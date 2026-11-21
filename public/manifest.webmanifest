@@ -1,0 +1,11 @@
+{
+  "name": "AfriCard",
+  "short_name": "AfriCard",
+  "description": "Cartes virtuelles multi-devises rechargées par Mobile Money",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1324",
+  "theme_color": "#0b1324",
+  "lang": "fr",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
