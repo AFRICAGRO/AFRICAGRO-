@@ -26,6 +26,26 @@ Canva, Coursera, frais de visa et de concours, billets d'avion, fournisseurs chi
 | **Historique** | Filtres, notifications, **relevé CSV** (utile pour visas, comptabilité, justificatifs) |
 | **Administration** | Statistiques, revenus, file KYC, gel de comptes, contrôle d'intégrité du grand livre, journal d'audit |
 
+### Agents automatiques (sécurité, bugs, notifications)
+
+| Agent | Rôle |
+|---|---|
+| 🛡️ **Sécurité** | Bloque les IP qui attaquent par force brute, **gèle les cartes victimes de test CVV**, prévient le titulaire, détecte les schémas de blanchiment (gros montants, fractionnement, entrée-sortie rapide) |
+| 🔧 **Fiabilité** | Contrôle le grand livre en continu : **auto-réparation** des soldes, **mode protégé** qui suspend les mouvements de fonds en cas d'anomalie, expiration des dépôts bloqués, détection des pics d'erreurs (bugs), purge des données expirées |
+| 📣 **Notifications** | Envoie SMS, e-mails et alertes équipe (Slack/Discord/Telegram) avec relances ; prévient des soldes bas, cartes qui expirent, étapes non terminées |
+
+Plus : alerte « nouvelle connexion », détection du vol de session, et une **CI GitHub** (tests, contrôles
+statiques, `npm audit`, CodeQL, Dependabot) qui bloque les bugs avant la mise en ligne. Détails : [docs/AGENTS.md](docs/AGENTS.md).
+
+### Conformité et protection des données
+
+- **Politique de confidentialité** et **CGU** versionnées (`/legal/confidentialite.html`, `/legal/cgu.html`), à **acceptation obligatoire** à l'inscription ; la preuve (version, date, IP) est conservée.
+- Nouvelle version publiée ⇒ **ré-acceptation exigée** avant toute opération.
+- Droits des personnes dans l'application : **export de toutes ses données** (JSON), préférences de notifications, consentement marketing facultatif, **clôture du compte avec anonymisation** (justificatifs financiers conservés 10 ans, obligation LBC/FT).
+- **Support et réclamations** intégrés (accusé de réception, suivi, réponses de l'équipe), alertes prioritaires pour les fraudes.
+- **Mot de passe oublié** par code à usage unique (SMS + e-mail), sans révéler si un compte existe.
+- Cookie unique strictement nécessaire, aucun traceur publicitaire.
+
 ### Sécurité
 
 - **Grand livre en partie double** : chaque mouvement est équilibré, aucun solde client ne peut devenir négatif, contrôle d'intégrité intégré.
@@ -46,7 +66,8 @@ Prérequis : **Node.js ≥ 22.13** (utilise le module SQLite intégré, aucune b
 ```bash
 npm install
 npm start            # http://localhost:3000
-npm test             # 14 tests unitaires et d'intégration
+npm test             # 23 tests : unitaires, intégration, agents, conformité
+npm run check        # contrôles statiques
 ```
 
 Parcours de test (mode sandbox) :

@@ -214,7 +214,126 @@ CREATE TABLE IF NOT EXISTS webhook_events (
   payload TEXT NOT NULL,
   received_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+-- Agents automatiques ----------------------------------------------------
+CREATE TABLE IF NOT EXISTS agent_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent TEXT NOT NULL,
+  status TEXT NOT NULL,                        -- ok | error
+  summary TEXT,
+  started_at TEXT NOT NULL,
+  finished_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_runs ON agent_runs(agent, id);
+
+CREATE TABLE IF NOT EXISTS security_alerts (
+  id TEXT PRIMARY KEY,
+  severity TEXT NOT NULL,                      -- info | warning | critical
+  type TEXT NOT NULL,
+  user_id TEXT,
+  message TEXT NOT NULL,
+  details TEXT,
+  dedupe_key TEXT UNIQUE,
+  status TEXT NOT NULL DEFAULT 'open',         -- open | resolved
+  resolved_by TEXT,
+  resolved_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_alerts_status ON security_alerts(status, created_at);
+
+CREATE TABLE IF NOT EXISTS ip_blocks (
+  ip TEXT PRIMARY KEY,
+  reason TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS error_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fingerprint TEXT NOT NULL,
+  message TEXT NOT NULL,
+  stack TEXT,
+  route TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_errors_fp ON error_events(fingerprint, created_at);
+
+CREATE TABLE IF NOT EXISTS system_flags (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+-- File d'envoi des notifications (e-mail, SMS, alertes admin) avec relances
+CREATE TABLE IF NOT EXISTS notification_outbox (
+  id TEXT PRIMARY KEY,
+  channel TEXT NOT NULL,                       -- email | sms | admin
+  recipient TEXT,
+  subject TEXT,
+  body TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',      -- pending | sent | failed
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  next_attempt_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  sent_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_outbox_pending ON notification_outbox(status, next_attempt_at);
+
+-- Conformité / données personnelles --------------------------------------
+CREATE TABLE IF NOT EXISTS consents (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  document TEXT NOT NULL,                      -- privacy | terms | marketing
+  version TEXT NOT NULL,
+  granted INTEGER NOT NULL DEFAULT 1,
+  ip TEXT,
+  user_agent TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_consents_user ON consents(user_id, document);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  code_hash TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  category TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open',         -- open | answered | closed
+  reply TEXT,
+  replied_by TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
 `;
+
+// Colonnes ajoutées après la première version (migrations idempotentes).
+const COLUMN_MIGRATIONS = [
+  ['users', 'notify_email', 'INTEGER NOT NULL DEFAULT 1'],
+  ['users', 'notify_sms', 'INTEGER NOT NULL DEFAULT 1'],
+  ['users', 'marketing_opt_in', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'closed_at', 'TEXT'],
+  ['notifications', 'category', "TEXT NOT NULL DEFAULT 'account'"],
+  ['notifications', 'dedupe_key', 'TEXT'],
+];
+
+function migrate(d) {
+  for (const [table, col, def] of COLUMN_MIGRATIONS) {
+    const cols = d.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+    if (!cols.includes(col)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`);
+  }
+  d.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_dedupe ON notifications(dedupe_key) WHERE dedupe_key IS NOT NULL');
+}
 
 let db;
 
@@ -224,6 +343,7 @@ function open(dbPath = config.dbPath) {
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA busy_timeout = 5000;');
   db.exec(SCHEMA);
+  migrate(db);
   return db;
 }
 

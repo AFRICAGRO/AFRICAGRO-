@@ -1,0 +1,42 @@
+# Intégration continue : chaque modification est vérifiée avant d'être fusionnée.
+name: CI
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+  schedule:
+    - cron: '17 4 * * 1'   # audit de sécurité hebdomadaire des dépendances
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Contrôles statiques
+        run: npm run check
+      - name: Tests unitaires, d'intégration et des agents
+        run: npm test
+      - name: Audit des dépendances (vulnérabilités connues)
+        run: npm audit --omit=dev --audit-level=high
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3

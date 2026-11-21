@@ -6,6 +6,7 @@ const { CARD_CURRENCIES } = require('../data/currencies');
 const { validate, idempotent } = require('../middleware/common');
 const { requireAuth, requirePin } = require('../middleware/auth');
 const { audit } = require('../services/notify');
+const { assertOperational } = require('../services/system');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -15,7 +16,7 @@ const optAmount = z.union([amountStr, z.null()]).optional();
 
 router.get('/', (req, res) => res.json({ cards: cards.list(req.user) }));
 
-router.post('/', idempotent, requirePin, validate(z.object({
+router.post('/', assertOperational, idempotent, requirePin, validate(z.object({
   label: z.string().trim().min(1).max(40).default('Ma carte'),
   brand: z.enum(['visa', 'mastercard']).default('visa'),
   currency: z.enum(CARD_CURRENCIES).default('USD'),
@@ -41,11 +42,11 @@ router.post('/:id/load/preview', validate(loadSchema), (req, res) => {
   res.json(cards.previewLoad(req.user, req.params.id, req.body.amount, req.body.sourceCurrency));
 });
 
-router.post('/:id/load', idempotent, validate(loadSchema), (req, res) => {
+router.post('/:id/load', assertOperational, idempotent, validate(loadSchema), (req, res) => {
   res.json({ card: cards.loadCard(req.user, req.params.id, req.body.amount, req.body.sourceCurrency) });
 });
 
-router.post('/:id/unload', idempotent, validate(z.object({ amount: amountStr })), (req, res) => {
+router.post('/:id/unload', assertOperational, idempotent, validate(z.object({ amount: amountStr })), (req, res) => {
   res.json({ card: cards.unloadCard(req.user, req.params.id, req.body.amount) });
 });
 

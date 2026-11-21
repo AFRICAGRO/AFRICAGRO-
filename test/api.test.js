@@ -12,11 +12,11 @@ test('inscription, connexion, rotation de session et détection de réutilisatio
   const weak = await call('POST', '/auth/register', { body: { fullName: 'Awa Koné', email: 'awa@test.africa', country: 'CI', phone: '0505050505', password: 'faible' } });
   assert.equal(weak.status, 400);
 
-  const r = await call('POST', '/auth/register', { body: { fullName: 'Awa Koné', email: 'awa@test.africa', country: 'CI', phone: '0505050505', password: 'MotDePasse123' } });
+  const r = await call('POST', '/auth/register', { body: { fullName: 'Awa Koné', email: 'awa@test.africa', country: 'CI', phone: '0505050505', password: 'MotDePasse123', acceptPrivacy: true, acceptTerms: true } });
   assert.equal(r.status, 201);
   assert.equal(r.body.user.phone, '+2250505050505');
 
-  const dup = await call('POST', '/auth/register', { body: { fullName: 'Awa', email: 'autre@test.africa', country: 'CI', phone: '+225 05 05 05 05 05', password: 'MotDePasse123' } });
+  const dup = await call('POST', '/auth/register', { body: { fullName: 'Awa', email: 'autre@test.africa', country: 'CI', phone: '+225 05 05 05 05 05', password: 'MotDePasse123', acceptPrivacy: true, acceptTerms: true } });
   assert.equal(dup.status, 409);
 
   const bad = await call('POST', '/auth/login', { body: { login: 'awa@test.africa', password: 'mauvais' } });

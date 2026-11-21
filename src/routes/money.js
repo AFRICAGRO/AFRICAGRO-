@@ -11,6 +11,7 @@ const limits = require('../services/limits');
 const mm = require('../services/mobileMoney');
 const { validate, idempotent } = require('../middleware/common');
 const { requireAuth, requirePin } = require('../middleware/auth');
+const { assertOperational } = require('../services/system');
 const { AppError, asyncHandler } = require('../lib/errors');
 const { notify, audit } = require('../services/notify');
 const { normalizePhone } = require('../data/countries');
@@ -51,7 +52,7 @@ router.post('/fx/quote', validate(quoteSchema), (req, res) => {
     available: money.toMajor(ledger.wallet(req.user.id, from).balance, from) });
 });
 
-router.post('/fx/execute', idempotent, validate(z.object({ quoteId: z.string().uuid() })), (req, res) => {
+router.post('/fx/execute', assertOperational, idempotent, validate(z.object({ quoteId: z.string().uuid() })), (req, res) => {
   const tx = fx.executeQuote(req.user.id, req.body.quoteId);
   audit(req.user.id, 'fx.execute', req.ip, { tx: tx.id });
   res.json({ ok: true, transactionId: tx.id });
@@ -72,7 +73,7 @@ router.post('/deposits/preview', validate(mmSchema), (req, res) => {
     usdEquivalent: money.toMajor(fx.midConvert(minor - fee, currency, 'USD'), 'USD') });
 });
 
-router.post('/deposits', idempotent, validate(mmSchema), asyncHandler(async (req, res) => {
+router.post('/deposits', assertOperational, idempotent, validate(mmSchema), asyncHandler(async (req, res) => {
   const r = await mm.initiateDeposit(req.user, req.body);
   audit(req.user.id, 'deposit.initiated', req.ip, { op: r.id });
   res.status(201).json(r);
@@ -96,14 +97,14 @@ router.post('/withdrawals/preview', validate(mmSchema), (req, res) => {
     available: money.toMajor(ledger.wallet(req.user.id, currency).balance, currency) });
 });
 
-router.post('/withdrawals', idempotent, requirePin, validate(mmSchema), asyncHandler(async (req, res) => {
+router.post('/withdrawals', assertOperational, idempotent, requirePin, validate(mmSchema), asyncHandler(async (req, res) => {
   const r = await mm.initiateWithdrawal(req.user, req.body);
   audit(req.user.id, 'withdrawal.initiated', req.ip, { op: r.id });
   res.status(201).json(r);
 }));
 
 // ------------------------------------------------------------------ Transferts entre membres (P2P)
-router.post('/transfers', idempotent, requirePin, validate(z.object({
+router.post('/transfers', assertOperational, idempotent, requirePin, validate(z.object({
   recipient: z.string().trim().min(3).max(200),         // e-mail ou numéro (+225…)
   recipientCountry: z.string().length(2).toUpperCase().optional(),
   currency: ccy,

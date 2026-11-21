@@ -113,17 +113,17 @@ function finalize(opId, status, reason) {
           { account: ledger.system('fees', op.currency), amount: op.fee },
           { account: ledger.wallet(op.user_id, op.currency), amount: op.amount - op.fee },
         ] });
-        notify(op.user_id, 'Dépôt reçu', `${money.format(op.amount - op.fee, op.currency)} ont été crédités sur votre portefeuille.`);
+        notify(op.user_id, 'Dépôt reçu', `${money.format(op.amount - op.fee, op.currency)} ont été crédités sur votre portefeuille.`, { category: 'transaction', sms: true });
       } else {
         ledger.settle(op.transaction_id, { status: 'failed' });
-        notify(op.user_id, 'Dépôt échoué', reason || 'Le paiement Mobile Money n’a pas abouti.');
+        notify(op.user_id, 'Dépôt échoué', reason || 'Le paiement Mobile Money n’a pas abouti.', { category: 'transaction' });
       }
     } else if (status === 'completed') {
       ledger.settle(op.transaction_id, { status: 'completed' });
-      notify(op.user_id, 'Retrait effectué', `${money.format(op.amount - op.fee, op.currency)} envoyés au ${op.phone}.`);
+      notify(op.user_id, 'Retrait effectué', `${money.format(op.amount - op.fee, op.currency)} envoyés au ${op.phone}.`, { category: 'transaction', sms: true });
     } else {
       ledger.reverse(op.transaction_id, 'failed');
-      notify(op.user_id, 'Retrait échoué', `${reason || 'Le décaissement a échoué.'} Vos fonds ont été restitués.`);
+      notify(op.user_id, 'Retrait échoué', `${reason || 'Le décaissement a échoué.'} Vos fonds ont été restitués.`, { category: 'transaction', sms: true });
     }
     d.prepare('UPDATE mobile_money_ops SET status=?, failure_reason=?, updated_at=? WHERE id=?').run(status, reason || null, db.now(), opId);
     return d.prepare('SELECT * FROM mobile_money_ops WHERE id=?').get(opId);

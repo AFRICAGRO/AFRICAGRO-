@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const config = require('./config');
 const { AppError } = require('./lib/errors');
+const { recordError } = require('./services/system');
+const { blockIps } = require('./middleware/auth');
 
 function createApp() {
   const app = express();
@@ -43,8 +45,7 @@ function createApp() {
     message: { error: { code: 'RATE_LIMITED', message: 'Trop de tentatives, réessayez plus tard' } } });
 
   api.get('/health', (_req, res) => res.json({ ok: true, service: 'africard', modes: { mobileMoney: config.mobileMoneyMode, cardIssuer: config.cardIssuerMode } }));
-  api.use('/auth/login', authLimiter);
-  api.use('/auth/register', authLimiter);
+  api.use(['/auth/login', '/auth/register', '/auth/password'], blockIps, authLimiter);
   api.use('/auth', require('./routes/auth').router);
   const pub = require('./routes/public');
   api.use('/meta', pub.meta);
@@ -52,6 +53,7 @@ function createApp() {
   api.use('/sandbox', pub.sandbox);
   api.use('/cards', require('./routes/cards').router);
   api.use('/admin', require('./routes/admin').router);
+  api.use('/', require('./routes/privacy').router);
   api.use('/', require('./routes/money').router);
   api.use('/', require('./routes/account').router);
   app.use('/api', api);
@@ -65,8 +67,11 @@ function createApp() {
     if (err.type === 'entity.parse.failed') err = new AppError(400, 'BAD_JSON', 'Corps JSON invalide');
     if (err.type === 'entity.too.large') err = new AppError(413, 'TOO_LARGE', 'Requête trop volumineuse');
     const status = err instanceof AppError ? err.status : 500;
+    if (status >= 500) recordError(err, `${req.method} ${req.route?.path || req.originalUrl.split('?')[0]}`);
     if (status >= 500) console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, err);
-    res.status(status).json({ error: { code: err.code || 'INTERNAL_ERROR', message: status >= 500 ? 'Erreur interne, veuillez réessayer' : err.message } });
+    const body = { code: err.code || 'INTERNAL_ERROR', message: status >= 500 ? 'Erreur interne, veuillez réessayer' : err.message };
+    if (err.code === 'CONSENT_REQUIRED') body.details = err.details;
+    res.status(status).json({ error: body });
   });
 
   return app;

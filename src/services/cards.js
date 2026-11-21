@@ -12,6 +12,7 @@ const { encrypt, decrypt, hmacSha256, uuid, safeEqual } = require('../lib/crypto
 const { AppError } = require('../lib/errors');
 const { issuer } = require('../providers/cardIssuer');
 const { CARD_CURRENCIES } = require('../data/currencies');
+const system = require('./system');
 
 const CATEGORIES = {
   streaming: 'Streaming & musique (Netflix, Spotify, YouTube…)',
@@ -201,7 +202,7 @@ function decline(card, input, reason, risk = 0) {
                     billed_amount, billed_currency, status, decline_reason, risk_score) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(id, card ? card.id : 'unknown', input.merchantName, input.merchantCategory, input.merchantCountry, input.amountMinor || 0,
       input.currency, 0, card ? card.currency : input.currency, 'declined', reason, risk);
-  if (card) notify(card.user_id, 'Paiement refusé', `${input.merchantName} : ${reason} (carte •••• ${card.last4}).`);
+  if (card) notify(card.user_id, 'Paiement refusé', `${input.merchantName} : ${reason} (carte •••• ${card.last4}).`, { category: 'transaction' });
   return { approved: false, authorizationId: id, reason };
 }
 
@@ -234,6 +235,7 @@ function authorize(input) {
   const pan = String(input.pan).replace(/\s/g, '');
   const card = d.prepare('SELECT * FROM cards WHERE pan_hash=?').get(panHash(pan));
   if (!card) return decline(null, input, 'Carte inconnue');
+  if (system.financialLock()) return decline(card, input, 'Service temporairement indisponible');
 
   if (card.status === 'frozen') return decline(card, input, 'Carte gelée');
   if (card.status !== 'active') return decline(card, input, 'Carte résiliée');
@@ -284,7 +286,7 @@ function authorize(input) {
         total, card.currency, fee, 'approved', risk, tx.id);
     if (card.single_use) dd.prepare('UPDATE cards SET used_once=1 WHERE id=?').run(card.id);
     if (card.lock_to_first_merchant && !card.merchant_lock) dd.prepare('UPDATE cards SET merchant_lock=? WHERE id=?').run(merchantKey, card.id);
-    notify(card.user_id, 'Paiement accepté', `${money.format(total, card.currency)} chez ${input.merchantName} (•••• ${card.last4}).`);
+    notify(card.user_id, 'Paiement accepté', `${money.format(total, card.currency)} chez ${input.merchantName} (•••• ${card.last4}).`, { category: 'transaction' });
     return { approved: true, authorizationId: id, billedAmount: money.toMajor(total, card.currency), billedCurrency: card.currency,
       fee: money.toMajor(fee, card.currency) };
   });
@@ -298,7 +300,7 @@ function refund(authorizationId) {
     ledger.reverse(a.transaction_id, 'reversed');
     d.prepare("UPDATE card_authorizations SET status='reversed' WHERE id=?").run(a.id);
     const card = d.prepare('SELECT * FROM cards WHERE id=?').get(a.card_id);
-    notify(card.user_id, 'Remboursement reçu', `${money.format(a.billed_amount, a.billed_currency)} remboursés par ${a.merchant_name}.`);
+    notify(card.user_id, 'Remboursement reçu', `${money.format(a.billed_amount, a.billed_currency)} remboursés par ${a.merchant_name}.`, { category: 'transaction' });
     return { ok: true };
   });
 }

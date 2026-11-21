@@ -41,6 +41,7 @@
     if (!res.ok) {
       const err = new Error(data?.error?.message || 'Une erreur est survenue');
       err.code = data?.error?.code; err.status = res.status;
+      if (err.code === 'CONSENT_REQUIRED') showConsentModal(data.error.details?.missing || ['privacy', 'terms']);
       throw err;
     }
     return data;
@@ -75,6 +76,7 @@
   async function loadMe() {
     const me = await api('GET', '/auth/me');
     state.user = me.user; state.limits = me.limits;
+    if (me.missingConsents?.length) showConsentModal(me.missingConsents);
   }
 
   // ================================================================ UI : toasts, modales
@@ -86,16 +88,48 @@
     setTimeout(() => el.remove(), 4200);
   }
 
-  function modal(content, { onMount } = {}) {
+  function modal(content, { onMount, locked = false } = {}) {
     const root = $('#modal-root');
     root.innerHTML = html`<div class="modal-backdrop"><div class="modal" role="dialog" aria-modal="true">${content}</div></div>`.s;
     const close = () => { root.innerHTML = ''; document.removeEventListener('keydown', onKey); };
     const onKey = (e) => { if (e.key === 'Escape') close(); };
-    document.addEventListener('keydown', onKey);
-    $('.modal-backdrop', root).addEventListener('click', (e) => { if (e.target.classList.contains('modal-backdrop')) close(); });
+    if (!locked) {
+      document.addEventListener('keydown', onKey);
+      $('.modal-backdrop', root).addEventListener('click', (e) => { if (e.target.classList.contains('modal-backdrop')) close(); });
+    }
     $$('[data-close]', root).forEach((b) => b.addEventListener('click', close));
     if (onMount) onMount($('.modal', root), close);
     return close;
+  }
+
+  const LEGAL_LINKS = html`<a href="/legal/confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a>
+    <a href="/legal/cgu.html" target="_blank" rel="noopener">Conditions d’utilisation</a>`;
+
+  let consentOpen = false;
+  /** Modale bloquante : acceptation obligatoire des nouvelles versions des documents juridiques. */
+  function showConsentModal(missing) {
+    if (consentOpen) return;
+    consentOpen = true;
+    const names = { privacy: 'la politique de confidentialité', terms: 'les conditions générales d’utilisation' };
+    modal(html`
+      <h2>Mise à jour de nos conditions</h2>
+      <p>Pour continuer à utiliser AfriCard, merci de lire et d’accepter ${missing.map((m) => names[m]).join(' et ')} en vigueur.</p>
+      <form id="consent-form" class="stack">
+        ${missing.includes('privacy') ? html`<label class="check"><input type="checkbox" required> J’ai lu et j’accepte la <a href="/legal/confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a>.</label>` : ''}
+        ${missing.includes('terms') ? html`<label class="check"><input type="checkbox" required> J’ai lu et j’accepte les <a href="/legal/cgu.html" target="_blank" rel="noopener">conditions d’utilisation</a>.</label>` : ''}
+        <div class="row"><a class="btn secondary" href="#/deconnexion" data-close>Se déconnecter</a><button class="btn accent" type="submit">J’accepte</button></div>
+      </form>`, { locked: true, onMount: (m, close) => {
+      $('[data-close]', m).addEventListener('click', () => { consentOpen = false; });
+      $('#consent-form', m).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await withBusy($('button[type=submit]', e.target), async () => {
+          await api('POST', '/consents', { documents: missing });
+          consentOpen = false; close();
+          toast('Merci, vos choix sont enregistrés', 'success');
+          route();
+        });
+      });
+    } });
   }
 
   /** Demande le code PIN de transaction (modale). */
@@ -133,7 +167,7 @@
   const NAV = [
     ['accueil', '🏠', 'Accueil'], ['recharger', '📲', 'Recharger'], ['cartes', '💳', 'Mes cartes'], ['convertir', '💱', 'Convertir'],
     ['envoyer', '💸', 'Envoyer'], ['retirer', '🏧', 'Retirer'], ['historique', '🧾', 'Historique'], ['securite', '🔐', 'Sécurité & profil'],
-    ['simulateur', '🛒', 'Simulateur marchand'],
+    ['simulateur', '🛒', 'Simulateur marchand'], ['support', '💬', 'Support & réclamations'],
   ];
   const MOBILE_NAV = [['accueil', '🏠', 'Accueil'], ['recharger', '📲', 'Recharger'], ['cartes', '💳', 'Cartes'], ['historique', '🧾', 'Historique'], ['securite', '👤', 'Profil']];
 
@@ -149,6 +183,7 @@
           <div class="spacer"></div>
           ${sandbox ? html`<div class="sandbox-pill">Mode test (sandbox) : aucun argent réel n’est débité.</div>` : ''}
           <a href="#/deconnexion" class="logout">↪ Se déconnecter</a>
+          <div class="legal-links">${LEGAL_LINKS}</div>
         </aside>
         <main class="main">
           <div class="topbar">
@@ -223,6 +258,7 @@
             <li>💳 Cartes à usage unique ou verrouillées sur un marchand pour vos abonnements</li>
             <li>🔐 Code PIN, double authentification, données de carte chiffrées</li>
           </ul>
+          <div class="legal-links">${LEGAL_LINKS}</div>
           <div class="ops-logos">${['Orange Money', 'MTN MoMo', 'Wave', 'Moov Money', 'M-Pesa', 'Airtel Money', 'Free Money', 'T-Money', 'telebirr', 'OPay'].map((o) => html`<span>${o}</span>`)}</div>
         </section>
         <section class="auth-form">
@@ -234,6 +270,7 @@
               <div class="field"><label for="l-pass">Mot de passe</label><input id="l-pass" name="password" type="password" autocomplete="current-password" required></div>
               <div class="field hidden" id="totp-field"><label for="l-totp">Code de double authentification</label><input id="l-totp" name="totp" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
               <button class="btn block" type="submit">Se connecter</button>
+              <p class="small section-title"><button type="button" class="link-btn" id="forgot">Mot de passe oublié ?</button></p>
             </form>
             <form id="register-form" class="hidden">
               <div class="field"><label for="r-name">Nom complet (comme sur votre pièce d’identité)</label><input id="r-name" name="fullName" required minlength="3" autocomplete="name"></div>
@@ -242,7 +279,9 @@
               <div class="field"><label for="r-phone">Téléphone (Mobile Money)</label><div class="input-group"><span class="prefix" id="r-dial">+225</span><input id="r-phone" name="phone" inputmode="tel" required autocomplete="tel-national"></div></div>
               <div class="field"><label for="r-pass">Mot de passe</label><input id="r-pass" name="password" type="password" required minlength="10" autocomplete="new-password">
                 <div class="hint">10 caractères minimum, avec majuscule, minuscule et chiffre.</div></div>
-              <label class="check"><input type="checkbox" required> J’accepte les conditions d’utilisation et la politique de confidentialité.</label>
+              <label class="check"><input type="checkbox" name="acceptPrivacy" required> <span>J’ai lu et j’accepte la <a href="/legal/confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a> (obligatoire).</span></label>
+              <label class="check"><input type="checkbox" name="acceptTerms" required> <span>J’accepte les <a href="/legal/cgu.html" target="_blank" rel="noopener">conditions générales d’utilisation</a> et certifie avoir au moins 18 ans (obligatoire).</span></label>
+              <label class="check"><input type="checkbox" name="marketingOptIn"> <span>Je souhaite recevoir les offres et nouveautés AfriCard (facultatif).</span></label>
               <button class="btn block accent" type="submit">Créer mon compte gratuitement</button>
             </form>
           </div>
@@ -271,16 +310,59 @@
         }
       });
     });
+    $('#forgot').addEventListener('click', () => forgotPassword(meta));
     $('#register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       await withBusy($('button[type=submit]', e.target), async () => {
-        const r = await api('POST', '/auth/register', formData(e.target));
+        const f = formData(e.target);
+        const r = await api('POST', '/auth/register', { ...f, acceptPrivacy: f.acceptPrivacy === 'on', acceptTerms: f.acceptTerms === 'on', marketingOptIn: f.marketingOptIn === 'on' });
         state.token = r.accessToken; state.user = r.user;
         toast('Bienvenue ! Commencez par définir votre code PIN.', 'success');
         location.hash = '#/securite';
       });
     });
   };
+
+  function forgotPassword(meta) {
+    const countryOpts = meta.countries.map((c) => html`<option value="${c.code}" ${c.code === 'CI' ? 'selected' : ''}>${c.name}</option>`);
+    modal(html`
+      <h2>Mot de passe oublié</h2>
+      <form id="fp1" class="stack">
+        <p class="small muted">Recevez un code à 6 chiffres par SMS et e-mail.</p>
+        <div class="field"><label for="fp-login">E-mail ou téléphone</label><input id="fp-login" name="login" required></div>
+        <div class="field"><label for="fp-country">Pays (si téléphone)</label><select id="fp-country" name="country">${countryOpts}</select></div>
+        <div class="row"><button type="button" class="btn secondary" data-close>Annuler</button><button class="btn" type="submit">Recevoir le code</button></div>
+      </form>
+      <form id="fp2" class="stack hidden">
+        <div class="alert small" id="fp-info"></div>
+        <div class="field"><label for="fp-code">Code reçu</label><input id="fp-code" name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></div>
+        <div class="field"><label for="fp-new">Nouveau mot de passe</label><input id="fp-new" name="newPassword" type="password" minlength="10" required autocomplete="new-password">
+          <div class="hint">10 caractères minimum, majuscule, minuscule et chiffre.</div></div>
+        <div class="field hidden" id="fp-totp-f"><label for="fp-totp">Code de double authentification</label><input id="fp-totp" name="totp" inputmode="numeric" maxlength="6"></div>
+        <button class="btn accent" type="submit">Changer mon mot de passe</button>
+      </form>`, { onMount: (m, close) => {
+      let ident;
+      $('#fp1', m).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        ident = formData(e.target);
+        const r = await withBusy($('button[type=submit]', e.target), () => api('POST', '/auth/password/forgot', ident));
+        if (!r) return;
+        $('#fp1', m).classList.add('hidden'); $('#fp2', m).classList.remove('hidden');
+        $('#fp-info', m).textContent = r.message + (r.devCode ? ` (Mode test : code ${r.devCode})` : '');
+      });
+      $('#fp2', m).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = formData(e.target); if (!f.totp) delete f.totp;
+        try {
+          await api('POST', '/auth/password/reset', { ...ident, ...f });
+          close(); toast('Mot de passe changé : connectez-vous', 'success');
+        } catch (err) {
+          if (err.code === 'TOTP_REQUIRED') $('#fp-totp-f', m).classList.remove('hidden');
+          toast(err.message, 'error');
+        }
+      });
+    } });
+  }
 
   // ---------------- Accueil
   pages.accueil = async () => {
@@ -812,11 +894,29 @@
           </div>
         </div>
         <div class="stack">
+          <div class="card" id="privacy"><h2>Confidentialité & notifications</h2>
+            <div class="switch-row"><span>Alertes de sécurité par SMS et e-mail<div class="small muted">Toujours actives pour protéger votre compte</div></span><input type="checkbox" checked disabled aria-label="Alertes de sécurité"></div>
+            <div class="switch-row"><label for="pv-email">Notifications de transactions par e-mail</label><input type="checkbox" id="pv-email" data-pref="notifyEmail" ${u.notifyEmail ? 'checked' : ''}></div>
+            <div class="switch-row"><label for="pv-sms">Dépôts et retraits par SMS</label><input type="checkbox" id="pv-sms" data-pref="notifySms" ${u.notifySms ? 'checked' : ''}></div>
+            <div class="switch-row"><label for="pv-mkt">Offres et nouveautés (facultatif)</label><input type="checkbox" id="pv-mkt" data-pref="marketingOptIn" ${u.marketingOptIn ? 'checked' : ''}></div>
+            <div class="row section-title">
+              <button class="btn sm secondary" id="pv-export">⬇️ Télécharger mes données</button>
+              <a class="btn sm ghost" href="/legal/confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a>
+            </div>
+            <details><summary class="small muted">Clôturer mon compte</summary>
+              <form id="close-form" class="stack">
+                <p class="small">Vos soldes doivent être à zéro. Vos données d’identification seront anonymisées ; les justificatifs financiers sont conservés le temps exigé par la loi (LBC/FT).</p>
+                <div class="field"><label for="cl-pass">Mot de passe</label><input id="cl-pass" name="password" type="password" required></div>
+                <div class="field"><label for="cl-reason">Motif (facultatif)</label><input id="cl-reason" name="reason" maxlength="300"></div>
+                <button class="btn danger sm" type="submit">Clôturer définitivement</button>
+              </form>
+            </details>
+          </div>
           <div class="card" id="twofa"><h2>Double authentification (2FA)</h2>
             ${u.totpEnabled ? html`<p>✅ Activée. Un code de votre application (Google Authenticator, Authy…) est demandé à chaque connexion.</p>
-              <form id="2fa-off" class="stack"><div class="field"><label for="tf-code">Code actuel</label><input id="tf-code" name="code" inputmode="numeric" maxlength="6" required></div>
+              <form id="tfa-off" class="stack"><div class="field"><label for="tf-code">Code actuel</label><input id="tf-code" name="code" inputmode="numeric" maxlength="6" required></div>
               <div class="field"><label for="tf-pass">Mot de passe</label><input id="tf-pass" name="password" type="password" required></div><button class="btn danger" type="submit">Désactiver</button></form>`
-              : html`<p class="small muted">Protégez votre compte même si votre mot de passe est volé ou votre carte SIM clonée.</p><button class="btn" id="2fa-setup">Activer la 2FA</button><div id="2fa-step"></div>`}
+              : html`<p class="small muted">Protégez votre compte même si votre mot de passe est volé ou votre carte SIM clonée.</p><button class="btn" id="tfa-setup">Activer la 2FA</button><div id="tfa-step"></div>`}
           </div>
           <form class="card" id="pref"><h2>Devise d’affichage</h2>
             <div class="field"><select name="preferredCurrency">${state.meta.currencies.map((c) => html`<option value="${c.code}" ${c.code === u.preferredCurrency ? 'selected' : ''}>${c.code} — ${c.name}</option>`)}</select></div>
@@ -827,7 +927,7 @@
             <button class="btn secondary" type="submit">Changer</button></form>
           <div class="card"><h2>Activité récente</h2><ul class="list small">${activity.slice(0, 10).map((a) => html`<li><span class="grow">${a.action}</span><span class="muted">${a.ip || ''} · ${dateFmt(a.created_at)}</span></li>`)}</ul>
             <button class="btn ghost sm" id="logout-all">Déconnecter tous les appareils</button></div>
-          <div class="card small"><strong>Compte :</strong> ${u.email} · ${u.phone}<div class="row section-title"><a class="btn sm secondary" href="#/envoyer">💸 Envoyer</a><a class="btn sm secondary" href="#/convertir">💱 Convertir</a>${u.role === 'admin' ? html`<a class="btn sm secondary" href="#/admin">🛡️ Administration</a>` : ''}<a class="btn sm ghost" href="#/deconnexion">Se déconnecter</a></div></div>
+          <div class="card small"><strong>Compte :</strong> ${u.email} · ${u.phone}<div class="row section-title"><a class="btn sm secondary" href="#/envoyer">💸 Envoyer</a><a class="btn sm secondary" href="#/support">💬 Support</a><a class="btn sm secondary" href="#/convertir">💱 Convertir</a>${u.role === 'admin' ? html`<a class="btn sm secondary" href="#/admin">🛡️ Administration</a>` : ''}<a class="btn sm ghost" href="#/deconnexion">Se déconnecter</a></div></div>
         </div>
       </div>`, (root) => {
       const bind = (sel, fn) => $(sel, root)?.addEventListener('submit', async (e) => { e.preventDefault(); await withBusy($('button[type=submit]', e.target), () => fn(formData(e.target), e.target)); });
@@ -835,19 +935,65 @@
       bind('#kyc-form', async (f) => { const r = await api('POST', '/kyc', { ...f, targetLevel: Number(f.targetLevel) }); toast(r.status === 'approved' ? 'Identité vérifiée ✅' : 'Dossier envoyé', 'success'); route(); });
       bind('#pref', async (f) => { await api('PATCH', '/profile', f); toast('Préférence enregistrée', 'success'); });
       bind('#pwd', async (f, form) => { await api('POST', '/security/password', f); toast('Mot de passe modifié', 'success'); form.reset(); });
-      bind('#2fa-off', async (f) => { await api('POST', '/security/2fa/disable', f); toast('2FA désactivée'); route(); });
-      $('#2fa-setup', root)?.addEventListener('click', async (e) => {
+      bind('#tfa-off', async (f) => { await api('POST', '/security/2fa/disable', f); toast('2FA désactivée'); route(); });
+      $('#tfa-setup', root)?.addEventListener('click', async (e) => {
         const btn = e.currentTarget;
         const r = await withBusy(btn, () => api('POST', '/security/2fa/setup'));
         if (!r) return;
-        $('#2fa-step', root).innerHTML = html`<div class="stack"><div class="section-title"></div>
+        $('#tfa-step', root).innerHTML = html`<div class="stack"><div class="section-title"></div>
           <p class="small">Dans votre application d’authentification, ajoutez un compte avec cette clé :</p>
           <p class="mono alert">${r.secret.match(/.{1,4}/g).join(' ')}</p>
           <p class="small muted">Ou ouvrez ce lien sur votre téléphone : <a class="mono" href="${r.otpauthUrl}">otpauth://…</a></p>
-          <form id="2fa-on" class="input-group"><input name="code" inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres" required><button class="btn" type="submit">Activer</button></form></div>`.s;
-        bind('#2fa-on', async (f) => { await api('POST', '/security/2fa/enable', f); toast('2FA activée 🔐', 'success'); route(); });
+          <form id="tfa-on" class="input-group"><input name="code" inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres" required><button class="btn" type="submit">Activer</button></form></div>`.s;
+        bind('#tfa-on', async (f) => { await api('POST', '/security/2fa/enable', f); toast('2FA activée 🔐', 'success'); route(); });
+      });
+      $$('[data-pref]', root).forEach((cb) => cb.addEventListener('change', async () => {
+        try { const r = await api('PATCH', '/privacy/preferences', { [cb.dataset.pref]: cb.checked }); state.user = r.user; toast('Préférence enregistrée', 'success'); } catch (err) { cb.checked = !cb.checked; toast(err.message, 'error'); }
+      }));
+      $('#pv-export', root).addEventListener('click', async () => {
+        const res = await fetch('/api/privacy/export', { headers: { Authorization: `Bearer ${state.token}` } });
+        if (!res.ok) return toast('Export impossible', 'error');
+        const url = URL.createObjectURL(await res.blob());
+        const a = document.createElement('a'); a.href = url; a.download = 'mes-donnees-africard.json'; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        return toast('Vos données ont été téléchargées', 'success');
+      });
+      $('#close-form', root).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = formData(e.target); if (!f.reason) delete f.reason;
+        const pin = await askPin('Confirmer la clôture du compte'); if (!pin) return;
+        const r = await withBusy($('button[type=submit]', e.target), () => api('POST', '/privacy/close-account', { ...f, pin }));
+        if (r) { toast(r.message, 'success'); state.token = null; state.user = null; location.hash = '#/connexion'; }
       });
       $('#logout-all', root).addEventListener('click', async () => { await api('POST', '/auth/logout-all'); logoutLocal(); });
+    });
+  };
+
+  // ---------------- Support & réclamations
+  const TICKET_CATS = { reclamation: 'Réclamation', fraude: 'Fraude / opération non reconnue', carte: 'Carte', mobile_money: 'Dépôt / retrait Mobile Money',
+    compte: 'Mon compte', donnees_personnelles: 'Données personnelles', autre: 'Autre' };
+  pages.support = async () => {
+    const { tickets } = await api('GET', '/support/tickets');
+    render('support', html`
+      <h1>Support & réclamations</h1>
+      <p class="muted">Accusé de réception sous 48 h ouvrées, réponse sous 30 jours maximum. En cas de fraude, <strong>gelez d’abord votre carte</strong> depuis « Mes cartes ».</p>
+      <div class="grid grid-2">
+        <form class="card" id="tk-form">
+          <div class="field"><label for="tk-cat">Sujet</label><select id="tk-cat" name="category">${Object.entries(TICKET_CATS).map(([k, v]) => html`<option value="${k}">${v}</option>`)}</select></div>
+          <div class="field"><label for="tk-sub">Titre</label><input id="tk-sub" name="subject" required minlength="3" maxlength="120"></div>
+          <div class="field"><label for="tk-msg">Message</label><textarea id="tk-msg" name="message" rows="6" required minlength="10" maxlength="3000" placeholder="Décrivez votre demande (date, montant, référence…). Ne communiquez jamais votre PIN ni votre mot de passe."></textarea></div>
+          <button class="btn accent" type="submit">Envoyer</button>
+        </form>
+        <div class="card"><h2>Mes demandes</h2>${tickets.length ? html`<ul class="list">${tickets.map((t) => html`
+          <li><div class="grow"><div class="title">${t.subject}</div><div class="small muted">${TICKET_CATS[t.category] || t.category} · réf. ${t.id.slice(0, 8).toUpperCase()} · ${dateFmt(t.created_at)}</div>
+            ${t.reply ? html`<div class="alert small">💬 ${t.reply}</div>` : ''}</div>${statusBadge(t.status === 'open' ? 'pending' : t.status === 'answered' ? 'completed' : 'terminated')}</li>`)}</ul>`
+          : html`<div class="empty">Aucune demande.</div>`}</div>
+      </div>`, (root) => {
+      $('#tk-form', root).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const r = await withBusy($('button[type=submit]', e.target), () => api('POST', '/support/tickets', formData(e.target)));
+        if (r) { toast(`Demande enregistrée (réf. ${r.reference})`, 'success'); route(); }
+      });
     });
   };
 
@@ -911,9 +1057,29 @@
   // ---------------- Administration
   pages.admin = async () => {
     if (state.user.role !== 'admin') { location.hash = '#/accueil'; return; }
-    const [stats, kyc, integ] = await Promise.all([api('GET', '/admin/stats'), api('GET', '/admin/kyc'), api('GET', '/admin/ledger/integrity')]);
+    const [stats, kyc, integ, ag, al, tk] = await Promise.all([api('GET', '/admin/stats'), api('GET', '/admin/kyc'), api('GET', '/admin/ledger/integrity'),
+      api('GET', '/admin/agents'), api('GET', '/admin/alerts'), api('GET', '/admin/tickets')]);
+    const agentLabels = { security: '🛡️ Agent de sécurité', reliability: '🔧 Agent de fiabilité', notification: '📣 Agent de notifications' };
+    const openTickets = tk.tickets.filter((t) => t.status === 'open');
     render('admin', html`
       <h1>Administration</h1>
+      ${ag.financialLock ? html`<div class="banner-lock">🚨 Mode protégé actif : ${ag.financialLock}<div class="row section-title"><button class="btn sm secondary" id="unlock">Lever le mode protégé</button></div></div>` : ''}
+      <div class="section-title"><h2>Agents automatiques</h2></div>
+      <div class="grid grid-3">${ag.agents.map((a) => html`
+        <div class="card"><div class="row between"><strong>${agentLabels[a.name] || a.name}</strong>${a.lastRun ? statusBadge(a.lastRun.status === 'ok' ? 'completed' : 'failed') : html`<span class="badge">jamais</span>`}</div>
+          <p class="small muted">${a.lastRun ? `Dernier passage : ${dateFmt(a.lastRun.at)}` : 'En attente du premier passage'}${a.errors24h ? ` · ${a.errors24h} échec(s) 24 h` : ''}</p>
+          ${a.lastRun && typeof a.lastRun.summary === 'object' ? html`<dl class="kv small">${Object.entries(a.lastRun.summary).map(([k, v]) => html`<dt>${k}</dt><dd>${String(v)}</dd>`)}</dl>` : ''}
+          <div class="section-title"></div><button class="btn sm secondary" data-agent="${a.name}">Exécuter maintenant</button></div>`)}</div>
+      <div class="section-title"><h2>Alertes ouvertes (${al.alerts.length})</h2></div>
+      <div class="card">${al.alerts.length ? html`<ul class="list">${al.alerts.map((a) => html`
+        <li class="sev-${a.severity}"><div class="grow"><div class="title">${a.type}</div><div class="small">${a.message}</div>
+          <div class="small muted">${a.full_name ? `${a.full_name} · ` : ''}${dateFmt(a.created_at)}</div></div>
+          <button class="btn sm secondary" data-alert="${a.id}">Traiter</button></li>`)}</ul>` : html`<div class="empty">Aucune alerte ouverte ✅</div>`}</div>
+      <div class="section-title"><h2>Demandes clients en attente (${openTickets.length})</h2></div>
+      <div class="card">${openTickets.length ? html`<ul class="list">${openTickets.map((t) => html`
+        <li><div class="grow"><div class="title">[${t.category}] ${t.subject}</div><div class="small">${t.message}</div><div class="small muted">${t.full_name} · ${t.email} · ${dateFmt(t.created_at)}</div></div>
+          <button class="btn sm" data-ticket="${t.id}">Répondre</button></li>`)}</ul>` : html`<div class="empty">Aucune demande en attente.</div>`}</div>
+      <div class="section-title"><h2>Activité</h2></div>
       <div class="grid grid-3">
         <div class="card"><div class="muted small">Utilisateurs</div><h2>${stats.users.total}</h2><div class="small">${stats.users.verified} vérifiés</div></div>
         <div class="card"><div class="muted small">Cartes actives</div><h2>${stats.cards.active}</h2><div class="small">${stats.cards.total} émises</div></div>
@@ -929,6 +1095,23 @@
         ${stats.volumes.map((v) => html`<tr><td>${txLabel[v.type] || v.type}</td><td>${v.currency}</td><td>${v.n}</td><td class="num">${fmt(v.total, v.currency)}</td></tr>`)}</tbody></table></div>
       <div class="section-title"><h2>Principaux motifs de refus carte</h2></div>
       <div class="card"><ul class="list">${stats.topDeclineReasons.map((d) => html`<li><span class="grow">${d.decline_reason}</span><strong>${d.n}</strong></li>`)}</ul></div>`, (root) => {
+      $$('[data-agent]', root).forEach((b) => b.addEventListener('click', async () => {
+        const r = await withBusy(b, () => api('POST', `/admin/agents/${b.dataset.agent}/run`));
+        if (r) { toast('Agent exécuté', 'success'); route(); }
+      }));
+      $$('[data-alert]', root).forEach((b) => b.addEventListener('click', async () => {
+        const note = prompt('Note de traitement (facultatif)') || undefined;
+        if (await withBusy(b, () => api('POST', `/admin/alerts/${b.dataset.alert}/resolve`, { note }))) { toast('Alerte traitée', 'success'); route(); }
+      }));
+      $$('[data-ticket]', root).forEach((b) => b.addEventListener('click', async () => {
+        const reply = prompt('Votre réponse au client'); if (!reply) return;
+        if (await withBusy(b, () => api('POST', `/admin/tickets/${b.dataset.ticket}/reply`, { reply }))) { toast('Réponse envoyée', 'success'); route(); }
+      }));
+      $('#unlock', root)?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const reason = prompt('Motif de la levée (enquête effectuée, anomalie corrigée…)'); if (!reason) return;
+        if (await withBusy(btn, () => api('POST', '/admin/financial-lock/clear', { reason }))) { toast('Mode protégé levé', 'success'); route(); }
+      });
       $$('[data-kyc]', root).forEach((b) => b.addEventListener('click', async () => {
         const note = b.dataset.d === 'rejected' ? (prompt('Motif du refus ?') || 'Informations non conformes') : undefined;
         if (await withBusy(b, () => api('POST', `/admin/kyc/${b.dataset.kyc}/review`, { decision: b.dataset.d, note }))) { toast('Dossier traité', 'success'); route(); }
@@ -959,6 +1142,7 @@
       return await pages[name](arg);
     } catch (e) {
       if (e.status === 401) return logoutLocal();
+      if (e.code === 'CONSENT_REQUIRED') return undefined; // la modale d'acceptation est déjà affichée
       toast(e.message, 'error');
       return undefined;
     }

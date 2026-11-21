@@ -65,7 +65,14 @@ via `/api/admin/stats` et le grand livre.
 - **SMS/WhatsApp** : `src/services/notify.js` est le point d'extension (Africa's Talking, Twilio,
   Termii, Orange SMS API).
 
-## 6. Liste de contrôle avant lancement
+## 6. Protection des données
+
+- Compléter les mentions [À COMPLÉTER] de `public/legal/confidentialite.html` et `public/legal/cgu.html`, puis les faire valider par un juriste.
+- Désigner un **DPO** (`DPO_EMAIL`) et effectuer les **formalités préalables** auprès de chaque autorité (ex. déclaration/autorisation ARTCI en Côte d'Ivoire, CDP au Sénégal, NDPC au Nigeria), y compris pour les **transferts hors du pays**.
+- Tenir le registre des traitements et signer des clauses de sous-traitance avec chaque prestataire (hébergeur, KYC, SMS, e-mail).
+- À chaque modification d'un document : mettre à jour sa date dans la page **et** la variable `PRIVACY_POLICY_VERSION` / `TERMS_VERSION` (les utilisateurs devront ré-accepter).
+
+## 7. Liste de contrôle avant lancement
 
 - [ ] Contrat signé avec un émetteur de cartes et un agrégateur Mobile Money
 - [ ] Statut réglementaire validé dans chaque pays ouvert
@@ -74,4 +81,7 @@ via `/api/admin/stats` et le grand livre.
 - [ ] Webhooks testés (signature, rejeu, ordre des événements)
 - [ ] Rapprochement quotidien : grand livre ↔ relevés agrégateur ↔ relevés émetteur
 - [ ] Test d'intrusion et revue de code sécurité
-- [ ] Conditions générales, politique de confidentialité, grille tarifaire publiée
+- [ ] Conditions générales, politique de confidentialité, grille tarifaire publiées et validées
+- [ ] Fournisseurs SMS/e-mail et canal d'alertes équipe configurés (tester un « Exécuter maintenant » des agents)
+- [ ] Procédure de traitement des alertes LBC/FT et des réclamations rédigée
+- [ ] Protection de branche GitHub : CI obligatoire avant fusion

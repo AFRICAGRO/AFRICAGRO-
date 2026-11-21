@@ -11,6 +11,9 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { AppError } = require('../lib/errors');
 const { decrypt } = require('../lib/crypto');
 const { audit, notify } = require('../services/notify');
+const agents = require('../agents');
+const system = require('../services/system');
+const { asyncHandler } = require('../lib/errors');
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -70,6 +73,73 @@ router.post('/kyc/:id/review', validate(z.object({ decision: z.enum(['approved',
       req.body.decision === 'approved' ? `Votre compte est passé au niveau ${k.target_level}.` : (req.body.note || 'Merci de soumettre des informations valides.'));
     audit(req.user.id, `admin.kyc_${req.body.decision}`, req.ip, { submission: k.id });
   });
+  res.json({ ok: true });
+});
+
+// ------------------------------------------------------------------ Agents & alertes
+router.get('/agents', (_req, res) => res.json({ agents: agents.status(), financialLock: system.financialLock() }));
+
+router.post('/agents/:name/run', asyncHandler(async (req, res) => {
+  if (!agents.AGENTS[req.params.name]) throw new AppError(404, 'AGENT_NOT_FOUND', 'Agent inconnu');
+  audit(req.user.id, 'admin.agent_run', req.ip, { agent: req.params.name });
+  res.json({ summary: await agents.runAgent(req.params.name) });
+}));
+
+router.get('/alerts', (req, res) => {
+  const status = req.query.status === 'resolved' ? 'resolved' : 'open';
+  const rows = db.get().prepare(`SELECT a.*, u.full_name, u.email FROM security_alerts a LEFT JOIN users u ON u.id=a.user_id
+                                 WHERE a.status=? ORDER BY CASE a.severity WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END, a.created_at DESC LIMIT 200`).all(status);
+  res.json({ alerts: rows.map((r) => ({ ...r, details: r.details ? JSON.parse(r.details) : null })) });
+});
+
+router.post('/alerts/:id/resolve', validate(z.object({ note: z.string().max(300).optional() })), (req, res) => {
+  const r = db.get().prepare("UPDATE security_alerts SET status='resolved', resolved_by=?, resolved_at=? WHERE id=? AND status='open'").run(req.user.id, db.now(), req.params.id);
+  if (!r.changes) throw new AppError(404, 'ALERT_NOT_FOUND', 'Alerte introuvable ou déjà traitée');
+  audit(req.user.id, 'admin.alert_resolved', req.ip, { alert: req.params.id, note: req.body.note });
+  res.json({ ok: true });
+});
+
+/** Levée du mode protégé, après vérification humaine du grand livre. */
+router.post('/financial-lock/clear', validate(z.object({ reason: z.string().min(5).max(300) })), (req, res) => {
+  const check = ledger.integrityCheck();
+  if (!check.ok) throw new AppError(409, 'LEDGER_STILL_UNBALANCED', 'Le grand livre est toujours incohérent : corrigez l’anomalie avant de lever le mode protégé');
+  system.setFlag('financial_lock', null);
+  audit(req.user.id, 'admin.financial_lock_cleared', req.ip, { reason: req.body.reason });
+  res.json({ ok: true });
+});
+
+router.get('/ip-blocks', (_req, res) => res.json({ blocks: db.get().prepare('SELECT * FROM ip_blocks ORDER BY created_at DESC').all() }));
+router.delete('/ip-blocks/:ip', (req, res) => {
+  db.get().prepare('DELETE FROM ip_blocks WHERE ip=?').run(req.params.ip);
+  audit(req.user.id, 'admin.ip_unblocked', req.ip, { ip: req.params.ip });
+  res.json({ ok: true });
+});
+
+router.get('/errors', (_req, res) => {
+  res.json({ errors: db.get().prepare(`SELECT fingerprint, COUNT(*) AS n, MAX(message) AS message, MAX(route) AS route, MAX(created_at) AS last
+                                       FROM error_events GROUP BY fingerprint ORDER BY last DESC LIMIT 50`).all() });
+});
+
+router.get('/notifications/outbox', (_req, res) => {
+  const d = db.get();
+  res.json({ stats: d.prepare('SELECT channel, status, COUNT(*) AS n FROM notification_outbox GROUP BY channel, status').all(),
+    failed: d.prepare("SELECT id, channel, recipient, subject, last_error, attempts, created_at FROM notification_outbox WHERE status='failed' ORDER BY created_at DESC LIMIT 50").all() });
+});
+
+// ------------------------------------------------------------------ Support
+router.get('/tickets', (_req, res) => {
+  res.json({ tickets: db.get().prepare(`SELECT t.*, u.full_name, u.email FROM support_tickets t JOIN users u ON u.id=t.user_id
+                                        ORDER BY CASE t.status WHEN 'open' THEN 0 ELSE 1 END, t.created_at DESC LIMIT 200`).all() });
+});
+
+router.post('/tickets/:id/reply', validate(z.object({ reply: z.string().trim().min(2).max(3000), close: z.boolean().default(false) })), (req, res) => {
+  const d = db.get();
+  const t = d.prepare('SELECT * FROM support_tickets WHERE id=?').get(req.params.id);
+  if (!t) throw new AppError(404, 'TICKET_NOT_FOUND', 'Demande introuvable');
+  d.prepare('UPDATE support_tickets SET reply=?, replied_by=?, status=?, updated_at=? WHERE id=?')
+    .run(req.body.reply, req.user.id, req.body.close ? 'closed' : 'answered', db.now(), t.id);
+  notify(t.user_id, 'Réponse du support', `« ${t.subject} » : ${req.body.reply}`);
+  audit(req.user.id, 'admin.ticket_replied', req.ip, { ticket: t.id });
   res.json({ ok: true });
 });
 

@@ -28,7 +28,7 @@ async function startServer() {
     n += 1;
     const r = await call('POST', '/auth/register', { body: {
       fullName: `Testeur ${n}`, email: `user${n}_${Date.now()}@test.africa`, country,
-      phone: phone || `07${String(10000000 + n * 7919).slice(0, 8)}`, password: 'MotDePasse123',
+      phone: phone || `07${String(10000000 + n * 7919).slice(0, 8)}`, password: 'MotDePasse123', acceptPrivacy: true, acceptTerms: true,
     } });
     if (r.status !== 201) throw new Error(`register failed: ${JSON.stringify(r.body)}`);
     const token = r.body.accessToken;
