@@ -1,0 +1,30 @@
+{
+  "nom": "ile-depart",
+  "taille_px": 2017,
+  "metres_par_pixel_jeu": 2.67,
+  "cote_km_jeu": 5.383,
+  "altitude_min_m": -20.0,
+  "altitude_max_m": 291.7,
+  "surface_terres_km2": 5.12,
+  "unreal_import": {
+    "Scale_X_cm": 267.01,
+    "Scale_Y_cm": 267.01,
+    "Scale_Z": 120
+  },
+  "transformations": {
+    "rotation_deg": 35.0,
+    "miroir": true,
+    "echelle": 0.5,
+    "exageration": 1.0
+  },
+  "zone_reelle_wgs84": [
+    5.585,
+    -1.475,
+    5.665,
+    -1.385
+  ],
+  "sources": [
+    "Copernicus DEM GLO-30 — © DLR e.V. 2010-2014 et © Airbus Defence and Space GmbH 2014-2018, fourni dans le cadre du programme COPERNICUS par l'ESA et l'Union européenne",
+    "Contient des données Copernicus Sentinel modifiées (20250819) — https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/31/M/GU/2025/8/S2B_31MGU_20250819_0_L2A/TCI.tif"
+  ]
+}

@@ -1,15 +1,19 @@
 # Cartographie de la République de Wanzala
 
-Voir aussi : [carte-monde.svg](carte-monde.svg) et [carte-ile-kassa.svg](carte-ile-kassa.svg).
+Voir aussi : [carte-afrique-fictive.svg](carte-afrique-fictive.svg) (Wanzala sur la vraie carte de
+l'Afrique), [carte-monde.svg](carte-monde.svg), [carte-ile-kassa.svg](carte-ile-kassa.svg) et
+[GEOGRAPHIE-REELLE.md](GEOGRAPHIE-REELLE.md) (relief et images satellites réels).
+
+> ⚠️ Une vraie île de Kassa existe (îles de Loos, Guinée) : le nom de notre île sera changé.
 
 ## 1. Vue d'ensemble
 
 Superficie jouable totale visée (jeu complet) : **≈ 120 km²** (GTA V ≈ 80 km²). On ne la
-construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait ≈ 4 km².
+construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait ≈ 5 km².
 
 | # | Région | Taille | Biomes | Débloquée | Ville / lieux clés |
 |---|---|---|---|---|---|
-| 1 | **Île de Kassa** | ~4 km² | Plage, cocoteraie, mangrove, colline volcanique, forêt | Début (Acte 1) | Port-Néré (petite ville), 3 villages, camp du Cobra |
+| 1 | **Île de Kassa** | ~5 km² | Plage, cocoteraie, mangrove, colline volcanique, forêt | Début (Acte 1) | Port-Néré (petite ville), 3 villages, camp du Cobra |
 | 2 | **Côte de Lagunaville** | ~18 km² | Lagune, mangroves, plages, zones industrielles | Acte 2 | Lagunaville (ville moyenne), port à conteneurs, raffinerie, bidonville sur pilotis |
 | 3 | **Plateau d'Ébène** | ~30 km² | Savane arborée, champs, baobabs, villages | Acte 3 | Bourg de Sanké, grandes plantations, aérodrome de brousse |
 | 4 | **Forêt de la Mbali** | ~25 km² | Forêt dense humide, fleuve, cascades | Acte 3 | Mines d'or illégales, base du Général Okapi, scierie |
@@ -21,7 +25,10 @@ voie ferrée minière (plateau ↔ capitale), aérodromes.
 
 ## 2. L'île de Kassa en détail (zone de départ)
 
-Île volcanique de ≈ 2,5 km × 1,6 km, orientée nord-est / sud-ouest, à ~3 km de la côte.
+Île volcanique d'environ 5 km² et 290 m d'altitude, avec un lac de cratère. Son relief est **tiré
+de données satellites réelles** (île d'Annobón réduite de moitié, tournée et retournée) :
+[terrains/ile-depart/](terrains/ile-depart/). La carte schématique [carte-ile-kassa.svg](carte-ile-kassa.svg)
+sera redessinée sur ce vrai relief ; l'emplacement des lieux ci-dessous sera ajusté en conséquence.
 
 | Zone | Description | Gameplay |
 |---|---|---|
@@ -59,7 +66,8 @@ Port-Néré (arrivée, occupé)
 ## 3. Échelle et règles de construction (pour l'équipe)
 
 - Unité : **1 unité Unreal = 1 cm**. Une rue de ville : 8–12 m ; une case : 4–6 m de diamètre.
-- Terrain de l'île : heightmap 4 033 × 4 033 (≈ 1 m par pixel) — standard Unreal Landscape.
+- Terrain de l'île : heightmap 2 017 × 2 017 (2,67 m par pixel), déjà générée à partir de données
+  réelles ; on pourra monter à 4 033 × 4 033 pour plus de détail.
 - **World Partition** activé dès le départ (même pour l'île) pour que l'extension aux autres
   régions soit naturelle.
 - Densité : la végétation et les objets décoratifs seront placés via **PCG** (graphes
@@ -68,8 +76,9 @@ Port-Néré (arrivée, occupé)
 
 ## 4. Prochaines étapes cartographiques
 
-1. Valider le tracé de l'île (cette version est un brouillon).
-2. Dessiner la carte de l'île à l'échelle dans un outil (Gaea / World Machine / Krita).
-3. Produire la heightmap, l'importer dans Unreal, faire un « blockout » (formes grises) de
+1. ~~Valider le tracé de l'île~~ → relief réel généré ; choisir le nouveau nom de l'île.
+2. Replacer Port-Néré, les villages et le camp sur le vrai relief (le port au nord, où se trouve
+   déjà la zone plate habitée sur l'image satellite).
+3. Importer la heightmap dans Unreal, faire un « blockout » (formes grises) de
    Port-Néré et se promener dedans pour vérifier les distances et le rythme.
 4. Seulement ensuite : textures, végétation, bâtiments définitifs.

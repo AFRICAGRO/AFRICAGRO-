@@ -8,6 +8,10 @@
 |---|---|
 | [README.md](README.md) | Vision, histoire, mécaniques, factions (ce fichier) |
 | [CARTOGRAPHIE.md](CARTOGRAPHIE.md) | Le monde, les régions, l'île de départ en détail, l'ordre de déblocage |
+| [GEOGRAPHIE-REELLE.md](GEOGRAPHIE-REELLE.md) | Vraie Afrique + pays fictifs, données satellites, licences, précautions |
+| [carte-afrique-fictive.svg](carte-afrique-fictive.svg) | Afrique réelle découpée en pays fictifs |
+| [terrains/](terrains/) | Terrains tirés de vraies données satellites (île de départ prête) |
+| [outils-geo/](outils-geo/) | Outils : lieu réel → terrain Unreal ; régénération de la carte |
 | [carte-monde.svg](carte-monde.svg) | Carte schématique du monde |
 | [carte-ile-kassa.svg](carte-ile-kassa.svg) | Carte schématique de l'île de départ |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
@@ -38,8 +42,10 @@ pour **rendre la terre à ceux qui la cultivent**.
 
 ## 3. Cadre — un pays fictif (règle absolue)
 
-Le jeu se déroule dans la **République fédérale de Wanzala** (pays fictif d'Afrique de l'Ouest et
-centrale), avec ses langues, ses drapeaux, ses monnaies, ses partis, ses personnages — **tous
+Le jeu se déroule dans la **République fédérale de Wanzala**, pays fictif placé sur la **vraie
+carte de l'Afrique** (golfe de Guinée), au milieu d'autres pays fictifs (voir
+[GEOGRAPHIE-REELLE.md](GEOGRAPHIE-REELLE.md)). Les reliefs et paysages sont tirés de **vraies
+données satellites** ; les frontières, les villes et les personnes sont inventées,, avec ses langues, ses drapeaux, ses monnaies, ses partis, ses personnages — **tous
 inventés**. Raisons :
 
 - **Juridique** : aucune attaque contre de vrais États, dirigeants, groupes ethniques ou partis
@@ -138,7 +144,7 @@ Explorer → Renseigner (informateurs, drone, écoute) → Planifier (approche f
 GTA V a demandé plusieurs centaines de développeurs pendant environ 5 ans. Notre stratégie pour
 ne pas bâcler :
 
-1. **Tranche verticale** : l'île de Kassa seule (≈ 4 km²), finie et belle, avec 10–12 missions.
+1. **Tranche verticale** : l'île de Kassa seule (≈ 5 km²), finie et belle, avec 10–12 missions.
    C'est notre « démo » pour trouver financement, partenaires et talents.
 2. **Sortie épisodique possible** : Acte 1 vendu seul, financement des actes suivants.
 3. **Monde construit de façon procédurale** (PCG Unreal + Claude pilotant l'éditeur) pour

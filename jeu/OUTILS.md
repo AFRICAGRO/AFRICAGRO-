@@ -25,7 +25,9 @@ et au code ; la production 3D se fera sur votre machine.
 | Humains réalistes | **MetaHuman** (intégré à Unreal) | Gratuit dans Unreal | Personnages principaux et PNJ, toutes carnations et morphologies |
 | Modélisation 3D | **Blender** | Gratuit, open source | Bâtiments, objets, véhicules, armes fictives |
 | Textures | **Material Maker**, **ArmorPaint** (ou Substance plus tard) | Gratuit / très bas coût | Matériaux : latérite, tôle rouillée, banco, wax |
-| Terrain | **Gaea** (version Community) ou **World Machine** (version basique) | Gratuit pour usage non commercial ou limité | Relief de l'île, heightmaps |
+| Terrain | **Gaea** (version Community) ou **World Machine** (version basique) | Gratuit pour usage non commercial ou limité | Détail fin du relief (érosion, rochers) |
+| Cartographie / SIG | **QGIS** | Gratuit, open source | Explorer les données satellites, choisir les « jumeaux réels » |
+| Données géographiques | **Copernicus DEM, Sentinel-2, ESA WorldCover, Natural Earth** | Gratuites (mention obligatoire) | Relief et paysages réels — voir [GEOGRAPHIE-REELLE.md](GEOGRAPHIE-REELLE.md) |
 | Peinture / concept art | **Krita**, **GIMP** | Gratuit | Croquis, cartes, affiches fictives |
 | Vectoriel / UI | **Inkscape**, **Figma** (plan gratuit) | Gratuit | Logos, HUD, menus |
 | Animations | **Mixamo** (Adobe) | Gratuit | Animations de base (marche, course, combat) en attendant la motion capture |
