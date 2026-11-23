@@ -13,7 +13,7 @@ construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait 
 |---|---|---|---|---|---|
 | 1 | **Île de Talanké** | ~5 km² | Plage, cocoteraie, mangrove, colline volcanique, forêt | Début (Acte 1) | Port-Néré (petite ville), 3 villages, camp du Cobra |
 | 2 | **Côte de Lagunaville** | ~18 km² | Lagune, mangroves, plages, zones industrielles | Acte 2 | Lagunaville (ville moyenne), port à conteneurs, raffinerie, bidonville sur pilotis |
-| 3 | **Plateau d'Ébène** | ~30 km² | Savane arborée, champs, baobabs, villages | Acte 3 | Bourg de Sanké, grandes plantations, aérodrome de brousse |
+| 3 | **Plateau d'Ébène** | ~30 km² | Savane arborée, champs, baobabs, villages | Acte 3 | Bourg de Ébenville, grandes plantations, aérodrome de brousse |
 | 4 | **Forêt de la Mbali** | ~25 km² | Forêt dense humide, fleuve, cascades | Acte 3 | Mines d'or illégales, base du Général Okapi, scierie |
 | 5 | **Monts Kouré** | ~20 km² | Hauts plateaux, thé, brouillard, falaises | Acte 4 | Barrage hydroélectrique, relais télécom, ville de Kouré |
 | 6 | **Port-Wanzala (capitale)** | ~25 km² de ville (80 km² avec les collines) | Grande ville : plaine côtière (centre, port, quartiers populaires), collines (quartiers riches, palais sur une crête), plages, baie, **volcan Mont Kibaré**, **Plateau des Pyramides** — voir [carte-port-wanzala.svg](carte-port-wanzala.svg) | Acte 5 | Palais présidentiel, ministères, aéroport international, stade, cathédrale, grand marché |
@@ -37,10 +37,10 @@ déjà habitée ; l'intérieur est une forêt volcanique en pente.
 | **Phare de la Pointe** (pointe nord-est) | Phare abandonné | Planque secrète, objets à collecter |
 | **Plantations** (ouest, clairières rouges) | Grandes parcelles saisies par la milice | Zone de champs ennemis, patrouilles |
 | **Village de Bomé** (centre-ouest, ~150 m) | Cultivateurs de manioc et cacao, sur les pentes | Champs illicites à brûler, première coopérative |
-| **Village d'Akwa** (côte ouest) | Pêcheurs, pirogues, fumoirs à poisson | Premier village libéré, tutoriel de confiance |
+| **Village d'Akwéri** (côte ouest) | Pêcheurs, pirogues, fumoirs à poisson | Premier village libéré, tutoriel de confiance |
 | **Lac du cratère** (centre) | Ancien cratère rempli d'eau, entouré de forêt | Lieu sacré, point de rencontre secret de la résistance |
 | **Mont Talanké** (≈ 290 m, au sud du lac) | Sommet boisé, grottes, antenne radio | Point de vue, relais radio à saboter, sentier d'escalade |
-| **Village de Tiko** (côte est) | Village isolé, otages | Mission de sauvetage nocturne |
+| **Village de Tikané** (côte est) | Village isolé, otages | Mission de sauvetage nocturne |
 | **Camp du Cobra** (sud-est, ancienne mission catholique) | Quartier général fortifié du Commandant Mamba | Mission finale de l'acte 1 |
 | **Baie du Sud** (mangrove à créer) | Côte découpée, chenaux et cabane de contrebandiers | Pirogue, furtivité (mission « Le Chenal ») |
 
@@ -48,9 +48,9 @@ déjà habitée ; l'intérieur est une forêt volcanique en pente.
 
 ```
 Port-Néré (arrivée, occupé)
-   └─> Akwa (village de pêcheurs) ─> Quai/entrepôts
+   └─> Akwéri (village de pêcheurs) ─> Quai/entrepôts
           └─> Bomé (1re coopérative) ─> Plantations
-                 └─> Mont Talanké (radio) ─> Tiko (otages) ─> Baie du Sud ─> Piste
+                 └─> Mont Talanké (radio) ─> Tikané (otages) ─> Baie du Sud ─> Piste
                         └─> Camp du Cobra (fin de l'acte 1) ─> Port-Néré libérée ─> Bac vers la côte
 ```
 

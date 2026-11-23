@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="Arial Black, Arial, sans-serif">
+  <title>Drapeau des Racines, la résistance (fictif)</title>
+  <rect width="900" height="600" fill="#2f6b34"/>
+  <rect y="540" width="900" height="60" fill="#b5532a"/>
+  <g fill="#e8b23a" stroke="#e8b23a" stroke-linecap="round" transform="translate(450,300)">
+    <!-- tronc -->
+    <rect x="-34" y="-60" width="68" height="150" rx="12" stroke="none"/>
+    <!-- branches -->
+    <path d="M-34,-40 C-90,-70 -140,-75 -170,-120 M34,-40 C90,-70 140,-75 170,-120 M-12,-60 C-25,-110 -45,-150 -70,-185 M12,-60 C25,-110 45,-150 70,-185 M0,-60 V-195" stroke-width="16" fill="none"/>
+    <ellipse cx="-170" cy="-130" rx="48" ry="22" stroke="none"/>
+    <ellipse cx="170" cy="-130" rx="48" ry="22" stroke="none"/>
+    <ellipse cx="-72" cy="-195" rx="42" ry="20" stroke="none"/>
+    <ellipse cx="72" cy="-195" rx="42" ry="20" stroke="none"/>
+    <ellipse cx="0" cy="-208" rx="45" ry="22" stroke="none"/>
+    <!-- racines visibles -->
+    <path d="M-20,88 C-60,120 -120,130 -190,175 M20,88 C60,120 120,130 190,175 M-8,90 C-25,140 -55,170 -80,220 M8,90 C25,140 55,170 80,220 M0,90 V215" stroke-width="12" fill="none"/>
+  </g>
+  <text x="450" y="585" text-anchor="middle" font-size="44" fill="#ffffff" letter-spacing="10">ZALADOU</text>
+</svg>

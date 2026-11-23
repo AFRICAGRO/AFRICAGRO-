@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <title>Drapeau de la République fédérale de Wanzala (fictif)</title>
+  <!-- ocre rouge : la terre -->
+  <rect width="900" height="600" fill="#b5532a"/>
+  <!-- indigo : l'océan et la nuit (triangle haut-gauche) -->
+  <path d="M0,0 H900 C760,120 640,170 520,250 C400,330 260,420 0,600 Z" fill="#1f2d5c"/>
+  <!-- vague blanche : le fleuve Mbali -->
+  <path d="M900,0 C760,120 640,170 520,250 C400,330 260,420 0,600 L0,560 C240,395 380,305 500,225 C620,145 740,95 860,0 Z" fill="#ffffff"/>
+  <!-- baobab doré -->
+  <g fill="#e8b23a" transform="translate(190,175)">
+    <rect x="-22" y="-10" width="44" height="95" rx="8"/>
+    <path d="M-22,0 C-60,-20 -90,-25 -110,-55 M22,0 C60,-20 90,-25 110,-55 M-8,-10 C-15,-45 -30,-70 -45,-95 M8,-10 C15,-45 30,-70 45,-95 M0,-10 V-100" stroke="#e8b23a" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <ellipse cx="-110" cy="-62" rx="34" ry="16"/>
+    <ellipse cx="110" cy="-62" rx="34" ry="16"/>
+    <ellipse cx="-48" cy="-102" rx="30" ry="15"/>
+    <ellipse cx="48" cy="-102" rx="30" ry="15"/>
+    <ellipse cx="0" cy="-112" rx="32" ry="16"/>
+    <rect x="-55" y="82" width="110" height="10" rx="5"/>
+  </g>
+</svg>

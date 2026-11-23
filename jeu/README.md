@@ -16,6 +16,7 @@
 | [carte-port-wanzala.svg](carte-port-wanzala.svg) | Plan de la capitale : relief réel + volcan et pyramides fictifs |
 | [carte-monde.svg](carte-monde.svg) | Carte schématique du monde |
 | [carte-ile-talanke.svg](carte-ile-talanke.svg) | Carte de l'île de départ sur image satellite réelle |
+| [BIBLE-DU-MONDE.md](BIBLE-DU-MONDE.md) | Identité du pays, langue wazalé, noms, drapeaux, hymne, marques, culture |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
@@ -74,7 +75,7 @@ les paysans à cultiver des plantations illicites et contrôle le port.
 | **2 — La Côte** | Ville côtière de Lagunaville, mangroves, raffinerie | Cartel portuaire, douaniers corrompus | Couper la route du trafic vers l'intérieur |
 | **3 — La Savane et les Forêts** | Plateau agricole, forêt dense, fleuve | Seigneur de guerre « Général Okapi », mines illégales | Libérer les mines et les grandes plantations, rallier les régions |
 | **4 — Les Montagnes** | Hauts plateaux, barrage hydroélectrique | Gouverneurs régionaux, armée privée | Prendre le contrôle de l'énergie et des communications |
-| **5 — La Capitale** | Port-Wanzala (capitale) | Ministres, puis le président Ezéchiel Bantou | Révéler la corruption au monde, procès ou chute du régime |
+| **5 — La Capitale** | Port-Wanzala (capitale) | Ministres, puis le président Ezéchiel Dabéro | Révéler la corruption au monde, procès ou chute du régime |
 
 Fil rouge : un **réseau de preuves** (documents, enregistrements, comptes) que le joueur
 rassemble pour relier chaque chef local au sommet de l'État. La fin dépend de ce qui a été prouvé

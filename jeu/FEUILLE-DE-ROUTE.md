@@ -15,7 +15,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [x] Titre : **WANZALA : FREEDOM** · héros : **Faris** · pays : **Wanzala**
 - [ ] Planche d'ambiance visuelle (Canva) : 50–100 photos de référence par lieu
 - [ ] Fiches personnages détaillées (apparence, voix, motivations)
-- [ ] Bible des langues/noms fictifs, drapeaux, monnaie, marques fictives
+- [x] Bible du monde : langue wazalé, noms, drapeaux, hymne, monnaie (kauri), marques → BIBLE-DU-MONDE.md
 - [ ] Choisir et installer le PC de développement → suivre [installation/INSTALLATION.md](installation/INSTALLATION.md)
 - [x] Kit d'installation prêt : script Windows, configuration Unreal, `.mcp.json` (Blender + Unreal), Git LFS
 
@@ -29,7 +29,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 ## Phase 2 — Prototype « gris » de l'île (mois 3–5)
 
 - [ ] Heightmap de l'île importée
-- [ ] Blockout (formes simples) de Port-Néré, Akwa, Bomé, du camp
+- [ ] Blockout (formes simples) de Port-Néré, Akwéri, Bomé, du camp
 - [ ] Personnage jouable : marcher, courir, nager, se mettre à couvert, tirer
 - [ ] Une moto et une pirogue conduisibles
 - [ ] Un ennemi avec IA de base (patrouille, détection, combat)
