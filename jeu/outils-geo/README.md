@@ -42,6 +42,19 @@ python3 chercher_scene.py --bbox 10.23 -0.70 10.29 -0.64 --annees 2023 2024 2025
 Mesure les nuages **sur la zone elle-même** (pas sur toute la tuile de 110 km) et classe les
 scènes. Choisir les mois de saison sèche de la région.
 
+## `modifier_terrain.py` — ajouter des éléments fictifs (volcan, plateaux…)
+
+```bash
+python3 modifier_terrain.py --terrain ../terrains/port-wanzala \
+    --elements ../terrains/port-wanzala/elements_fictifs.json --nom port-wanzala-fictif
+```
+
+Types d'éléments : `greffe` (relief d'une vraie montagne ou d'un vrai volcan, réduit et posé),
+`volcan` (cône calculé, moins réaliste), `plateau` (aplanit une zone ; `"altitude_m": "auto"`
+arase au niveau du haut de la colline), `repere` (simple nom de lieu). Les positions sont en
+fraction du cadre (0 à 1). L'outil lit toujours le terrain d'origine : on peut le relancer
+autant de fois que nécessaire en modifiant le fichier JSON.
+
 ## `carte_afrique.py` — carte des pays fictifs
 
 ```bash

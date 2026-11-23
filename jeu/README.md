@@ -12,6 +12,7 @@
 | [carte-afrique-fictive.svg](carte-afrique-fictive.svg) | Afrique réelle découpée en pays fictifs |
 | [terrains/](terrains/) | Terrains tirés de vraies données satellites (île de départ prête) |
 | [outils-geo/](outils-geo/) | Outils : lieu réel → terrain Unreal ; régénération de la carte |
+| [carte-port-wanzala.svg](carte-port-wanzala.svg) | Plan de la capitale : relief réel + volcan et pyramides fictifs |
 | [carte-monde.svg](carte-monde.svg) | Carte schématique du monde |
 | [carte-ile-talanke.svg](carte-ile-talanke.svg) | Carte de l'île de départ sur image satellite réelle |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |

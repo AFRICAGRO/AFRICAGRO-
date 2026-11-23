@@ -66,6 +66,15 @@ placé sur une crête qui domine toute la ville, et on le verra de partout.
   (rebelles, mines, corruption) pourrait y faire penser si le site était reconnaissable : c'est
   une raison de plus de le transformer, et de ne jamais reprendre de faits, de noms ou d'images
   de cette guerre.
+- **Rendre la ville fictive par le paysage** (fait) : on a ajouté ce qui n'existe pas sur le
+  site réel. **Un volcan d'environ 1 470 m**, le *Mont Kibaré* (nom provisoire), domine la ville au
+  nord-est. Son relief est celui d'un vrai volcan africain (le Pico Basilé, île de Bioko), réduit
+  et tourné : son érosion est réelle, donc crédible. On a aussi aplani **le Plateau des
+  Pyramides** (nécropole royale, au bord de l'océan) et **l'esplanade du Palais présidentiel** sur
+  une crête. Voir [carte-port-wanzala.svg](carte-port-wanzala.svg).
+- **Les pyramides** sont des bâtiments : elles seront modélisées dans Blender et posées sur le
+  plateau dans Unreal. Proposition de style : pyramides **nubiennes** (hautes et étroites, comme
+  à Méroé au Soudan). C'est un vrai patrimoine africain, et il est moins attendu que l'Égypte.
 - **Alternative** si vous préférez éviter tout rapprochement : la côte de Limbé (Cameroun), avec
   le volcan en toile de fond, mais une plaine plus étroite pour la ville.
 
