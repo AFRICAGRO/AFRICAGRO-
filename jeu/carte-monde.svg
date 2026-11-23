@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" font-family="Segoe UI, Arial, sans-serif">
+  <title>République de Wanzala — carte schématique du monde (brouillon v0.1)</title>
+  <rect width="1000" height="720" fill="#2f7fb0"/>
+  <text x="24" y="40" font-size="26" fill="#fff" font-weight="700">RÉPUBLIQUE DE WANZALA</text>
+  <text x="24" y="64" font-size="14" fill="#dbeefa">Pays fictif — monde jouable ≈ 120 km² — ordre de déblocage par acte</text>
+
+  <!-- Continent -->
+  <path d="M300,720 L300,560 C340,520 360,470 420,450 C470,430 520,440 560,400 C600,360 620,300 700,260 C780,220 880,200 1000,180 L1000,720 Z" fill="#d8c48a"/>
+
+  <!-- Régions -->
+  <!-- 2 Côte -->
+  <path d="M300,720 L300,560 C340,520 360,470 420,450 C470,430 520,440 560,400 L600,470 C560,520 520,560 470,600 C430,640 420,690 420,720 Z" fill="#9ccf7a" stroke="#fff" stroke-width="2"/>
+  <!-- 3 Plateau -->
+  <path d="M560,400 C600,360 620,300 700,260 L760,360 C720,420 660,450 600,470 Z" fill="#d9b860" stroke="#fff" stroke-width="2"/>
+  <!-- 4 Forêt -->
+  <path d="M420,720 C420,690 430,640 470,600 C520,560 560,520 600,470 C660,450 720,420 760,360 L800,470 C760,560 700,640 680,720 Z" fill="#3f7a35" stroke="#fff" stroke-width="2"/>
+  <!-- 5 Monts -->
+  <path d="M700,260 C780,220 880,200 1000,180 L1000,420 C920,430 860,450 800,470 L760,360 Z" fill="#8d7a68" stroke="#fff" stroke-width="2"/>
+  <!-- 6 Capitale -->
+  <path d="M680,720 C700,640 760,560 800,470 C860,450 920,430 1000,420 L1000,720 Z" fill="#b7b0a5" stroke="#fff" stroke-width="2"/>
+
+  <!-- Fleuve Mbali -->
+  <path d="M960,300 C880,360 820,420 780,480 C740,540 700,560 640,600 C590,630 530,650 470,720" stroke="#2f7fb0" stroke-width="7" fill="none"/>
+
+  <!-- 1 Île de Talanké -->
+  <path d="M120,560 C110,520 150,490 200,480 C240,470 270,490 270,520 C270,560 230,580 190,585 C150,588 125,580 120,560 Z" fill="#5e9a45" stroke="#fff" stroke-width="3"/>
+  <path d="M265,540 C285,560 300,575 330,590" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+
+  <!-- Route nationale -->
+  <path d="M380,600 C460,520 560,480 660,470 C740,465 800,520 860,600" stroke="#c0623a" stroke-width="4" stroke-dasharray="10 4" fill="none"/>
+  <!-- Voie ferrée -->
+  <path d="M640,360 C720,420 800,500 880,600" stroke="#333" stroke-width="3" fill="none"/>
+  <path d="M640,360 C720,420 800,500 880,600" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 5" fill="none"/>
+
+  <!-- Étiquettes -->
+  <g fill="#111" font-weight="700" font-size="15">
+    <text x="130" y="530">1. Île de Talanké</text>
+    <text x="150" y="548" font-size="11" font-weight="400">Acte 1 · Port-Néré</text>
+
+    <text x="330" y="560">2. Côte de</text><text x="330" y="578">Lagunaville</text>
+    <text x="330" y="595" font-size="11" font-weight="400">Acte 2 · port, raffinerie</text>
+
+    <text x="600" y="380">3. Plateau</text><text x="600" y="398">d'Ébène</text>
+    <text x="600" y="414" font-size="11" font-weight="400">Acte 3 · plantations</text>
+
+    <text x="520" y="650" fill="#fff">4. Forêt de la Mbali</text>
+    <text x="520" y="668" font-size="11" font-weight="400" fill="#fff">Acte 3 · mines, Gén. Okapi</text>
+
+    <text x="830" y="300" fill="#fff">5. Monts Kouré</text>
+    <text x="830" y="318" font-size="11" font-weight="400" fill="#fff">Acte 4 · barrage</text>
+
+    <text x="800" y="620">6. Port-Wanzala</text>
+    <text x="800" y="638" font-size="11" font-weight="400">Acte 5 · capitale, palais</text>
+  </g>
+  <!-- Capitale étoile -->
+  <polygon points="880,560 886,576 903,576 889,586 894,602 880,592 866,602 871,586 857,576 874,576" fill="#c33" stroke="#fff"/>
+
+  <!-- Légende -->
+  <g transform="translate(24,90)" font-size="12" fill="#fff">
+    <rect width="210" height="96" rx="8" fill="#000" opacity=".3"/>
+    <line x1="8" y1="20" x2="34" y2="20" stroke="#c0623a" stroke-width="4" stroke-dasharray="10 4"/><text x="42" y="24">Route nationale</text>
+    <line x1="8" y1="42" x2="34" y2="42" stroke="#333" stroke-width="3"/><text x="42" y="46">Voie ferrée minière</text>
+    <line x1="8" y1="64" x2="34" y2="64" stroke="#7fc3ec" stroke-width="6"/><text x="42" y="68">Fleuve Mbali</text>
+    <line x1="8" y1="84" x2="34" y2="84" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/><text x="42" y="88">Bac île ↔ côte</text>
+  </g>
+</svg>

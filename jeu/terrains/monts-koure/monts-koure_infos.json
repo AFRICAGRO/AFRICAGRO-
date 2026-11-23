@@ -1,0 +1,31 @@
+{
+  "nom": "monts-koure",
+  "taille_px": 2017,
+  "metres_par_pixel_jeu": 4.161,
+  "cote_km_jeu": 8.388,
+  "altitude_min_m": 2.9,
+  "altitude_max_m": 1454.5,
+  "altitude_reelle_du_zero_m": 1288,
+  "surface_terres_km2": 70.44,
+  "unreal_import": {
+    "Scale_X_cm": 416.09,
+    "Scale_Y_cm": 416.09,
+    "Scale_Z": 597
+  },
+  "transformations": {
+    "rotation_deg": -40.0,
+    "miroir": false,
+    "echelle": 1.0,
+    "exageration": 1.0
+  },
+  "zone_reelle_wgs84": [
+    10.02,
+    5.61,
+    10.09,
+    5.68
+  ],
+  "sources": [
+    "Copernicus DEM GLO-30 — © DLR e.V. 2010-2014 et © Airbus Defence and Space GmbH 2014-2018, fourni dans le cadre du programme COPERNICUS par l'ESA et l'Union européenne",
+    "Contient des données Copernicus Sentinel modifiées (20230101) — https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/N/PM/2023/1/S2A_32NPM_20230101_0_L2A/TCI.tif"
+  ]
+}

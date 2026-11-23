@@ -1,0 +1,66 @@
+{
+  "description": "Éléments inventés ajoutés au relief réel de la capitale pour la rendre fictive",
+  "elements": [
+    {
+      "type": "greffe",
+      "nom": "Mont Kibaré (nom provisoire)",
+      "x": 0.8,
+      "y": 0.2,
+      "rayon_m": 2700,
+      "altitude_m": 1350,
+      "source": "Relief réel du Pico Basilé (île de Bioko, Guinée équatoriale), réduit et tourné",
+      "source_centre": [
+        8.77,
+        3.606
+      ],
+      "source_rayon_m": 11000,
+      "rotation": 40
+    },
+    {
+      "type": "plateau",
+      "nom": "Plateau des Pyramides",
+      "x": 0.205,
+      "y": 0.6,
+      "rayon_m": 520,
+      "altitude_m": "auto",
+      "talus_m": 300,
+      "couleur": [
+        200,
+        166,
+        118
+      ]
+    },
+    {
+      "type": "plateau",
+      "nom": "Esplanade du Palais présidentiel",
+      "x": 0.65,
+      "y": 0.45,
+      "rayon_m": 260,
+      "altitude_m": "auto",
+      "talus_m": 200,
+      "couleur": [
+        170,
+        160,
+        140
+      ]
+    },
+    {
+      "type": "repere",
+      "nom": "Centre des affaires",
+      "x": 0.42,
+      "y": 0.86
+    },
+    {
+      "type": "repere",
+      "nom": "Port autonome",
+      "x": 0.73,
+      "y": 0.95
+    },
+    {
+      "type": "repere",
+      "nom": "Grand marché",
+      "x": 0.33,
+      "y": 0.72
+    }
+  ]
+}

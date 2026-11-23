@@ -1,0 +1,11 @@
+# Projet Unreal Engine (fichiers régénérés automatiquement)
+unreal/**/Binaries/
+unreal/**/Intermediate/
+unreal/**/Saved/
+unreal/**/DerivedDataCache/
+unreal/**/.vs/
+unreal/**/*.sln
+# Blender : sauvegardes automatiques
+*.blend1
+*.blend2
+__pycache__/

@@ -1,0 +1,94 @@
+{
+  "nom": "port-wanzala-fictif",
+  "taille_px": 2017,
+  "metres_par_pixel_jeu": 5.059,
+  "cote_km_jeu": 10.199,
+  "altitude_min_m": -40.0,
+  "altitude_max_m": 1469.0,
+  "altitude_reelle_du_zero_m": 0,
+  "surface_terres_km2": 79.77,
+  "unreal_import": {
+    "Scale_X_cm": 505.9,
+    "Scale_Y_cm": 505.9,
+    "Scale_Z": 603
+  },
+  "transformations": {
+    "rotation_deg": 160.0,
+    "miroir": true,
+    "echelle": 1.0,
+    "exageration": 1.0
+  },
+  "zone_reelle_wgs84": [
+    -13.29,
+    8.415,
+    -13.205,
+    8.5
+  ],
+  "sources": [
+    "Copernicus DEM GLO-30 — © DLR e.V. 2010-2014 et © Airbus Defence and Space GmbH 2014-2018, fourni dans le cadre du programme COPERNICUS par l'ESA et l'Union européenne",
+    "Contient des données Copernicus Sentinel modifiées (20250301) — https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/28/P/FQ/2025/3/S2C_28PFQ_20250301_0_L2A/TCI.tif"
+  ],
+  "elements_fictifs": [
+    {
+      "type": "greffe",
+      "nom": "Mont Kibaré (nom provisoire)",
+      "x": 0.8,
+      "y": 0.2,
+      "rayon_m": 2700,
+      "altitude_m": 1350,
+      "source": "Relief réel du Pico Basilé (île de Bioko, Guinée équatoriale), réduit et tourné",
+      "source_centre": [
+        8.77,
+        3.606
+      ],
+      "source_rayon_m": 11000,
+      "rotation": 40
+    },
+    {
+      "type": "plateau",
+      "nom": "Plateau des Pyramides",
+      "x": 0.205,
+      "y": 0.6,
+      "rayon_m": 520,
+      "altitude_m": 131.3,
+      "talus_m": 300,
+      "couleur": [
+        200,
+        166,
+        118
+      ]
+    },
+    {
+      "type": "plateau",
+      "nom": "Esplanade du Palais présidentiel",
+      "x": 0.65,
+      "y": 0.45,
+      "rayon_m": 260,
+      "altitude_m": 383.9,
+      "talus_m": 200,
+      "couleur": [
+        170,
+        160,
+        140
+      ]
+    },
+    {
+      "type": "repere",
+      "nom": "Centre des affaires",
+      "x": 0.42,
+      "y": 0.86
+    },
+    {
+      "type": "repere",
+      "nom": "Port autonome",
+      "x": 0.73,
+      "y": 0.95
+    },
+    {
+      "type": "repere",
+      "nom": "Grand marché",
+      "x": 0.33,
+      "y": 0.72
+    }
+  ]
+}
