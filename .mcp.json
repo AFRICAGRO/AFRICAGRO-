@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": ["mcp-for-blender"]
+    },
+    "unreal": {
+      "command": "uvx",
+      "args": ["unreal-engine-mcp"]
+    }
+  }
+}

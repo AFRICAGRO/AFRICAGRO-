@@ -18,6 +18,7 @@
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
+| [installation/](installation/INSTALLATION.md) | Installation du PC et des connecteurs Claude (Unreal, Blender…) |
 
 ---
 

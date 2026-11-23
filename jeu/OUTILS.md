@@ -74,15 +74,16 @@ et au code ; la production 3D se fera sur votre machine.
 
 ### 3.c Serveurs MCP locaux (gratuits, open source) — les plus importants pour la 3D
 
-| Serveur | Ce que Claude peut faire | Installation (sur votre PC) |
+| Serveur | Ce que Claude peut faire | Configuration |
 |---|---|---|
-| **Blender MCP** (`ahujasid/blender-mcp`, licence MIT, renommé `mcp-for-blender`) | Créer et modifier des scènes 3D, voir la vue 3D, chercher des modèles Sketchfab, générer des objets | `uvx mcp-for-blender setup` (voir le README officiel) |
-| **Unreal MCP** — plusieurs projets : **UEMCP** (MIT, Python), **ChiR24/unreal_mcp** (MIT, TypeScript), **unrealmcp** (plugin C++) | Placer des objets, créer des niveaux, modifier des Blueprints et matériaux, lancer des scripts Python dans l'éditeur | Ex. : activer « Python Remote Execution » dans Unreal puis `claude mcp add …` |
+| **Blender MCP** (`mcp-for-blender`, ex-`blender-mcp`, licence MIT) | Créer et modifier des scènes 3D, voir la vue 3D, chercher des modèles Sketchfab | Déclaré dans `.mcp.json` à la racine du dépôt ; extension Blender installée par le script |
+| **Unreal Engine MCP** (`unreal-engine-mcp`, licence MIT, Unreal 5.0+, testé sur 5.8) | 162 outils : acteurs, niveaux, Blueprints, matériaux, import, compilation… | Déclaré dans `.mcp.json` ; projet préparé par `configurer-projet-unreal.ps1` |
 | **Git / système de fichiers** | Intégrés à Claude Code | Rien à installer |
 
-Recommandation : commencer avec **UEMCP** (pas de plugin C++ à compiler) et **Blender MCP**.
-Vérifier la version d'Unreal testée par chaque projet avant de l'adopter, et ne jamais lui donner
-accès à autre chose que le dossier du projet.
+`unreal-engine-mcp` a été préféré à UEMCP, qui n'est donné compatible que jusqu'à Unreal 5.6.
+
+**Installation complète : [installation/INSTALLATION.md](installation/INSTALLATION.md)**
+(script automatique pour Windows, configuration du projet Unreal, liste de contrôle).
 
 ## 4. Matériel minimum recommandé (PC de développement)
 

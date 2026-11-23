@@ -16,12 +16,13 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [ ] Planche d'ambiance visuelle (Canva) : 50–100 photos de référence par lieu
 - [ ] Fiches personnages détaillées (apparence, voix, motivations)
 - [ ] Bible des langues/noms fictifs, drapeaux, monnaie, marques fictives
-- [ ] Choisir et installer le PC de développement
+- [ ] Choisir et installer le PC de développement → suivre [installation/INSTALLATION.md](installation/INSTALLATION.md)
+- [x] Kit d'installation prêt : script Windows, configuration Unreal, `.mcp.json` (Blender + Unreal), Git LFS
 
 ## Phase 1 — Installation et apprentissage (mois 2–3)
 
-- [ ] Installer Unreal Engine 5, Blender, Git, Perforce (ou Git LFS au début)
-- [ ] Installer Claude Code sur le PC + Blender MCP + un Unreal MCP
+- [ ] Installer Unreal Engine 5, Blender, Git, Git LFS → `jeu/installation/installer-windows.ps1`
+- [ ] Brancher Claude Code sur Blender et Unreal (`.mcp.json` fourni) → `jeu/installation/INSTALLATION.md`
 - [ ] Créer le projet Unreal (modèle « Third Person », World Partition activé)
 - [ ] Tutoriels : Landscape, PCG, MetaHuman, Chaos Vehicles, Behavior Trees
 
