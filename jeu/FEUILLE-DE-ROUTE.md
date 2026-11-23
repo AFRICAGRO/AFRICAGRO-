@@ -11,7 +11,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [x] Liste des outils et connecteurs (OUTILS.md)
 - [x] Vraie carte de l'Afrique découpée en pays fictifs (GEOGRAPHIE-REELLE.md)
 - [x] Terrain de l'île de départ tiré de vraies données satellites (terrains/ile-depart)
-- [ ] Renommer l'île de départ (une vraie île de Kassa existe en Guinée)
+- [x] Renommer l'île de départ → **île de Talanké** (« Kassa » existe réellement en Guinée)
 - [ ] Valider le titre, le nom du héros et du pays
 - [ ] Planche d'ambiance visuelle (Canva) : 50–100 photos de référence par lieu
 - [ ] Fiches personnages détaillées (apparence, voix, motivations)

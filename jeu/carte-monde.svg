@@ -22,7 +22,7 @@
   <!-- Fleuve Mbali -->
   <path d="M960,300 C880,360 820,420 780,480 C740,540 700,560 640,600 C590,630 530,650 470,720" stroke="#2f7fb0" stroke-width="7" fill="none"/>
 
-  <!-- 1 Île de Kassa -->
+  <!-- 1 Île de Talanké -->
   <path d="M120,560 C110,520 150,490 200,480 C240,470 270,490 270,520 C270,560 230,580 190,585 C150,588 125,580 120,560 Z" fill="#5e9a45" stroke="#fff" stroke-width="3"/>
   <path d="M265,540 C285,560 300,575 330,590" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
 
@@ -34,7 +34,7 @@
 
   <!-- Étiquettes -->
   <g fill="#111" font-weight="700" font-size="15">
-    <text x="130" y="530">1. Île de Kassa</text>
+    <text x="130" y="530">1. Île de Talanké</text>
     <text x="150" y="548" font-size="11" font-weight="400">Acte 1 · Port-Néré</text>
 
     <text x="330" y="560">2. Côte de</text><text x="330" y="578">Lagunaville</text>

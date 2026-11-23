@@ -1,10 +1,8 @@
 # Cartographie de la République de Wanzala
 
 Voir aussi : [carte-afrique-fictive.svg](carte-afrique-fictive.svg) (Wanzala sur la vraie carte de
-l'Afrique), [carte-monde.svg](carte-monde.svg), [carte-ile-kassa.svg](carte-ile-kassa.svg) et
+l'Afrique), [carte-monde.svg](carte-monde.svg), [carte-ile-talanke.svg](carte-ile-talanke.svg) et
 [GEOGRAPHIE-REELLE.md](GEOGRAPHIE-REELLE.md) (relief et images satellites réels).
-
-> ⚠️ Une vraie île de Kassa existe (îles de Loos, Guinée) : le nom de notre île sera changé.
 
 ## 1. Vue d'ensemble
 
@@ -13,7 +11,7 @@ construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait 
 
 | # | Région | Taille | Biomes | Débloquée | Ville / lieux clés |
 |---|---|---|---|---|---|
-| 1 | **Île de Kassa** | ~5 km² | Plage, cocoteraie, mangrove, colline volcanique, forêt | Début (Acte 1) | Port-Néré (petite ville), 3 villages, camp du Cobra |
+| 1 | **Île de Talanké** | ~5 km² | Plage, cocoteraie, mangrove, colline volcanique, forêt | Début (Acte 1) | Port-Néré (petite ville), 3 villages, camp du Cobra |
 | 2 | **Côte de Lagunaville** | ~18 km² | Lagune, mangroves, plages, zones industrielles | Acte 2 | Lagunaville (ville moyenne), port à conteneurs, raffinerie, bidonville sur pilotis |
 | 3 | **Plateau d'Ébène** | ~30 km² | Savane arborée, champs, baobabs, villages | Acte 3 | Bourg de Sanké, grandes plantations, aérodrome de brousse |
 | 4 | **Forêt de la Mbali** | ~25 km² | Forêt dense humide, fleuve, cascades | Acte 3 | Mines d'or illégales, base du Général Okapi, scierie |
@@ -23,34 +21,36 @@ construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait 
 Liaisons : bac et pirogues (île ↔ côte), route nationale côtière, fleuve Mbali navigable,
 voie ferrée minière (plateau ↔ capitale), aérodromes.
 
-## 2. L'île de Kassa en détail (zone de départ)
+## 2. L'île de Talanké en détail (zone de départ)
 
 Île volcanique d'environ 5 km² et 290 m d'altitude, avec un lac de cratère. Son relief est **tiré
 de données satellites réelles** (île d'Annobón réduite de moitié, tournée et retournée) :
-[terrains/ile-depart/](terrains/ile-depart/). La carte schématique [carte-ile-kassa.svg](carte-ile-kassa.svg)
-sera redessinée sur ce vrai relief ; l'emplacement des lieux ci-dessous sera ajusté en conséquence.
+[terrains/ile-depart/](terrains/ile-depart/). La carte [carte-ile-talanke.svg](carte-ile-talanke.svg)
+place les lieux sur l'image satellite réelle : la ville est au nord, sur la seule zone plate et
+déjà habitée ; l'intérieur est une forêt volcanique en pente.
 
 | Zone | Description | Gameplay |
 |---|---|---|
-| **Port-Néré** (sud-ouest) | Petite ville de ~2 000 habitants : port de pêche, marché, église, mosquée, maquis, station-service, gendarmerie corrompue, maison familiale du héros | Hub : planque, garage, marché, premières missions ; ville **occupée** au départ (barrages, couvre-feu) |
-| **Quai et entrepôts** | Port de pêche + entrepôt du Cobra (stockage de la récolte illicite) | Mission d'infiltration, poursuite en pirogue |
-| **Village d'Akwa** (ouest, littoral) | Pêcheurs, pirogues, fumoirs à poisson | Premier village libéré, tutoriel de confiance |
-| **Village de Bomé** (centre) | Cultivateurs de manioc et cacao | Champs illicites à brûler, première coopérative |
-| **Village de Tiko** (est) | Village isolé dans la forêt, otages | Mission de sauvetage nocturne |
-| **Cocoteraie et plantations** (nord) | Grandes parcelles saisies par la milice | Zone de champs ennemis, patrouilles |
-| **Mont Kassa** (centre, ~300 m) | Ancien volcan, grottes, antenne radio | Point de vue, relais radio à saboter, chemin d'escalade |
-| **Mangrove du Nord-Est** | Chenaux étroits, cabane de contrebandiers | Pirogue, furtivité |
-| **Camp du Cobra** (est, ancienne mission catholique) | Quartier général fortifié du Commandant Mamba | Mission finale de l'acte 1 |
-| **Phare de la Pointe** (sud-est) | Phare abandonné | Planque secrète, objets à collecter |
-| **Piste d'atterrissage** (nord) | Piste de terre des trafiquants | Avion de contrebande à intercepter |
+| **Port-Néré** (nord, plaine côtière) | Petite ville de ~2 000 habitants : port de pêche, marché, église, mosquée, maquis, station-service, gendarmerie corrompue, maison familiale du héros | Hub : planque, garage, marché, premières missions ; ville **occupée** au départ (barrages, couvre-feu) |
+| **Quai et entrepôts** (nord-ouest, jetée) | Port de pêche + entrepôt du Cobra (stockage de la récolte illicite) ; arrivée du bac | Mission d'infiltration, poursuite en pirogue |
+| **Piste d'atterrissage** (nord, à la sortie de la ville) | Piste des trafiquants | Avion de contrebande à intercepter |
+| **Phare de la Pointe** (pointe nord-est) | Phare abandonné | Planque secrète, objets à collecter |
+| **Plantations** (ouest, clairières rouges) | Grandes parcelles saisies par la milice | Zone de champs ennemis, patrouilles |
+| **Village de Bomé** (centre-ouest, ~150 m) | Cultivateurs de manioc et cacao, sur les pentes | Champs illicites à brûler, première coopérative |
+| **Village d'Akwa** (côte ouest) | Pêcheurs, pirogues, fumoirs à poisson | Premier village libéré, tutoriel de confiance |
+| **Lac du cratère** (centre) | Ancien cratère rempli d'eau, entouré de forêt | Lieu sacré, point de rencontre secret de la résistance |
+| **Mont Talanké** (≈ 290 m, au sud du lac) | Sommet boisé, grottes, antenne radio | Point de vue, relais radio à saboter, sentier d'escalade |
+| **Village de Tiko** (côte est) | Village isolé, otages | Mission de sauvetage nocturne |
+| **Camp du Cobra** (sud-est, ancienne mission catholique) | Quartier général fortifié du Commandant Mamba | Mission finale de l'acte 1 |
+| **Baie du Sud** (mangrove à créer) | Côte découpée, chenaux et cabane de contrebandiers | Pirogue, furtivité (mission « Le Chenal ») |
 
 ### Ordre de libération de l'île
 
 ```
 Port-Néré (arrivée, occupé)
    └─> Akwa (village de pêcheurs) ─> Quai/entrepôts
-          └─> Bomé (1re coopérative) ─> Cocoteraie/plantations
-                 └─> Mont Kassa (radio) ─> Tiko (otages) ─> Mangrove ─> Piste
+          └─> Bomé (1re coopérative) ─> Plantations
+                 └─> Mont Talanké (radio) ─> Tiko (otages) ─> Baie du Sud ─> Piste
                         └─> Camp du Cobra (fin de l'acte 1) ─> Port-Néré libérée ─> Bac vers la côte
 ```
 
@@ -76,9 +76,8 @@ Port-Néré (arrivée, occupé)
 
 ## 4. Prochaines étapes cartographiques
 
-1. ~~Valider le tracé de l'île~~ → relief réel généré ; choisir le nouveau nom de l'île.
-2. Replacer Port-Néré, les villages et le camp sur le vrai relief (le port au nord, où se trouve
-   déjà la zone plate habitée sur l'image satellite).
+1. ~~Valider le tracé de l'île~~ → relief réel généré ; ~~choisir le nom~~ → île de Talanké.
+2. ~~Replacer les lieux sur le vrai relief~~ → fait (carte-ile-talanke.svg v0.2).
 3. Importer la heightmap dans Unreal, faire un « blockout » (formes grises) de
    Port-Néré et se promener dedans pour vérifier les distances et le rythme.
 4. Seulement ensuite : textures, végétation, bâtiments définitifs.

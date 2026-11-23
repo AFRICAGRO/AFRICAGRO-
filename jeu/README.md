@@ -13,7 +13,7 @@
 | [terrains/](terrains/) | Terrains tirés de vraies données satellites (île de départ prête) |
 | [outils-geo/](outils-geo/) | Outils : lieu réel → terrain Unreal ; régénération de la carte |
 | [carte-monde.svg](carte-monde.svg) | Carte schématique du monde |
-| [carte-ile-kassa.svg](carte-ile-kassa.svg) | Carte schématique de l'île de départ |
+| [carte-ile-talanke.svg](carte-ile-talanke.svg) | Carte de l'île de départ sur image satellite réelle |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
@@ -60,13 +60,13 @@ toute l'Afrique, avec documentation sérieuse et, à terme, des consultants cult
 ## 4. Histoire (synopsis acte par acte)
 
 **Héros :** *Kofi Adébayo Mensah* (nom provisoire), 32 ans, ancien ingénieur agronome parti
-travailler à l'étranger. Il revient sur l'île de Kassa pour l'enterrement de son père, un chef de
+travailler à l'étranger. Il revient sur l'île de Talanké pour l'enterrement de son père, un chef de
 coopérative assassiné. Il découvre que la milice du **Front du Cobra** a pris les terres, force
 les paysans à cultiver des plantations illicites et contrôle le port.
 
 | Acte | Lieu | Ennemi principal | Enjeu |
 |---|---|---|---|
-| **1 — L'Île** | Île de Kassa (Port-Néré + villages) | Front du Cobra, chef « Commandant Mamba » | Libérer l'île, rouvrir le port, créer la 1re coopérative |
+| **1 — L'Île** | Île de Talanké (Port-Néré + villages) | Front du Cobra, chef « Commandant Mamba » | Libérer l'île, rouvrir le port, créer la 1re coopérative |
 | **2 — La Côte** | Ville côtière de Lagunaville, mangroves, raffinerie | Cartel portuaire, douaniers corrompus | Couper la route du trafic vers l'intérieur |
 | **3 — La Savane et les Forêts** | Plateau agricole, forêt dense, fleuve | Seigneur de guerre « Général Okapi », mines illégales | Libérer les mines et les grandes plantations, rallier les régions |
 | **4 — Les Montagnes** | Hauts plateaux, barrage hydroélectrique | Gouverneurs régionaux, armée privée | Prendre le contrôle de l'énergie et des communications |
@@ -144,7 +144,7 @@ Explorer → Renseigner (informateurs, drone, écoute) → Planifier (approche f
 GTA V a demandé plusieurs centaines de développeurs pendant environ 5 ans. Notre stratégie pour
 ne pas bâcler :
 
-1. **Tranche verticale** : l'île de Kassa seule (≈ 5 km²), finie et belle, avec 10–12 missions.
+1. **Tranche verticale** : l'île de Talanké seule (≈ 5 km²), finie et belle, avec 10–12 missions.
    C'est notre « démo » pour trouver financement, partenaires et talents.
 2. **Sortie épisodique possible** : Acte 1 vendu seul, financement des actes suivants.
 3. **Monde construit de façon procédurale** (PCG Unreal + Claude pilotant l'éditeur) pour

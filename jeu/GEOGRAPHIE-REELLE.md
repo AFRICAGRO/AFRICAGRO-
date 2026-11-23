@@ -46,7 +46,7 @@ Mélanger des modèles de **plusieurs pays** renforce le caractère fictif de Wa
 | Mesure | Valeur dans le jeu |
 |---|---|
 | Surface des terres | ≈ 5,1 km² |
-| Point culminant | ≈ 290 m (le « Mont Kassa » du document de conception, avec son lac de cratère) |
+| Point culminant | ≈ 290 m (le « Mont Talanké » du document de conception, avec son lac de cratère) |
 | Heightmap | 2017 × 2017 pixels, 16 bits, 2,67 m par pixel |
 | Import Unreal | Échelle X = Y = 267,01 ; Z = 120 (voir `ile-depart_infos.json`) |
 
@@ -84,16 +84,17 @@ Toutes les mentions seront regroupées dans les crédits du jeu (fichier `CREDIT
 2. **Wanzala ne doit correspondre à aucun pays réel en particulier.** Dans ce brouillon, elle
    recouvre une partie de plusieurs pays du golfe de Guinée ; sa position peut encore bouger
    (une seule ligne à changer dans `carte_afrique.py`).
-3. **Attention aux noms qui existent déjà.** Vérification faite : une vraie **île de Kassa**
-   existe dans les îles de Loos, en face de Conakry (Guinée). Je recommande de **renommer**
-   notre île de départ pour éviter toute confusion (à vous de choisir le nom).
+3. **Attention aux noms qui existent déjà.** Une vraie **île de Kassa** existe dans les îles
+   de Loos, en face de Conakry (Guinée) : notre île de départ a donc été **renommée île de
+   Talanké** (aucun lieu réel connu sous ce nom). **Wanzala** n'existe pas non plus : conservé.
 4. Les noms des 29 pays fictifs sont des propositions ; il faudra vérifier qu'aucun ne
    correspond à une ethnie, une région ou une marque existante.
 
 ## 6. Prochaines étapes
 
-- [ ] Choisir le nouveau nom de l'île de départ
-- [ ] Valider (ou déplacer) la position de Wanzala et les noms des pays
+- [x] Nouveau nom de l'île de départ : **Talanké**
+- [x] Wanzala conservé à sa position
+- [ ] Valider les noms des 28 autres pays fictifs
 - [ ] Générer les terrains des autres régions avec `terrain_reel.py`
 - [ ] Ajouter le relief ombré à la carte du continent et la carte d'occupation des sols (ESA WorldCover)
 - [ ] Sur le PC de développement : importer la heightmap dans Unreal et faire une première promenade

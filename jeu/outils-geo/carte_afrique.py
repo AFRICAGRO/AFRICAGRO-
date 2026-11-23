@@ -131,7 +131,7 @@ def main():
     ix, iy = xy(4.2, 3.2)
     svg.append(f'<circle cx="{ix:.0f}" cy="{iy:.0f}" r="5" fill="#ffd60a" stroke="#000"/>'
                f'<text x="{ix - 8:.0f}" y="{iy + 20:.0f}" font-size="12" font-weight="700" fill="#fff" '
-               f'text-anchor="middle">Île de départ</text>')
+               f'text-anchor="middle">Île de Talanké</text>')
     svg.append(f'<text x="20" y="{hauteur - 70}" font-size="22" font-weight="800" fill="#fff">AFRIQUE</text>'
                f'<text x="20" y="{hauteur - 46}" font-size="22" font-weight="800" fill="#fff">PAYS FICTIFS</text>'
                f'<text x="20" y="{hauteur - 26}" font-size="11" fill="#dbeefa">Côtes, fleuves, lacs réels (Natural Earth)</text>'

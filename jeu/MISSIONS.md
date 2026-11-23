@@ -1,4 +1,4 @@
-# Missions — Acte 1 : L'Île de Kassa
+# Missions — Acte 1 : L'Île de Talanké
 
 Objectif : 10 à 12 missions principales (≈ 4–6 h de jeu) + activités secondaires.
 Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les précédentes.
@@ -11,9 +11,9 @@ Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les p
 | 4 | **Première Étincelle** | Akwa | Combat, couverture | La milice revient punir le village. Premier combat ; Akwa est libéré. |
 | 5 | **Les Graines** | Entrepôt du port | Furtivité | Récupérer les semences de la coopérative confisquées dans l'entrepôt. |
 | 6 | **Champs de Cendre** | Bomé | Sabotage, incendie contrôlé | Détruire les champs illicites sans toucher le village ; fonder la 1re coopérative. |
-| 7 | **La Voix de l'Île** | Mont Kassa | Escalade, sabotage | Prendre l'antenne radio : la résistance a désormais sa radio (« Radio Racines »). |
+| 7 | **La Voix de l'Île** | Mont Talanké | Escalade, sabotage | Prendre l'antenne radio : la résistance a désormais sa radio (« Radio Racines »). |
 | 8 | **Nuit à Tiko** | Tiko | Sauvetage non létal, nuit | Libérer les otages, dont des enfants enrôlés de force — aucun tir sur eux. |
-| 9 | **Le Chenal** | Mangrove | Furtivité en bateau | Suivre une cargaison jusqu'à la cabane des contrebandiers. Preuve : registre du trafic. |
+| 9 | **Le Chenal** | Baie du Sud (mangrove) | Furtivité en bateau | Suivre une cargaison jusqu'à la cabane des contrebandiers. Preuve : registre du trafic. |
 | 10 | **L'Avion** | Piste du nord | Véhicule + combat | Intercepter l'avion de contrebande. Le pilote révèle un nom : le Syndicat des Docks de Lagunaville. |
 | 11 | **Le Serpent** | Camp du Cobra | Assaut planifié (furtif ou frontal) | Assaut final contre le Commandant Mamba. Choix : l'arrêter ou l'éliminer. |
 | 12 | **L'Aube** | Port-Néré | Conséquences | Fête de la libération, la ville change. Le bac vers la côte reprend. Appel mystérieux depuis la capitale. |
