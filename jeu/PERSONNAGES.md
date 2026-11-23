@@ -13,7 +13,10 @@ Noms et cultures : voir [BIBLE-DU-MONDE.md](BIBLE-DU-MONDE.md). Tous les personn
 
 ## 1. Le héros
 
-### Faris Kandé — « le Cavalier »
+### Faris — « le Cavalier »
+
+*Il n'a pas de nom de famille dans le jeu : on l'appelle Faris, et le peuple l'appelle « le Cavalier »
+(c'est d'ailleurs le sens de son prénom en arabe).*
 | | |
 |---|---|
 | **Âge** | 32 ans |
@@ -28,7 +31,7 @@ Noms et cultures : voir [BIBLE-DU-MONDE.md](BIBLE-DU-MONDE.md). Tous les personn
 | **Réplique signature** | « La terre n'oublie pas qui la travaille. » |
 | **Défaut** | Orgueil : il veut tout porter seul. Plusieurs missions échouent s'il refuse l'aide de ses alliés |
 
-### Samuel Kandé — le père (décédé)
+### Samuel — le père (décédé)
 Chef respecté de la coopérative de Bomé, 64 ans, assassiné avant le début du jeu. Présent à travers
 ses **carnets** (objets à collecter) et des **souvenirs** de Faris. Homme simple, têtu et juste.
 Proverbe gravé sur sa tombe : *« Zala ka wan, wan ka zala. »*
@@ -139,5 +142,5 @@ preuves de Faris en enquêtes publiées. C'est elle qui rend possible la fin « 
   (Unreal), à partir des descriptions ci-dessus et de photos de référence (planche Canva).
 - **Voix provisoires :** ElevenLabs pour les premières missions ; **doublage professionnel** avec des
   comédiens africains pour la version finale.
-- **À valider :** le nom de famille de Faris (**Kandé**), le vrai nom du Commandant Mamba et celui du
-  Général Okapi.
+- **Décidé :** Faris n'a pas de nom de famille ; le Commandant Mamba s'appelle Sylvestre Mbéko.
+- **À trouver :** le vrai nom du Général Okapi.
