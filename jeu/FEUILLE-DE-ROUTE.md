@@ -14,7 +14,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [x] Renommer l'île de départ → **île de Talanké** (« Kassa » existe réellement en Guinée)
 - [x] Titre : **WANZALA : FREEDOM** · héros : **Faris** · pays : **Wanzala**
 - [ ] Planche d'ambiance visuelle (Canva) : 50–100 photos de référence par lieu
-- [ ] Fiches personnages détaillées (apparence, voix, motivations)
+- [x] Fiches personnages détaillées → PERSONNAGES.md
 - [x] Bible du monde : langue wazalé, noms, drapeaux, hymne, monnaie (kauri), marques → BIBLE-DU-MONDE.md
 - [ ] Choisir et installer le PC de développement → suivre [installation/INSTALLATION.md](installation/INSTALLATION.md)
 - [x] Kit d'installation prêt : script Windows, configuration Unreal, `.mcp.json` (Blender + Unreal), Git LFS

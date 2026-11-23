@@ -17,6 +17,7 @@
 | [carte-monde.svg](carte-monde.svg) | Carte schématique du monde |
 | [carte-ile-talanke.svg](carte-ile-talanke.svg) | Carte de l'île de départ sur image satellite réelle |
 | [BIBLE-DU-MONDE.md](BIBLE-DU-MONDE.md) | Identité du pays, langue wazalé, noms, drapeaux, hymne, marques, culture |
+| [PERSONNAGES.md](PERSONNAGES.md) | Fiches des personnages : apparence, caractère, histoire, voix |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |

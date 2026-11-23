@@ -28,11 +28,13 @@ Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les p
 
 ## Personnages de l'acte 1
 
+Fiches complètes : [PERSONNAGES.md](PERSONNAGES.md).
+
 | Personnage | Rôle |
 |---|---|
 | Faris | Héros (de l'arabe *fâris*, « le cavalier ») |
 | Ama | Pêcheuse, première alliée, pilote de pirogue |
-| Mama Efua | Doyenne de Bomé, mémoire de la coopérative |
+| Baya Efua | Doyenne de Bomé, mémoire de la coopérative |
 | Père Joseph / Imam Salif | Leaders religieux, cachent des réfugiés |
 | Dr Nadia | Infirmière, soins et améliorations de santé |
 | Kwame « Tournevis » | Mécanicien, véhicules et gadgets |
