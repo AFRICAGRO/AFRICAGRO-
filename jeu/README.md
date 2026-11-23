@@ -22,6 +22,7 @@
 | [CONSULTANTS-ET-PROTECTION.md](CONSULTANTS-ET-PROTECTION.md) | Spécialistes à consulter (enfance, culture, juridique), avertissement et protections |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
+| [prototype/](prototype/README.md) | Prototype gris de la mission 4 : étapes, script de blockout d'Akwéri, règles de jeu, test |
 | [installation/](installation/INSTALLATION.md) | Installation du PC et des connecteurs Claude (Unreal, Blender…) |
 
 ---
