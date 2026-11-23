@@ -38,10 +38,36 @@ identifiable. On peut aussi assembler plusieurs lieux réels dans une même rég
 | Plateau d'Ébène | Plateau de l'Adamaoua, vers Ngaoundéré (Cameroun) | Savane arborée, champs, galeries forestières, pitons | ✅ Généré (rotation 120°) |
 | Forêt de la Mbali | Fleuve Ogooué, vers Lambaréné (Gabon) | Forêt dense, grand fleuve, bancs de sable | ✅ Généré (rotation 75°, miroir) |
 | Monts Kouré | Monts Bamboutos (Cameroun) | Crêtes, vallées cultivées en terrasses, 1 450 m de dénivelé | ✅ Généré (rotation −40°) |
-| Port-Wanzala (capitale) | Site côtier en baie + urbanisme inventé | Ville construite à la main | À concevoir |
+| Port-Wanzala (capitale) | Presqu'île de Freetown (Sierra Leone) | Plaine côtière pour le centre-ville et le port, collines jusqu'à 750 m pour les quartiers riches et le palais, plages, baie et estuaire | ✅ Généré (rotation 160°, miroir) — voir §2 bis |
 
-Mélanger des modèles de **plusieurs pays** (ici Guinée équatoriale, Côte d'Ivoire, Cameroun, Gabon)
+Mélanger des modèles de **plusieurs pays** (ici Guinée équatoriale, Côte d'Ivoire, Cameroun, Gabon, Sierra Leone)
 renforce le caractère fictif de Wanzala. Détails, échelles d'import et limites : [terrains/README.md](terrains/README.md).
+
+## 2 bis. Pourquoi la presqu'île de Freetown pour la capitale
+
+Trois sites ont été comparés sur leur relief réel : la presqu'île de Freetown (Sierra Leone),
+la côte de Limbé au pied du mont Cameroun, et Cape Coast (Ghana).
+
+| Critère pour une grande ville de jeu | Freetown | Limbé | Cape Coast |
+|---|---|---|---|
+| Plaine côtière pour le centre, le port, les quartiers populaires | ✅ | Étroite | ✅ |
+| Collines dominant la ville (quartiers riches, palais, poursuites en lacets) | ✅ jusqu'à 750 m | ✅ volcan de 4 000 m, trop grand | ❌ presque plat |
+| Plages, baies, estuaire, presqu'île (variété, port, aéroport) | ✅ | Partiel | Partiel |
+| Ville déjà dense sur l'image (guide pour les rues et les quartiers) | ✅ | Petite ville | Petite ville |
+
+C'est le même principe que les grandes villes de jeux en monde ouvert : un centre plat au bord
+de l'eau, des collines chics au-dessus, et la nature tout autour. Le palais présidentiel sera
+placé sur une crête qui domine toute la ville, et on le verra de partout.
+
+**Précautions propres à ce choix :**
+- Freetown est une vraie capitale. Le terrain est donc **retourné en miroir et tourné de 160°**,
+  et toute la ville sera **reconstruite de zéro** : aucune rue, aucun bâtiment ni monument réel.
+- La Sierra Leone a connu une guerre civile liée aux rebelles et aux diamants. Notre histoire
+  (rebelles, mines, corruption) pourrait y faire penser si le site était reconnaissable : c'est
+  une raison de plus de le transformer, et de ne jamais reprendre de faits, de noms ou d'images
+  de cette guerre.
+- **Alternative** si vous préférez éviter tout rapprochement : la côte de Limbé (Cameroun), avec
+  le volcan en toile de fond, mais une plaine plus étroite pour la ville.
 
 ## 3. L'île de départ, résultat obtenu
 
@@ -98,6 +124,6 @@ Toutes les mentions seront regroupées dans les crédits du jeu (fichier `CREDIT
 - [x] Wanzala conservé à sa position
 - [ ] Valider les noms des 28 autres pays fictifs
 - [x] Générer les terrains des autres régions (côte, plateau, forêt, monts)
-- [ ] Choisir l'emplacement de la capitale Port-Wanzala et générer son terrain
+- [x] Choisir le modèle de la capitale Port-Wanzala et générer son terrain (presqu'île de Freetown)
 - [ ] Ajouter le relief ombré à la carte du continent et la carte d'occupation des sols (ESA WorldCover)
 - [ ] Sur le PC de développement : importer la heightmap dans Unreal et faire une première promenade

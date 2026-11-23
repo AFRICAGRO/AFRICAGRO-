@@ -13,6 +13,7 @@ retourné pour ne pas être reconnaissable.
 | [plateau-ebene/](plateau-ebene/) | Plateau d'Ébène (acte 3) | Plateau de l'Adamaoua, région de Ngaoundéré (Cameroun) | 7,2 km | 52 km² | 183 m | 356,50 / 77 | 1 066 m |
 | [foret-mbali/](foret-mbali/) | Forêt de la Mbali (acte 3) | Fleuve Ogooué, région de Lambaréné (Gabon) | 7,2 km | 52 km² | 99 m | 357,82 / 42 | 2 m |
 | [monts-koure/](monts-koure/) | Monts Kouré (acte 4) | Monts Bamboutos (Cameroun) | 8,4 km | 70 km² | 1 452 m | 416,09 / 597 | 1 288 m |
+| [port-wanzala/](port-wanzala/) | Port-Wanzala, capitale (acte 5) | Presqu'île de Freetown (Sierra Leone), en miroir et tournée de 160° | 10,2 km | 80 km² (dont ~25 km² de plaine urbanisable) | 749 m | 505,90 / 308 | niveau de la mer |
 
 Chaque dossier contient :
 
@@ -30,7 +31,7 @@ Chaque dossier contient :
   planter la végétation du jeu.
 - **Les lagunes et fleuves** sont plats dans le relief : on y place un plan d'eau Unreal
   (*Water* plugin). La profondeur de la lagune est fictive (à remodeler, la vraie fait 5 à 20 m).
-- **Les surfaces dépassent le plan initial** (≈ 225 km² au total contre 120 km² prévus). On pourra
+- **Les surfaces dépassent le plan initial** (≈ 300 km² au total contre 120 km² prévus). On pourra
   réduire avec `--echelle` ou ne garder qu'une partie de chaque terrain ; décision à prendre au
   moment de construire chaque acte (l'île, seule nécessaire pour commencer, est à la bonne taille).
 

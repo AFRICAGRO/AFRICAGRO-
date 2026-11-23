@@ -194,8 +194,12 @@ def main():
         rgb, url = lire_sentinel(a.scene, crs, transform, grand)
         rgb = np.dstack([recadrer(transformer(rgb[..., i], a.rotation, a.miroir, ordre=1), a.taille)
                          for i in range(3)])
-        # éclaircit la vraie couleur (les images Sentinel-2 TCI sont sombres)
-        rgb = np.clip(rgb.astype(np.float32) * 1.8 + 10, 0, 255)
+        # éclaircit la vraie couleur (les images Sentinel-2 TCI sont sombres), avec un gain
+        # adapté à chaque image pour ne pas « brûler » les zones claires (villes, savane sèche)
+        rgb = rgb.astype(np.float32)
+        terres = rgb[h > 0]
+        gain = 1.8 if terres.size == 0 else float(np.clip(225 / max(np.percentile(terres, 97), 1), 1.0, 2.2))
+        rgb = np.clip(rgb * gain + 6, 0, 255)
         # au large, on remplace l'image (bords de tuile, reflets) par une mer unie ;
         # on garde la vraie couleur près des côtes (récifs, sable, eaux peu profondes)
         large = ndimage.gaussian_filter((h < -6 * a.echelle).astype(np.float32), 3)[..., None]

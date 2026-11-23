@@ -16,7 +16,7 @@ construit **pas** d'un coup : chaque acte ajoute une région. L'île seule fait 
 | 3 | **Plateau d'Ébène** | ~30 km² | Savane arborée, champs, baobabs, villages | Acte 3 | Bourg de Sanké, grandes plantations, aérodrome de brousse |
 | 4 | **Forêt de la Mbali** | ~25 km² | Forêt dense humide, fleuve, cascades | Acte 3 | Mines d'or illégales, base du Général Okapi, scierie |
 | 5 | **Monts Kouré** | ~20 km² | Hauts plateaux, thé, brouillard, falaises | Acte 4 | Barrage hydroélectrique, relais télécom, ville de Kouré |
-| 6 | **Port-Wanzala (capitale)** | ~23 km² | Grande ville : centre d'affaires, quartiers populaires, palais | Acte 5 | Palais présidentiel, ministères, aéroport international, stade, cathédrale, grand marché |
+| 6 | **Port-Wanzala (capitale)** | ~25 km² de ville (80 km² avec les collines) | Grande ville : plaine côtière (centre, port, quartiers populaires), collines (quartiers riches, palais sur une crête), plages, baie | Acte 5 | Palais présidentiel, ministères, aéroport international, stade, cathédrale, grand marché |
 
 Liaisons : bac et pirogues (île ↔ côte), route nationale côtière, fleuve Mbali navigable,
 voie ferrée minière (plateau ↔ capitale), aérodromes.
