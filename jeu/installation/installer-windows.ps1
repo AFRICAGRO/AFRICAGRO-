@@ -24,9 +24,12 @@ function Titre($t) { Write-Host "`n=== $t ===" -ForegroundColor Cyan }
 function Installer($id, $nom) {
     Write-Host "-> $nom ($id)" -ForegroundColor Yellow
     winget install --id $id -e --accept-package-agreements --accept-source-agreements --silent
-    # 0 = installé ; -1978335189 = déjà installé / aucune mise à jour
-    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne -1978335189) {
-        $script:echecs += "$nom (winget id : $id)"
+    if ($LASTEXITCODE -ne 0) {
+        # winget renvoie aussi un code d'erreur quand le logiciel est DÉJÀ installé :
+        # on vérifie donc s'il est présent avant de le compter comme un échec.
+        winget list --id $id -e --accept-source-agreements | Out-Null
+        if ($LASTEXITCODE -ne 0) { $script:echecs += "$nom (winget id : $id)" }
+        else { Write-Host "   déjà installé" -ForegroundColor Green }
     }
 }
 
