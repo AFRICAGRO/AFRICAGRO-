@@ -5,7 +5,7 @@ Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les p
 
 | # | Titre | Lieu | Mécanique introduite | Résumé |
 |---|---|---|---|---|
-| 1 | **Le Retour** | Bac → Port-Néré | Déplacement, dialogue | Faris débarque pour l'enterrement de son père. Barrage du Cobra, humiliation publique. |
+| 1 | **[Le Retour](missions/01-LE-RETOUR.md)** | Bac → Port-Néré | Déplacement, dialogue | Faris débarque pour l'enterrement de son père. Barrage du Cobra, humiliation publique. |
 | 2 | **La Veillée** | Maison familiale | Exploration, indices | Il découvre les carnets de son père : noms, parcelles volées, un compte bancaire suspect. |
 | 3 | **Le Pêcheur** | Akwéri | Pirogue, poursuite | Il aide Ama, pêcheuse, à échapper au racket de la milice. Premier allié. |
 | 4 | **Première Étincelle** | Akwéri | Combat, couverture | La milice revient punir le village. Premier combat ; Akwéri est libéré. |
