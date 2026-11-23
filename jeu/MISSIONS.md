@@ -13,10 +13,10 @@ Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les p
 | 6 | **[Champs de Cendre](missions/06-CHAMPS-DE-CENDRE.md)** | Bomé | Sabotage, incendie contrôlé | Détruire les champs illicites sans toucher le village ; fonder la 1re coopérative. |
 | 7 | **[La Voix de l'Île](missions/07-LA-VOIX-DE-L-ILE.md)** | Mont Talanké | Escalade, sabotage | Prendre l'antenne radio : la résistance a désormais sa radio (« Radio Racines »). |
 | 8 | **[Nuit à Tikané](missions/08-NUIT-A-TIKANE.md)** | Tikané | Sauvetage non létal, nuit | Libérer les otages, dont des enfants enrôlés de force — aucun tir sur eux. |
-| 9 | **Le Chenal** | Baie du Sud (mangrove) | Furtivité en bateau | Suivre une cargaison jusqu'à la cabane des contrebandiers. Preuve : registre du trafic. |
-| 10 | **L'Avion** | Piste du nord | Véhicule + combat | Intercepter l'avion de contrebande. Le pilote révèle un nom : le Syndicat des Docks de Lagunaville. |
-| 11 | **Le Serpent** | Camp du Cobra | Assaut planifié (furtif ou frontal) | Assaut final contre le Commandant Mamba. Choix : l'arrêter ou l'éliminer. |
-| 12 | **L'Aube** | Port-Néré | Conséquences | Fête de la libération, la ville change. Le bac vers la côte reprend. Appel mystérieux depuis la capitale. |
+| 9 | **[Le Chenal](missions/09-LE-CHENAL.md)** | Baie du Sud (mangrove) | Furtivité en bateau | Suivre une cargaison jusqu'à la cabane des contrebandiers. Preuve : registre du trafic. |
+| 10 | **[L'Avion](missions/10-L-AVION.md)** | Piste du nord | Véhicule + combat | Intercepter l'avion de contrebande. Le pilote révèle un nom : le Syndicat des Docks de Lagunaville. |
+| 11 | **[Le Serpent](missions/11-LE-SERPENT.md)** | Camp du Cobra | Assaut planifié (furtif ou frontal) | Assaut final contre le Commandant Mamba. Choix : l'arrêter ou l'éliminer. |
+| 12 | **[L'Aube](missions/12-L-AUBE.md)** | Port-Néré | Conséquences | Fête de la libération, la ville change. Le bac vers la côte reprend. Appel mystérieux depuis la capitale. |
 
 ## Activités secondaires (île)
 

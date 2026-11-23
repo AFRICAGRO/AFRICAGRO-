@@ -19,6 +19,7 @@
 | [BIBLE-DU-MONDE.md](BIBLE-DU-MONDE.md) | Identité du pays, langue wazalé, noms, drapeaux, hymne, marques, culture |
 | [PERSONNAGES.md](PERSONNAGES.md) | Fiches des personnages : apparence, caractère, histoire, voix |
 | [MISSIONS.md](MISSIONS.md) | Arc narratif et liste des missions de l'acte 1 |
+| [CONSULTANTS-ET-PROTECTION.md](CONSULTANTS-ET-PROTECTION.md) | Spécialistes à consulter (enfance, culture, juridique), avertissement et protections |
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
 | [installation/](installation/INSTALLATION.md) | Installation du PC et des connecteurs Claude (Unreal, Blender…) |
