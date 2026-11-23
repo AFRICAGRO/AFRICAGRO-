@@ -12,7 +12,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [x] Vraie carte de l'Afrique découpée en pays fictifs (GEOGRAPHIE-REELLE.md)
 - [x] Terrains réels des 5 régions : île, côte, plateau, forêt, monts (terrains/)
 - [x] Renommer l'île de départ → **île de Talanké** (« Kassa » existe réellement en Guinée)
-- [ ] Valider le titre, le nom du héros et du pays
+- [x] Titre : **WANZALA : FREEDOM** · héros : **Faris** · pays : **Wanzala**
 - [ ] Planche d'ambiance visuelle (Canva) : 50–100 photos de référence par lieu
 - [ ] Fiches personnages détaillées (apparence, voix, motivations)
 - [ ] Bible des langues/noms fictifs, drapeaux, monnaie, marques fictives

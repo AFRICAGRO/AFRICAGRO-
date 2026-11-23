@@ -1,5 +1,5 @@
 ﻿# =====================================================================
-#  TERRE LIBRE — Installation de l'atelier de création (Windows 10/11)
+#  WANZALA : FREEDOM — Installation de l'atelier de création (Windows 10/11)
 #
 #  Lancer dans PowerShell (clic droit > « Exécuter en tant qu'administrateur ») :
 #     Set-ExecutionPolicy -Scope Process Bypass

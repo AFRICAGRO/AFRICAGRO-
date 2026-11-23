@@ -1,4 +1,4 @@
-# Installation de l'atelier « Terre Libre »
+# Installation de l'atelier « WANZALA : FREEDOM »
 
 Objectif : un PC prêt à créer le jeu, avec Claude branché directement sur **Unreal Engine** et
 **Blender**, plus les connecteurs claude.ai pour l'organisation et le design.

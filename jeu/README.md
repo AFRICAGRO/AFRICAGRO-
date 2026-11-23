@@ -1,6 +1,7 @@
-# TERRE LIBRE — Dossier de conception (GDD v0.1)
+# WANZALA : FREEDOM — Dossier de conception (GDD v0.2)
 
-> Titre provisoire. Jeu d'action-aventure en monde ouvert, en 3D réaliste, à la troisième personne.
+> Titre retenu : **WANZALA : FREEDOM** (en français : *Wanzala : Liberté*). Le nom de code
+> technique du projet Unreal reste « TerreLibre ». Jeu d'action-aventure en monde ouvert, en 3D réaliste, à la troisième personne.
 > Ce dossier est le **document de référence** : toute décision de conception y est consignée avant
 > d'être produite. On avance lentement et proprement : chaque étape est validée avant la suivante.
 
@@ -61,8 +62,9 @@ toute l'Afrique, avec documentation sérieuse et, à terme, des consultants cult
 
 ## 4. Histoire (synopsis acte par acte)
 
-**Héros :** *Kofi Adébayo Mensah* (nom provisoire), 32 ans, ancien ingénieur agronome parti
-travailler à l'étranger. Il revient sur l'île de Talanké pour l'enterrement de son père, un chef de
+**Héros : Faris** (de l'arabe *fâris*, « le cavalier, le chevalier »), 32 ans, ancien ingénieur
+agronome parti travailler à l'étranger. Son prénom vient du Sahel, du côté de sa mère, et rappelle les
+cavaliers de la région : certaines missions se feront à cheval. Il revient sur l'île de Talanké pour l'enterrement de son père, un chef de
 coopérative assassiné. Il découvre que la milice du **Front du Cobra** a pris les terres, force
 les paysans à cultiver des plantations illicites et contrôle le port.
 

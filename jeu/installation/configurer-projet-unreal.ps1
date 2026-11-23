@@ -1,5 +1,5 @@
 ﻿# =====================================================================
-#  TERRE LIBRE — Prépare un projet Unreal Engine 5 pour être piloté par Claude
+#  WANZALA : FREEDOM — Prépare un projet Unreal Engine 5 pour être piloté par Claude
 #
 #  Après avoir créé le projet dans Unreal (modèle Third Person), Unreal FERMÉ :
 #     Set-ExecutionPolicy -Scope Process Bypass
