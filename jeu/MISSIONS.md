@@ -9,10 +9,10 @@ Chaque mission introduit **une** mécanique nouvelle, puis la combine avec les p
 | 2 | **[La Veillée](missions/02-LA-VEILLEE.md)** | Maison familiale | Exploration, indices | Il découvre les carnets de son père : noms, parcelles volées, un compte bancaire suspect. |
 | 3 | **[Le Pêcheur](missions/03-LE-PECHEUR.md)** | Akwéri | Pirogue, poursuite | Il aide Ama, pêcheuse, à échapper au racket de la milice. Premier allié. |
 | 4 | **[Première Étincelle](missions/04-PREMIERE-ETINCELLE.md)** | Akwéri | Combat, couverture | La milice revient punir le village. Premier combat ; Akwéri est libéré. |
-| 5 | **Les Graines** | Entrepôt du port | Furtivité | Récupérer les semences de la coopérative confisquées dans l'entrepôt. |
-| 6 | **Champs de Cendre** | Bomé | Sabotage, incendie contrôlé | Détruire les champs illicites sans toucher le village ; fonder la 1re coopérative. |
-| 7 | **La Voix de l'Île** | Mont Talanké | Escalade, sabotage | Prendre l'antenne radio : la résistance a désormais sa radio (« Radio Racines »). |
-| 8 | **Nuit à Tikané** | Tikané | Sauvetage non létal, nuit | Libérer les otages, dont des enfants enrôlés de force — aucun tir sur eux. |
+| 5 | **[Les Graines](missions/05-LES-GRAINES.md)** | Entrepôt du port | Furtivité | Récupérer les semences de la coopérative confisquées dans l'entrepôt. |
+| 6 | **[Champs de Cendre](missions/06-CHAMPS-DE-CENDRE.md)** | Bomé | Sabotage, incendie contrôlé | Détruire les champs illicites sans toucher le village ; fonder la 1re coopérative. |
+| 7 | **[La Voix de l'Île](missions/07-LA-VOIX-DE-L-ILE.md)** | Mont Talanké | Escalade, sabotage | Prendre l'antenne radio : la résistance a désormais sa radio (« Radio Racines »). |
+| 8 | **[Nuit à Tikané](missions/08-NUIT-A-TIKANE.md)** | Tikané | Sauvetage non létal, nuit | Libérer les otages, dont des enfants enrôlés de force — aucun tir sur eux. |
 | 9 | **Le Chenal** | Baie du Sud (mangrove) | Furtivité en bateau | Suivre une cargaison jusqu'à la cabane des contrebandiers. Preuve : registre du trafic. |
 | 10 | **L'Avion** | Piste du nord | Véhicule + combat | Intercepter l'avion de contrebande. Le pilote révèle un nom : le Syndicat des Docks de Lagunaville. |
 | 11 | **Le Serpent** | Camp du Cobra | Assaut planifié (furtif ou frontal) | Assaut final contre le Commandant Mamba. Choix : l'arrêter ou l'éliminer. |
