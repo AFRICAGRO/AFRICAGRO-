@@ -40,3 +40,10 @@ Fiches complètes : [PERSONNAGES.md](PERSONNAGES.md).
 | Kwame « Tournevis » | Mécanicien, véhicules et gadgets |
 | Commandant Mamba | Chef du Front du Cobra |
 | Lieutenant Dossou | Second de Mamba, peut faire défection selon les choix |
+
+
+---
+
+## Acte 2 — Côte de Lagunaville
+
+Vue d'ensemble et missions : [missions/acte2/README.md](missions/acte2/README.md) (missions 1 à 4 écrites en détail).
