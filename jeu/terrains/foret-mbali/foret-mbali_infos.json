@@ -1,0 +1,31 @@
+{
+  "nom": "foret-mbali",
+  "taille_px": 2017,
+  "metres_par_pixel_jeu": 3.578,
+  "cote_km_jeu": 7.214,
+  "altitude_min_m": 2.7,
+  "altitude_max_m": 101.9,
+  "altitude_reelle_du_zero_m": 2,
+  "surface_terres_km2": 52.09,
+  "unreal_import": {
+    "Scale_X_cm": 357.82,
+    "Scale_Y_cm": 357.82,
+    "Scale_Z": 42
+  },
+  "transformations": {
+    "rotation_deg": 75.0,
+    "miroir": true,
+    "echelle": 1.0,
+    "exageration": 1.0
+  },
+  "zone_reelle_wgs84": [
+    10.23,
+    -0.7,
+    10.29,
+    -0.64
+  ],
+  "sources": [
+    "Copernicus DEM GLO-30 — © DLR e.V. 2010-2014 et © Airbus Defence and Space GmbH 2014-2018, fourni dans le cadre du programme COPERNICUS par l'ESA et l'Union européenne",
+    "Contient des données Copernicus Sentinel modifiées (20250214) — https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/32/M/PE/2025/2/S2B_32MPE_20250214_0_L2A/TCI.tif"
+  ]
+}

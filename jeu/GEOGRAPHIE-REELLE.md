@@ -10,8 +10,9 @@ Fichiers produits :
 | Fichier | Contenu |
 |---|---|
 | [carte-afrique-fictive.svg](carte-afrique-fictive.svg) | Afrique réelle (côtes, fleuves, lacs) découpée en 29 pays fictifs |
-| [terrains/ile-depart/](terrains/ile-depart/) | Terrain de l'île de départ tiré de vraies données satellites, prêt pour Unreal |
+| [terrains/](terrains/) | Terrains des 5 régions tirés de vraies données satellites, prêts pour Unreal (tableau et aperçu) |
 | [outils-geo/terrain_reel.py](outils-geo/terrain_reel.py) | Outil : n'importe quel lieu d'Afrique → heightmap Unreal + image satellite |
+| [outils-geo/chercher_scene.py](outils-geo/chercher_scene.py) | Outil : trouve l'image satellite la moins nuageuse au-dessus d'une zone |
 | [outils-geo/carte_afrique.py](outils-geo/carte_afrique.py) | Outil : régénère la carte des pays fictifs (modifier noms et positions dans le fichier) |
 
 ## 1. Deux niveaux de carte
@@ -33,13 +34,14 @@ identifiable. On peut aussi assembler plusieurs lieux réels dans une même rég
 | Zone du jeu | Lieu réel servant de modèle | Pourquoi | État |
 |---|---|---|---|
 | Île de départ | **Annobón** (Guinée équatoriale) | Île volcanique, lac de cratère, forêt, côtes rocheuses | ✅ Terrain généré (échelle 0,5 ; tourné de 35° ; en miroir) |
-| Côte de Lagunaville | Lagune Ébrié (Côte d'Ivoire) ou lagunes du golfe du Bénin | Lagunes, mangroves, cordons de sable | À générer |
-| Plateau d'Ébène | Plateau de l'Adamaoua (Cameroun) ou savanes du nord du Ghana | Savane arborée, plateaux | À générer |
-| Forêt de la Mbali | Bassin de l'Ogooué (Gabon) | Forêt dense, grand fleuve, rapides | À générer |
-| Monts Kouré | Hauts plateaux de l'Ouest du Cameroun / Fouta-Djallon (Guinée) | Reliefs verts, chutes, terrasses | À générer |
+| Côte de Lagunaville | Cordon littoral et lagune Ébrié, vers Jacqueville (Côte d'Ivoire) | Océan, plage, cordon sableux habité, lagune | ✅ Généré (rotation −20°, miroir) |
+| Plateau d'Ébène | Plateau de l'Adamaoua, vers Ngaoundéré (Cameroun) | Savane arborée, champs, galeries forestières, pitons | ✅ Généré (rotation 120°) |
+| Forêt de la Mbali | Fleuve Ogooué, vers Lambaréné (Gabon) | Forêt dense, grand fleuve, bancs de sable | ✅ Généré (rotation 75°, miroir) |
+| Monts Kouré | Monts Bamboutos (Cameroun) | Crêtes, vallées cultivées en terrasses, 1 450 m de dénivelé | ✅ Généré (rotation −40°) |
 | Port-Wanzala (capitale) | Site côtier en baie + urbanisme inventé | Ville construite à la main | À concevoir |
 
-Mélanger des modèles de **plusieurs pays** renforce le caractère fictif de Wanzala.
+Mélanger des modèles de **plusieurs pays** (ici Guinée équatoriale, Côte d'Ivoire, Cameroun, Gabon)
+renforce le caractère fictif de Wanzala. Détails, échelles d'import et limites : [terrains/README.md](terrains/README.md).
 
 ## 3. L'île de départ, résultat obtenu
 
@@ -95,6 +97,7 @@ Toutes les mentions seront regroupées dans les crédits du jeu (fichier `CREDIT
 - [x] Nouveau nom de l'île de départ : **Talanké**
 - [x] Wanzala conservé à sa position
 - [ ] Valider les noms des 28 autres pays fictifs
-- [ ] Générer les terrains des autres régions avec `terrain_reel.py`
+- [x] Générer les terrains des autres régions (côte, plateau, forêt, monts)
+- [ ] Choisir l'emplacement de la capitale Port-Wanzala et générer son terrain
 - [ ] Ajouter le relief ombré à la carte du continent et la carte d'occupation des sols (ESA WorldCover)
 - [ ] Sur le PC de développement : importer la heightmap dans Unreal et faire une première promenade

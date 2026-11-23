@@ -6,7 +6,7 @@ Voir [../GEOGRAPHIE-REELLE.md](../GEOGRAPHIE-REELLE.md) pour la démarche et les
 ## Installation
 
 ```bash
-pip install rasterio numpy scipy pillow shapely
+pip install rasterio numpy scipy pillow shapely mgrs
 ```
 
 ## `terrain_reel.py` — un lieu réel devient un terrain Unreal
@@ -29,10 +29,18 @@ python3 terrain_reel.py --nom ile-depart --bbox 5.585 -1.475 5.665 -1.385 \
 Produit : heightmap PNG 16 bits, aperçu du relief, image satellite alignée, fichier `_infos.json`
 (échelles d'import Unreal, sources et mentions obligatoires).
 
-Pour trouver le relief d'une zone : les tuiles Copernicus sont téléchargées automatiquement.
-Pour trouver une image Sentinel-2 peu nuageuse : chercher la zone sur le navigateur gratuit
-*Copernicus Browser* (browser.dataspace.copernicus.eu), noter la date et la tuile (ex. `31MGU`),
-puis construire l'identifiant `S2B_31MGU_AAAAMMJJ_0_L2A`.
+Le relief est téléchargé automatiquement (tuiles Copernicus). Pour l'image, utiliser
+`chercher_scene.py` ci-dessous. Pour une zone intérieure, le point bas est ramené vers 0 m
+(meilleure précision) ; l'altitude réelle de ce zéro est notée dans `_infos.json`.
+
+## `chercher_scene.py` — image satellite la moins nuageuse
+
+```bash
+python3 chercher_scene.py --bbox 10.23 -0.70 10.29 -0.64 --annees 2023 2024 2025 --mois 12 1 2 6 7 8
+```
+
+Mesure les nuages **sur la zone elle-même** (pas sur toute la tuile de 110 km) et classe les
+scènes. Choisir les mois de saison sèche de la région.
 
 ## `carte_afrique.py` — carte des pays fictifs
 

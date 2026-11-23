@@ -59,6 +59,22 @@ def grille_carree(bbox, crs, taille, marge=0.08):
     return b, from_bounds(*b, taille, taille), (2 * demi) / (taille - 1)
 
 
+def grille_etendue(bornes, taille, facteur=1.45):
+    """Même grille, mais plus grande : la rotation ne fait alors entrer que de vraies données
+    dans le cadre final (pas de bords étirés dans les coins)."""
+    cx, cy = (bornes[0] + bornes[2]) / 2, (bornes[1] + bornes[3]) / 2
+    px = (bornes[2] - bornes[0]) / taille
+    grand = int(taille * facteur) | 1
+    demi = grand * px / 2
+    b = (cx - demi, cy - demi, cx + demi, cy + demi)
+    return b, from_bounds(*b, grand, grand), grand
+
+
+def recadrer(a, taille):
+    d = (a.shape[0] - taille) // 2
+    return a[d:d + taille, d:d + taille]
+
+
 def lire_dem(bbox, crs, transform, taille):
     dst = np.full((taille, taille), np.nan, dtype=np.float32)
     with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR"):
@@ -130,13 +146,18 @@ def main():
 
     w, s, e, n = a.bbox
     crs = crs_utm((w + e) / 2, (s + n) / 2)
-    _, transform, px_m = grille_carree(a.bbox, crs, a.taille)
+    bornes, _, px_m = grille_carree(a.bbox, crs, a.taille)
+    bornes_g, transform, grand = grille_etendue(bornes, a.taille)
+    bbox_g = transform_bounds(crs, "EPSG:4326", *bornes_g)
 
-    h = lire_dem(a.bbox, crs, transform, a.taille)
+    h = lire_dem(bbox_g, crs, transform, grand)
     h = fond_marin(h, px_m)
-    h = transformer(h, a.rotation, a.miroir, ordre=3)
+    h = recadrer(transformer(h, a.rotation, a.miroir, ordre=3), a.taille)
     h = ndimage.gaussian_filter(h, 0.6)  # adoucit les marches du suréchantillonnage
-    h = h * a.echelle * a.exageration
+    # zone sans mer (intérieur des terres) : on ramène le point bas vers 0 m pour garder
+    # toute la précision verticale ; l'altitude réelle de ce « zéro » est notée dans _infos.json
+    base = math.floor(float(h.min())) - 2 if h.min() > 2 else 0
+    h = (h - base) * a.echelle * a.exageration
     px_jeu = px_m * a.echelle
 
     # Encodage Unreal : 32768 = 0 m ; hauteur(m) = (v - 32768) / 128 * ZScale / 100
@@ -158,6 +179,7 @@ def main():
         "cote_km_jeu": round(px_jeu * (a.taille - 1) / 1000, 3),
         "altitude_min_m": round(float(h.min()), 1),
         "altitude_max_m": round(float(h.max()), 1),
+        "altitude_reelle_du_zero_m": base,
         "surface_terres_km2": round(float(terre.sum()) * px_jeu ** 2 / 1e6, 2),
         "unreal_import": {"Scale_X_cm": round(px_jeu * 100, 2), "Scale_Y_cm": round(px_jeu * 100, 2),
                           "Scale_Z": zscale},
@@ -169,8 +191,9 @@ def main():
     }
 
     if a.scene:
-        rgb, url = lire_sentinel(a.scene, crs, transform, a.taille)
-        rgb = np.dstack([transformer(rgb[..., i], a.rotation, a.miroir, ordre=1) for i in range(3)])
+        rgb, url = lire_sentinel(a.scene, crs, transform, grand)
+        rgb = np.dstack([recadrer(transformer(rgb[..., i], a.rotation, a.miroir, ordre=1), a.taille)
+                         for i in range(3)])
         # éclaircit la vraie couleur (les images Sentinel-2 TCI sont sombres)
         rgb = np.clip(rgb.astype(np.float32) * 1.8 + 10, 0, 255)
         # au large, on remplace l'image (bords de tuile, reflets) par une mer unie ;

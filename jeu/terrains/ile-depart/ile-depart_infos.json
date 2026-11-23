@@ -5,6 +5,7 @@
   "cote_km_jeu": 5.383,
   "altitude_min_m": -20.0,
   "altitude_max_m": 291.7,
+  "altitude_reelle_du_zero_m": 0,
   "surface_terres_km2": 5.12,
   "unreal_import": {
     "Scale_X_cm": 267.01,
