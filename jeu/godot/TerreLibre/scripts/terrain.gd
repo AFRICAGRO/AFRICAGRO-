@@ -8,6 +8,10 @@ const TAILLE := 5383.0 # côté du terrain en mètres
 const FICHIER := "res://data/talanke_505.f32"
 
 var hauteurs := PackedFloat32Array()
+## Terrassements pour poser les villages à plat (remplis avant l'ajout à la scène).
+## Chaque entrée : {"centre": Vector2, "avant_min", "avant_max", "cote", "marge", "base", "pente"} ;
+## "mer" (direction de la mer) est calculée automatiquement.
+var aplanissements: Array = []
 var pas := TAILLE / float(N - 1)
 
 
@@ -17,8 +21,40 @@ func _ready() -> void:
 		push_error("Relief introuvable : " + FICHIER)
 		return
 	hauteurs = f.get_buffer(N * N * 4).to_float32_array()
+	_aplanir()
 	_construire_maillage()
 	_construire_collision()
+
+
+func _aplanir() -> void:
+	var demi := TAILLE * 0.5
+	for ap in aplanissements:
+		var c: Vector2 = ap["centre"]
+		# la mer est du côté où le sol descend le plus, à 80 m
+		var bas := INF
+		var mer := Vector2(-1, 0)
+		for i in 16:
+			var d := Vector2(cos(i * PI / 8.0), sin(i * PI / 8.0))
+			var z := hauteur(c.x + d.x * 80.0, c.y + d.y * 80.0)
+			if z < bas:
+				bas = z
+				mer = d
+		ap["mer"] = mer
+		var plage := Vector2(-mer.y, mer.x)
+		var nouv := hauteurs.duplicate()
+		for r in N:
+			for col in N:
+				var p := Vector2(col * pas - demi, r * pas - demi) - c
+				var avant := p.dot(mer)
+				var cote := absf(p.dot(plage))
+				var dehors := maxf(maxf(ap["avant_min"] - avant, avant - ap["avant_max"]), cote - ap["cote"])
+				if dehors > ap["marge"]:
+					continue
+				var w := 1.0 - smoothstep(0.0, ap["marge"], maxf(dehors, 0.0))
+				var cible: float = ap["base"] + maxf(0.0, -avant) * ap["pente"]
+				var i := r * N + col
+				nouv[i] = lerpf(hauteurs[i], cible, w)
+		hauteurs = nouv
 
 
 func _h(c: int, r: int) -> float:

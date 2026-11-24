@@ -33,15 +33,16 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 | Arbres réalistes (rendus de vrais arbres scannés, sur plans croisés, balancement au vent) | `scripts/vegetation.gd`, `shaders/imposteur.gdshader`, `data/arbres/` | ✅ |
 | Cocotiers : tronc photographié, palmes découpées, courbure variée | `scripts/vegetation.gd` | ✅ |
 | Mer animée qui s'assombrit sous la pluie et la nuit, lac du cratère | `shaders/water.gdshader` | ✅ |
+| **Village d'Akwéri** (mission 4) : terrain aplani, 12 cases en banco et chaume, 2 maisons en planches et tôle, 5 fumoirs fumants, 9 pirogues peintes, mât au drapeau du Cobra, caisses et fûts, séchoirs à filets, cocotiers, repères de mission (départ, 3 vagues, civils, refuges) — disposition du blockout | `scripts/village_akweri.gd` | ✅ |
 | Pluie, sol mouillé, harmattan (herbe sèche) | `scripts/ambiances.gd` | ✅ |
 | Faris : vrai modèle humain (MakeHuman, morphologie africaine), chemise en wax original, pantalon, chaussures, cheveux courts | `personnages/faris.glb` | ✅ |
 | Animations de Faris : repos, marche, course, saut, nage (enchaînées selon la vitesse) | `scripts/joueur.gd` | ✅ (animations faites à la main, voir plus bas) |
 
 ## Prochaines étapes
 
-1. Port-Néré et Akwéri : bâtiments réalistes (parpaing enduit, tôle rouillée, cases), routes en latérite.
+1. Mission 4 « Première Étincelle » jouable à Akwéri : tir, couverture, miliciens, civils, libération.
+2. Port-Néré : bâtiments réalistes (parpaing enduit, tôle rouillée), routes en latérite.
 3. Moto et pirogue conduisibles.
-4. Mission 4 « Première Étincelle » : miliciens, combat, civils, libération.
 
 ## Faris : comment il est fait
 
@@ -62,6 +63,7 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 
 - Textures de sol, écorce de palmier, ciels HDRI et modèles d'arbres : **Poly Haven** (polyhaven.com), licence **CC0**
   (domaine public, usage commercial libre). Arbres : Island Tree 01 et 02, Jacaranda Tree.
-- Palmes et motif wax : textures créées pour le projet.
+- Palmes, motif wax et drapeau du Cobra : créés pour le projet.
+- Matières d'Akwéri (banco, chaume, planches, tôle, bois peint, pierres) : Poly Haven, CC0.
 - Corps de Faris : MakeHuman / MPFB2 (makehumancommunity), licence CC0.
 - Relief et image satellite : Copernicus (voir `jeu/terrains/README.md`).

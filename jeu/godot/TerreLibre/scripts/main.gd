@@ -3,7 +3,7 @@ extends Node3D
 
 const LIEUX := [
 	["Port-Néré", 225, 235], ["Quai et entrepôts", 170, 268], ["Piste d'atterrissage", 262, 215],
-	["Phare de la Pointe", 326, 232], ["Plantations", 212, 322], ["Bomé", 228, 372], ["Akwéri", 182, 420],
+	["Phare de la Pointe", 326, 232], ["Plantations", 212, 322], ["Bomé", 228, 372], ["Akwéri", 168, 392],
 	["Lac du cratère", 290, 356], ["Mont Talanké", 347, 442], ["Tikané", 405, 470],
 	["Camp du Cobra", 452, 540], ["Baie du Sud", 380, 628],
 ]
@@ -26,6 +26,9 @@ func _ready() -> void:
 	_actions_clavier()
 	terrain = Terrain.new()
 	terrain.name = "Terrain"
+	# Akwéri : position du blockout (jeu/prototype/blockout_akweri.py, pixel 484 × 1129 de la heightmap)
+	var akweri := Vector2((484.0 / 2016.0 - 0.5) * Terrain.TAILLE, (1129.0 / 2016.0 - 0.5) * Terrain.TAILLE)
+	terrain.aplanissements = [{"centre": akweri, "avant_min": -80.0, "avant_max": 6.0, "cote": 58.0, "marge": 32.0, "base": 1.3, "pente": 0.15}]
 	add_child(terrain)
 	_mer()
 	var env := _environnement()
@@ -34,11 +37,18 @@ func _ready() -> void:
 	veg.name = "Vegetation"
 	add_child(veg)
 	veg.construire(terrain, _zones_construites())
+	var village := VillageAkweri.new()
+	village.name = "Akweri"
+	add_child(village)
+	var mer: Vector2 = terrain.aplanissements[0]["mer"]
+	village.construire(terrain, akweri, mer, veg)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
-	var depart := _terre_ferme(carte_vers_monde(225, 235))
-	joueur.global_position = Vector3(depart.x, terrain.hauteur(depart.x, depart.y) + 0.5, depart.y)
+	# départ de la mission 4, sur les hauteurs d'Akwéri
+	var d3: Vector3 = village.reperes["depart"][0]
+	joueur.global_position = d3 + Vector3(0, 0.5, 0)
+	joueur.lacet = atan2(-mer.x, -mer.y)
 	pluie = _pluie()
 	ambiances = Ambiances.new()
 	ambiances.name = "Ambiances"
@@ -66,9 +76,12 @@ func _actions_clavier() -> void:
 ## Zones laissées libres pour les bâtiments : Port-Néré, villages, camp, piste d'atterrissage.
 func _zones_construites() -> Array:
 	var zones := []
-	for z in [[225, 235, 260.0], [170, 268, 90.0], [182, 420, 130.0], [228, 372, 110.0], [405, 470, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
+	for z in [[225, 235, 260.0], [170, 268, 90.0], [228, 372, 110.0], [405, 470, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
 		var c := carte_vers_monde(z[0], z[1])
 		zones.append(Vector3(c.x, c.y, z[2]))
+	var ap: Dictionary = terrain.aplanissements[0]
+	var ca: Vector2 = ap["centre"] + (ap["mer"] as Vector2) * -32.0
+	zones.append(Vector3(ca.x, ca.y, 78.0))
 	for i in 12:
 		var c := carte_vers_monde(lerpf(198, 326, i / 11.0), lerpf(214, 218, i / 11.0))
 		zones.append(Vector3(c.x, c.y, 45.0))
