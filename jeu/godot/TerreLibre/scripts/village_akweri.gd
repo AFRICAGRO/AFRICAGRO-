@@ -14,6 +14,9 @@ var mats := {}
 
 ## Points utiles pour la mission (remplis à la construction) : départ, vagues, civils, refuges
 var reperes := {}
+## Obstacles derrière lesquels se mettre à couvert : [position, rayon]
+var couverts: Array = []
+var drapeau_mat: ShaderMaterial
 
 
 func construire(t: Terrain, p_centre: Vector2, p_mer: Vector2, vegetation: Vegetation) -> void:
@@ -173,6 +176,7 @@ func _case(avant: float, cote: float, r: float) -> void:
 	n.name = "Case"
 	n.transform = _base(avant, cote, rng.randf_range(-0.6, 0.6))
 	add_child(n)
+	couverts.append([n.position, r])
 	var h := 2.5
 	_piece(_cylindre(r + 0.12, r + 0.18, 0.45, 20), mats["banco_bas"], Transform3D(Basis(), Vector3(0, 0.1, 0)), n)
 	_piece(_cylindre(r, r + 0.05, h, 20), mats["banco"], Transform3D(Basis(), Vector3(0, h * 0.5 - 0.2, 0)), n)
@@ -194,6 +198,7 @@ func _maison_planches(avant: float, cote: float) -> void:
 	n.name = "MaisonPlanches"
 	n.transform = _base(avant, cote, rng.randf_range(-0.15, 0.15))
 	add_child(n)
+	couverts.append([n.position, 3.4])
 	var l := 6.0
 	var p := 4.2
 	var h := 2.7
@@ -221,6 +226,7 @@ func _fumoir(avant: float, cote: float) -> void:
 	n.name = "Fumoir"
 	n.transform = _base(avant, cote, PI * 0.5)
 	add_child(n)
+	couverts.append([n.position, 1.7])
 	_piece(_boite(Vector3(3.0, 1.0, 2.0)), mats["banco_bas"], Transform3D(Basis(), Vector3(0, 0.4, 0)), n)
 	_piece(_boite(Vector3(0.6, 0.45, 0.1)), mats["ombre"], Transform3D(Basis(), Vector3(0, 0.35, 1.01)), n)
 	for i in 9: # claie de bois
@@ -281,6 +287,7 @@ func _pirogue(avant: float, cote: float, couleur1: Color, couleur2: Color) -> vo
 	n.name = "Pirogue"
 	n.transform = _base(avant, cote, rng.randf_range(-0.12, 0.12))
 	add_child(n)
+	couverts.append([n.position, 1.0])
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var sections := 16
@@ -349,6 +356,7 @@ void fragment() { ALBEDO = texture(image, UV).rgb; ROUGHNESS = 0.9; }"""
 	var m := ShaderMaterial.new()
 	m.shader = sh
 	m.set_shader_parameter("image", load("res://data/textures/drapeau_cobra.jpg"))
+	drapeau_mat = m
 	_piece(drap, m, Transform3D(Basis(), Vector3(1.15, 7.1, 0)), n)
 	_collision(n, _forme_boite(Vector3(0.25, 8.0, 0.25)), Transform3D(Basis(), Vector3(0, 4.0, 0)))
 
@@ -358,6 +366,7 @@ func _couvert(avant: float, cote: float) -> void:
 	n.name = "Couvert"
 	n.transform = _base(avant, cote, rng.randf_range(0, TAU))
 	add_child(n)
+	couverts.append([n.position, 1.6])
 	for p in [Vector3(-0.5, 0.3, 0), Vector3(0.5, 0.3, 0.1), Vector3(0, 0.9, 0.05)]:
 		_piece(_boite(Vector3(0.95, 0.6, 0.7)), mats["bois"], Transform3D(Basis(Vector3.UP, rng.randf_range(-0.2, 0.2)), p), n)
 	for p in [Vector3(1.3, 0.45, -0.6), Vector3(1.5, 0.45, 0.5)]:
@@ -377,3 +386,8 @@ func _sechoir_filets(avant: float, cote: float) -> void:
 	f.size = Vector2(6.0, 1.6)
 	f.orientation = PlaneMesh.FACE_Z
 	_piece(f, mats["filet"], Transform3D(Basis(Vector3(1, 0, 0), 0.08), Vector3(0, 1.15, 0.02)), n)
+
+
+## Libération : le drapeau des Racines remplace celui du Cobra, les fumoirs reprennent.
+func liberer() -> void:
+	drapeau_mat.set_shader_parameter("image", load("res://data/textures/drapeau_racines.jpg"))

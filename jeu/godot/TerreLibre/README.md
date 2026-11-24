@@ -17,6 +17,12 @@ sur un PC modeste avec carte graphique intégrée.
 | Z Q S D (ou W A S D, flèches) | Marcher |
 | Maj | Courir |
 | Espace | Sauter |
+| C | S'accroupir / se relever (discrétion, meilleure précision) |
+| F | Maîtriser un milicien par derrière · ligoter un milicien qui s'est rendu |
+| Clic droit (maintenu) | Viser (caméra par-dessus l'épaule) |
+| Clic gauche | Tirer |
+| R | Recharger |
+| 1 / 2 | Choix final face au lieutenant Dossou |
 | N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube |
 | Échap | Libérer la souris |
 
@@ -36,11 +42,23 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 | **Village d'Akwéri** (mission 4) : terrain aplani, 12 cases en banco et chaume, 2 maisons en planches et tôle, 5 fumoirs fumants, 9 pirogues peintes, mât au drapeau du Cobra, caisses et fûts, séchoirs à filets, cocotiers, repères de mission (départ, 3 vagues, civils, refuges) — disposition du blockout | `scripts/village_akweri.gd` | ✅ |
 | Pluie, sol mouillé, harmattan (herbe sèche) | `scripts/ambiances.gd` | ✅ |
 | Faris : vrai modèle humain (MakeHuman, morphologie africaine), chemise en wax original, pantalon, chaussures, cheveux courts | `personnages/faris.glb` | ✅ |
-| Animations de Faris : repos, marche, course, saut, nage (enchaînées selon la vitesse) | `scripts/joueur.gd` | ✅ (animations faites à la main, voir plus bas) |
+| Animations de Faris : repos, marche, course, saut, nage, accroupi, visée, rendu, ligoté, mort | `scripts/joueur.gd` | ✅ (animations faites à la main, voir plus bas) |
+| **Mission 4 « Première Étincelle »** jouable de bout en bout (voir ci-dessous) | `scripts/mission4.gd`, `pnj.gd`, `arme.gd` | ✅ v1 |
+
+## Mission 4 « Première Étincelle » — déroulé
+
+1. **Sans arme** : approcher accroupi le milicien isolé près des fumoirs, F dans son dos → il est ligoté, Faris récupère son fusil.
+2. **Vague 1** : 4 miliciens sur la plage. **Vague 2** : renforts en haut du village. **Vague 3** : le lieutenant Dossou et 2 gardes derrière les pirogues.
+3. Les miliciens patrouillent, entendent les tirs, cherchent un abri (navigation calculée au lancement), tirent par rafales. Blessés, ils **se rendent** : F pour les ligoter (épargnés).
+4. Les 12 villageois fuient vers les refuges et s'y cachent. Le jeu **refuse de tirer** quand un civil est sous le viseur.
+5. Choix final face à Dossou : **1** le laisser partir, **2** le faire prisonnier (compte pour la fin « Justice »).
+6. Libération : le drapeau du Cobra est remplacé par celui des Racines, la jauge **Confiance de l'île** apparaît. Mort de Faris : retour au refuge, la vague en cours recommence.
+
+Limites connues de la v1 : pas encore de pick-up de la milice ni de diversion d'Ama ; tous les villageois et miliciens réutilisent le corps de Faris (couleurs et tenues différentes) ; animations faites à la main en attendant une vraie capture de mouvement.
 
 ## Prochaines étapes
 
-1. Mission 4 « Première Étincelle » jouable à Akwéri : tir, couverture, miliciens, civils, libération.
+1. Mission 4 : corps variés (femmes, anciens, enfants), pick-up de la milice, diversion d'Ama, voix.
 2. Port-Néré : bâtiments réalistes (parpaing enduit, tôle rouillée), routes en latérite.
 3. Moto et pirogue conduisibles.
 

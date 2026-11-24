@@ -230,6 +230,26 @@ bm.to_mesh(me)
 bm.free()
 me.update()
 
+# poids portés par des os qui ne déforment pas (bouts des orteils, etc.) : transférés à l'os parent
+deform = {b.name for b in rig.data.bones if b.use_deform}
+non_def = {b.name: b for b in rig.data.bones if not b.use_deform}
+print("os non déformants", list(non_def)[:10])
+idx_groupes = {g.index: g.name for g in h.vertex_groups}
+transferts = 0
+for v in me.vertices:
+    for g in list(v.groups):
+        nom = idx_groupes[g.group]
+        if nom in non_def and g.weight > 0:
+            b = non_def[nom].parent
+            while b and b.name not in deform:
+                b = b.parent
+            if b:
+                cible = h.vertex_groups.get(b.name) or h.vertex_groups.new(name=b.name)
+                cible.add([v.index], g.weight, "ADD")
+                h.vertex_groups[nom].remove([v.index])
+                transferts += 1
+print("poids transférés", transferts)
+
 # UV pour les tissus (projection automatique, échelle de tissage réaliste)
 uv_tissu = me.uv_layers.new(name="Tissu")
 me.uv_layers.active = uv_tissu
@@ -389,6 +409,133 @@ for f in range(0, 41, 2):
         rot(cote + "Arm", Y, s * 75)
         rot(cote + "Arm", Z, s * 25 * math.sin(p * 2))
         vers(cote + "ForeArm", cote + "Arm", 20)
+    cle(f)
+
+
+# ---------- postures de combat (cinématique inverse pour placer les mains) ----------
+HAUT = ["Spine", "Spine1", "Spine2", "Neck", "Head", "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand",
+        "RightShoulder", "RightArm", "RightForeArm", "RightHand"]
+
+
+def cle_haut(f):
+    for n in HAUT:
+        if n in P:
+            P[n].keyframe_insert("rotation_quaternion", frame=f)
+
+
+def main_vers(cote, cible, pole):
+    """Place la main (cote = Left/Right) sur un point du squelette (mètres, repère Blender)."""
+    pb = P[cote + "ForeArm"]
+    vides = []
+    for pos in (cible, pole):
+        e = bpy.data.objects.new("cible", None)
+        e.location = Vector(pos)
+        bpy.context.scene.collection.objects.link(e)
+        vides.append(e)
+    c = pb.constraints.new("IK")
+    c.target = vides[0]
+    c.pole_target = vides[1]
+    c.pole_angle = math.radians(-90)
+    c.chain_count = 2
+    vl.update()
+    m_bras = P[cote + "Arm"].matrix.copy()
+    m_avant = pb.matrix.copy()
+    pb.constraints.remove(c)
+    for e in vides:
+        bpy.data.objects.remove(e)
+    vl.update()
+    P[cote + "Arm"].matrix = m_bras
+    vl.update()
+    pb.matrix = m_avant
+    vl.update()
+
+
+def pose_visee():
+    rot("Spine2", Z, 8)
+    rot("Head", X, 4)
+    rot("Head", Z, -6)
+    main_vers("Right", (-0.12, -0.28, 1.31), (-0.75, 0.15, 0.95))
+    main_vers("Left", (-0.04, -0.60, 1.35), (0.45, -0.2, 0.85))
+
+
+nouvelle("Visee")  # haut du corps seulement : se superpose à la marche
+for f in (0, 20):
+    raz()
+    pose_visee()
+    cle_haut(f)
+
+nouvelle("Accroupi")
+for f in range(0, 61, 6):
+    p = 2 * math.pi * f / 60
+    raz()
+    bouge_hanches(-0.36 - 0.006 * math.sin(p))
+    rot("Spine", X, 18)
+    rot("Spine1", X, 6 + 1.0 * math.sin(2 * p))
+    rot("Head", X, -16)
+    for cote in ("Left", "Right"):
+        rot(cote + "UpLeg", X, -62)
+        rot(cote + "Leg", X, 112)
+        rot(cote + "Foot", X, -48)
+    rot("LeftUpLeg", Z, 8)
+    rot("RightUpLeg", Z, -8)
+    bras_bas(25, 35)
+    cle(f)
+
+nouvelle("AccroupiMarche")
+for f in range(0, 37, 2):
+    phi = 2 * math.pi * f / 36
+    raz()
+    bouge_hanches(-0.34 - 0.02 * (0.5 + 0.5 * math.cos(2 * phi)))
+    rot("Spine", X, 20)
+    rot("Head", X, -18)
+    for cote, ph in (("Left", phi), ("Right", phi + math.pi)):
+        cuisse = -55 - 22 * math.cos(ph)
+        genou = 100 + 25 * max(0.0, math.sin(ph - math.pi))
+        rot(cote + "UpLeg", X, cuisse)
+        rot(cote + "Leg", X, genou)
+        rot(cote + "Foot", X, -(cuisse + genou) * 0.85)
+    bras_bas(25, 35)
+    rot("LeftArm", X, 10 * math.cos(phi))
+    rot("RightArm", X, -10 * math.cos(phi))
+    cle(f)
+
+nouvelle("Rendu")  # à genoux, mains sur la tête
+for f in range(0, 61, 10):
+    p = 2 * math.pi * f / 60
+    raz()
+    bouge_hanches(-0.47)
+    rot("Spine", X, 6 + 1.5 * math.sin(p))
+    rot("Head", X, 14)
+    for cote in ("Left", "Right"):
+        rot(cote + "Leg", X, 92)
+        rot(cote + "Foot", X, -30)
+    main_vers("Right", (-0.09, 0.0, 1.30), (-0.75, -0.2, 1.15))
+    main_vers("Left", (0.09, 0.0, 1.30), (0.75, -0.2, 1.15))
+    cle(f)
+
+nouvelle("Ligote")  # à genoux, mains liées dans le dos
+for f in (0, 30):
+    raz()
+    bouge_hanches(-0.47)
+    rot("Spine", X, 10)
+    rot("Head", X, 20)
+    for cote in ("Left", "Right"):
+        rot(cote + "Leg", X, 92)
+        rot(cote + "Foot", X, -30)
+    main_vers("Right", (-0.05, 0.16, 0.55), (-0.6, 0.3, 0.75))
+    main_vers("Left", (0.05, 0.16, 0.55), (0.6, 0.3, 0.75))
+    cle(f)
+
+nouvelle("Mort")  # allongé sur le dos
+for f in (0, 10):
+    raz()
+    rot("Hips", X, -88)
+    bouge_hanches(-0.84)
+    rot("Head", Z, 25)
+    rot("LeftArm", Y, 55)
+    rot("RightArm", Y, -40)
+    rot("LeftUpLeg", Z, 6)
+    rot("RightLeg", X, 25)
     cle(f)
 
 raz()

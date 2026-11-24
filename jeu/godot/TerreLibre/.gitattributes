@@ -1,2 +1,3 @@
 # Le modèle de Faris (6 Mo) est stocké en Git normal pour être téléchargeable avec le ZIP de GitHub.
 *.glb !filter !diff !merge binary
+*.wav !filter !diff !merge binary

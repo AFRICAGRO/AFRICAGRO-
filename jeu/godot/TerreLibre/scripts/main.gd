@@ -55,6 +55,10 @@ func _ready() -> void:
 	add_child(ambiances)
 	ambiances.mer_mat = ($Mer as MeshInstance3D).mesh.material
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
+	var mission := Mission4.new()
+	mission.name = "Mission4"
+	add_child(mission)
+	mission.demarrer(village, joueur)
 	_interface()
 
 
@@ -197,7 +201,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "Cliquer : contrôler la caméra · ZQSD/WASD : marcher · Maj : courir · Espace : sauter · N : changer d'ambiance · Échap : libérer la souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))

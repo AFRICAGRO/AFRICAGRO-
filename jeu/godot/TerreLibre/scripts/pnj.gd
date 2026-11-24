@@ -1,0 +1,363 @@
+## Personnages non joueurs de la mission 4 : miliciens du Cobra, Dossou, villageois.
+## Miliciens : Patrouille → Suspicion → Combat → Rendu (sous 25 PV) → Ligoté ou Mort.
+## Villageois : rassemblés, puis fuient vers un refuge dès que ça tire, et s'y cachent.
+class_name Pnj
+extends CharacterBody3D
+
+signal neutralise(pnj: Pnj, comment: String) # "ligote", "mort"
+signal rendu(pnj: Pnj)
+signal alerte(position: Vector3)
+
+enum Etat { CALME, SUSPICION, COMBAT, RENDU, LIGOTE, MORT, FUITE, CACHE }
+
+var role := "milicien"   # "milicien", "dossou", "civil"
+var etat := Etat.CALME
+var pv := 100.0
+var mission: Node
+var joueur: Joueur
+var corps: Node3D
+var anim: AnimationPlayer
+var anim_haut: AnimationPlayer
+var arme: Arme
+var agent: NavigationAgent3D
+var gravite := 9.8
+var points_patrouille: Array = []
+var i_patrouille := 0
+var attente := 0.0
+var soupcon := 0.0
+var t_tir := 0.0
+var rafale := 0
+var t_couvert := 0.0
+var cible_nav := Vector3.ZERO
+var refuges: Array = []
+var vitesse := 0.0
+var regard := Vector3.FORWARD
+
+
+func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise: Color, texture_chemise: String = "") -> void:
+	role = p_role
+	mission = p_mission
+	joueur = p_joueur
+	collision_layer = 4
+	collision_mask = 1 | 2 | 4
+	var cs := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.radius = 0.33
+	cap.height = 1.78
+	cs.shape = cap
+	cs.position.y = 0.89
+	add_child(cs)
+	corps = (load("res://personnages/faris.glb") as PackedScene).instantiate()
+	add_child(corps)
+	anim = corps.find_child("AnimationPlayer", true, false)
+	for nom in ["Repos", "Marche", "Course", "Accroupi", "AccroupiMarche", "Rendu", "Ligote", "Visee"]:
+		anim.get_animation(nom).loop_mode = Animation.LOOP_LINEAR
+	anim_haut = AnimationPlayer.new()
+	anim.get_parent().add_child(anim_haut)
+	anim_haut.root_node = anim.root_node
+	anim_haut.add_animation_library("", anim.get_animation_library(""))
+	# tenue : chemise teintée (ou autre motif), pantalon foncé pour la milice
+	var mesh_inst: MeshInstance3D = corps.find_child("Faris", true, false)
+	if mesh_inst:
+		for s in mesh_inst.mesh.get_surface_count():
+			var nom: String = mesh_inst.mesh.surface_get_material(s).resource_name
+			if nom == "Chemise":
+				var m: StandardMaterial3D = mesh_inst.mesh.surface_get_material(s).duplicate()
+				if texture_chemise != "":
+					m.albedo_texture = load(texture_chemise)
+				m.albedo_color = teinte_chemise
+				mesh_inst.set_surface_override_material(s, m)
+			elif nom == "Pantalon" and role != "civil":
+				var mp: StandardMaterial3D = mesh_inst.mesh.surface_get_material(s).duplicate()
+				mp.albedo_color = Color(0.25, 0.27, 0.2)
+				mesh_inst.set_surface_override_material(s, mp)
+	var sc := randf_range(0.95, 1.04)
+	corps.scale = Vector3(sc, sc, sc)
+	agent = NavigationAgent3D.new()
+	agent.radius = 0.4
+	agent.path_desired_distance = 0.8
+	agent.target_desired_distance = 1.0
+	add_child(agent)
+	if role != "civil":
+		arme = Arme.new()
+		add_child(arme)
+		arme.tenir(corps)
+		pv = 160.0 if role == "dossou" else 100.0
+	anim.play("Repos")
+	anim.seek(randf() * 3.0)
+
+
+# ---------- dégâts ----------
+func touche(degats: float, par_joueur: bool) -> void:
+	if etat in [Etat.MORT, Etat.LIGOTE] or role == "civil":
+		return
+	if etat == Etat.RENDU:
+		pv = 0.0
+		_mourir(true)
+		return
+	pv -= degats
+	if etat != Etat.COMBAT:
+		_passer_combat()
+	if pv <= 0.0:
+		_mourir(false)
+	elif pv <= 25.0:
+		_se_rendre()
+
+
+func _se_rendre() -> void:
+	etat = Etat.RENDU
+	velocity = Vector3.ZERO
+	anim_haut.stop()
+	anim.play("Rendu", 0.3)
+	if arme:
+		arme.queue_free()
+		arme = null
+	rendu.emit(self)
+
+
+func _mourir(alors_rendu: bool) -> void:
+	etat = Etat.MORT
+	velocity = Vector3.ZERO
+	anim_haut.stop()
+	anim.play("Mort", 0.25)
+	collision_layer = 0
+	if arme:
+		arme.queue_free()
+		arme = null
+	neutralise.emit(self, "mort_rendu" if alors_rendu else "mort")
+
+
+func ligoter() -> void:
+	etat = Etat.LIGOTE
+	velocity = Vector3.ZERO
+	anim_haut.stop()
+	anim.play("Ligote", 0.4)
+	collision_layer = 0
+	if arme:
+		arme.queue_free()
+		arme = null
+	neutralise.emit(self, "ligote")
+
+
+func est_actif() -> bool:
+	return etat in [Etat.CALME, Etat.SUSPICION, Etat.COMBAT]
+
+
+## Le joueur est-il dans le dos de ce PNJ (pour une prise non létale) ?
+func dos_au_joueur() -> bool:
+	var vers_joueur := (joueur.global_position - global_position)
+	vers_joueur.y = 0
+	return regard.dot(vers_joueur.normalized()) < -0.2
+
+
+func _passer_combat() -> void:
+	if role == "civil":
+		return
+	if etat in [Etat.CALME, Etat.SUSPICION]:
+		etat = Etat.COMBAT
+		t_couvert = 0.0
+		alerte.emit(global_position)
+
+
+func entendre(origine: Vector3, portee: float) -> void:
+	if global_position.distance_to(origine) > portee:
+		return
+	if role == "civil":
+		if etat == Etat.CALME:
+			_fuir()
+	elif etat in [Etat.CALME, Etat.SUSPICION]:
+		_passer_combat()
+
+
+func _fuir() -> void:
+	etat = Etat.FUITE
+	var best: Vector3 = refuges[0]
+	for r in refuges:
+		if global_position.distance_to(r) < global_position.distance_to(best):
+			best = r
+	_aller(best + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
+
+
+func _aller(p: Vector3) -> void:
+	cible_nav = p
+	agent.target_position = p
+
+
+# ---------- perception ----------
+func _voit_joueur() -> bool:
+	var tete := global_position + Vector3(0, 1.6, 0)
+	var cible := joueur.global_position + Vector3(0, 1.2 if joueur.accroupi else 1.5, 0)
+	var d := tete.distance_to(cible)
+	if d > 38.0:
+		return false
+	var dir := (cible - tete).normalized()
+	var plat := Vector3(dir.x, 0, dir.z).normalized()
+	if etat != Etat.COMBAT and regard.dot(plat) < 0.35:
+		return false
+	var q := PhysicsRayQueryParameters3D.create(tete, cible, 1 | 2)
+	q.exclude = [get_rid()]
+	var r := get_world_3d().direct_space_state.intersect_ray(q)
+	return r.is_empty() or r["collider"] == joueur
+
+
+# ---------- comportement ----------
+func _physics_process(delta: float) -> void:
+	if not is_on_floor():
+		velocity.y -= gravite * delta
+	else:
+		velocity.y = 0.0
+	match etat:
+		Etat.CALME, Etat.SUSPICION:
+			_calme(delta)
+		Etat.COMBAT:
+			_combat(delta)
+		Etat.FUITE:
+			_deplacer(4.8, delta)
+			if agent.is_navigation_finished() or global_position.distance_to(cible_nav) < 1.6:
+				etat = Etat.CACHE
+		_:
+			velocity.x = 0.0
+			velocity.z = 0.0
+	move_and_slide()
+	_animer()
+
+
+func _calme(delta: float) -> void:
+	if role == "civil" or joueur == null:
+		return
+	var voit := _voit_joueur()
+	if voit and joueur.a_une_arme:
+		var d := global_position.distance_to(joueur.global_position)
+		var vite := 1.6 if not joueur.accroupi else 0.6
+		soupcon += delta * vite * clampf(30.0 / maxf(d, 3.0), 0.5, 4.0)
+		etat = Etat.SUSPICION
+		_regarder(joueur.global_position, delta * 2.0)
+	elif voit and not joueur.accroupi and global_position.distance_to(joueur.global_position) < 9.0:
+		soupcon += delta * 0.8
+		etat = Etat.SUSPICION
+		_regarder(joueur.global_position, delta * 2.0)
+	else:
+		soupcon = maxf(0.0, soupcon - delta * 0.3)
+		if soupcon <= 0.0:
+			etat = Etat.CALME
+	if soupcon >= 1.0:
+		_passer_combat()
+		return
+	if etat == Etat.CALME and points_patrouille.size() > 1:
+		if attente > 0.0:
+			attente -= delta
+			velocity.x = 0.0
+			velocity.z = 0.0
+		else:
+			var p: Vector3 = points_patrouille[i_patrouille]
+			if global_position.distance_to(p) < 1.2:
+				i_patrouille = (i_patrouille + 1) % points_patrouille.size()
+				attente = randf_range(2.0, 4.5)
+			else:
+				_aller(p)
+				_deplacer(1.5, delta)
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+
+
+func _combat(delta: float) -> void:
+	if joueur.mort:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+	t_couvert -= delta
+	if t_couvert <= 0.0:
+		var c: Vector3 = mission.choisir_couvert(self)
+		_aller(c)
+		t_couvert = randf_range(6.0, 9.0)
+	var arrive := agent.is_navigation_finished() or global_position.distance_to(cible_nav) < 1.2
+	if not arrive:
+		_deplacer(4.2, delta)
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+	_regarder(joueur.global_position, delta * 6.0)
+	# tir par rafales de 3
+	t_tir -= delta
+	if t_tir <= 0.0 and _voit_joueur():
+		_tirer()
+		rafale += 1
+		if rafale >= 3:
+			rafale = 0
+			t_tir = randf_range(1.2, 2.2)
+		else:
+			t_tir = 0.13
+
+
+func _tirer() -> void:
+	if arme == null:
+		return
+	arme.tirer_effets()
+	mission.bruit_de_tir(global_position)
+	var depart := global_position + Vector3(0, 1.45, 0)
+	var cible := joueur.global_position + Vector3(0, 0.9 if joueur.accroupi else 1.2, 0)
+	var d := depart.distance_to(cible)
+	# précision : moins bonne de loin, si le joueur bouge ou est accroupi
+	var ecart := 0.02 + d * 0.004 + (0.03 if joueur.vitesse_affichee > 3.0 else 0.0) + (0.02 if joueur.accroupi else 0.0)
+	var dir := (cible - depart).normalized()
+	dir = (dir + Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * ecart).normalized()
+	var q := PhysicsRayQueryParameters3D.create(depart, depart + dir * 120.0, 1 | 2 | 4)
+	q.exclude = [get_rid()]
+	var r := get_world_3d().direct_space_state.intersect_ray(q)
+	if r.is_empty():
+		return
+	if r["collider"] == joueur:
+		joueur.blesser(9.0)
+	else:
+		Arme.impact(get_tree().current_scene, r["position"], r["normal"])
+
+
+func _deplacer(v: float, _delta: float) -> void:
+	if agent.is_navigation_finished():
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+	var suivant := agent.get_next_path_position()
+	var dir := suivant - global_position
+	dir.y = 0
+	if dir.length() < 0.05:
+		return
+	dir = dir.normalized()
+	velocity.x = dir.x * v
+	velocity.z = dir.z * v
+	if etat != Etat.COMBAT:
+		_regarder(global_position + dir, 0.25)
+
+
+func _regarder(p: Vector3, poids: float) -> void:
+	var d := p - global_position
+	d.y = 0
+	if d.length() < 0.1:
+		return
+	regard = regard.slerp(d.normalized(), clampf(poids, 0.0, 1.0)).normalized()
+	corps.rotation.y = atan2(regard.x, regard.z)
+
+
+func _animer() -> void:
+	var v := Vector2(velocity.x, velocity.z).length()
+	var nom := "Repos"
+	match etat:
+		Etat.RENDU:
+			return
+		Etat.LIGOTE, Etat.MORT:
+			return
+		Etat.CACHE:
+			nom = "Accroupi"
+		_:
+			if v > 3.0:
+				nom = "Course"
+			elif v > 0.3:
+				nom = "Marche"
+	if anim.current_animation != nom:
+		anim.play(nom, 0.25)
+	if etat == Etat.COMBAT and arme:
+		if anim_haut.current_animation != "Visee":
+			anim_haut.play("Visee", 0.2)
+	elif anim_haut.is_playing():
+		anim_haut.stop()
