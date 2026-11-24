@@ -34,7 +34,7 @@ VARIANTES = {
                        peau=(0.075, 0.032, 0.016), cheveux=(0.012, 0.009, 0.008),
                        haut=(L[0], (0.32, 0.17, 0.07)), bas=(L[0], (0.09, 0.085, 0.075))),
     "ancien": dict(macros=dict(gender=1.0, age=0.84, muscle=0.35, weight=0.42, height=0.42),
-                   peau=(0.085, 0.038, 0.02), cheveux=(0.16, 0.155, 0.15),
+                   peau=(0.085, 0.038, 0.02), cheveux=(0.07, 0.068, 0.065),
                    haut=("wax_bandes_indigo.jpg", (1, 1, 1)), bas=(L[0], (0.38, 0.34, 0.27))),
     "femme": dict(macros=dict(gender=0.0, age=0.45, muscle=0.45, weight=0.55, height=0.4),
                   peau=(0.095, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
@@ -44,8 +44,22 @@ VARIANTES = {
                        peau=(0.07, 0.03, 0.015), cheveux=(0.16, 0.155, 0.15),
                        haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)),
                        pagne=True, foulard=("wax_losanges_ocre.jpg", (1, 1, 1))),
+    "femme2": dict(macros=dict(gender=0.0, age=0.38, muscle=0.5, weight=0.45, height=0.55),
+                   peau=(0.06, 0.026, 0.013), cheveux=(0.012, 0.009, 0.008),
+                   haut=(L[0], (0.45, 0.07, 0.06)), bas=("wax_bandes_indigo.jpg", (1, 1, 1)), pagne=True),
+    "homme2": dict(macros=dict(gender=1.0, age=0.36, muscle=0.58, weight=0.4, height=0.48),
+                   peau=(0.11, 0.05, 0.025), cheveux=(0.012, 0.009, 0.008),
+                   haut=("wax_feuilles_rouge.jpg", (1, 1, 1)), bas=(L[0], (0.25, 0.2, 0.12))),
+    "garcon": dict(macros=dict(gender=1.0, age=0.17, muscle=0.5, weight=0.45, height=0.5),
+                   peau=(0.09, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
+                   haut=(L[0], (0.05, 0.09, 0.16)), bas=(L[0], (0.14, 0.12, 0.08))),
+    "fille": dict(macros=dict(gender=0.0, age=0.15, muscle=0.5, weight=0.45, height=0.5),
+                  peau=(0.08, 0.035, 0.018), cheveux=(0.012, 0.009, 0.008),
+                  haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)), pagne=True),
 }
 V = VARIANTES[VARIANTE]
+FEMININ = V["macros"]["gender"] < 0.5
+ENFANT = V["macros"]["age"] < 0.3
 print("VARIANTE", VARIANTE)
 
 for o in list(bpy.data.objects):
@@ -59,11 +73,31 @@ for k, v in [("african", 1.0), ("asian", 0.0), ("caucasian", 0.0), ("proportions
         print("macro", k, e)
 TargetService.reapply_macro_details(h)
 troot = LocationService.get_mpfb_data("targets")
-for rel, w in [("nose/nose-scale-horiz-incr.target.gz", 0.35), ("mouth/mouth-scale-horiz-incr.target.gz", 0.2),
-               ("chin/chin-prominent-incr.target.gz", 0.2)]:
-    p = os.path.join(troot, rel)
+if VARIANTE == "faris":
+    visage = [("nose/nose-scale-horiz-incr", 0.35), ("mouth/mouth-scale-horiz-incr", 0.2), ("chin/chin-prominent-incr", 0.2)]
+else:
+    # visage propre à chaque habitant : ~14 traits tirés au hasard (graine = nom), symétriques gauche/droite
+    import random
+    rng = random.Random(VARIANTE)
+    traits = ["nose/nose-scale-horiz", "nose/nose-scale-vert", "nose/nose-flaring", "nose/nose-nostrils-width",
+              "nose/nose-point-width", "nose/nose-volume", "nose/nose-hump", "mouth/mouth-scale-horiz",
+              "mouth/mouth-lowerlip-volume", "mouth/mouth-upperlip-volume", "mouth/mouth-scale-vert",
+              "chin/chin-width", "chin/chin-prominent", "chin/chin-height", "chin/chin-jaw-drop",
+              "forehead/forehead-scale-vert", "forehead/forehead-nubian", "head/head-scale-horiz",
+              "head/head-scale-vert", "head/head-fat", "cheek/*-cheek-bones", "cheek/*-cheek-volume",
+              "eyes/*-eye-scale", "eyes/*-eye-bag", "ears/*-ear-scale", "ears/*-ear-flap"]
+    visage = []
+    for t in rng.sample(traits, 14):
+        sens = rng.choice(["incr", "decr"])
+        w = rng.uniform(0.2, 0.7)
+        for cote in (["l", "r"] if "*" in t else [""]):
+            visage.append((t.replace("*", cote) + "-" + sens, w))
+for rel, w in visage:
+    p = os.path.join(troot, rel + ".target.gz")
     if os.path.exists(p):
         TargetService.load_target(h, p, weight=w)
+    else:
+        print("cible absente", rel)
 rig = HumanService.add_builtin_rig(h, "mixamo")
 bpy.context.view_layer.update()
 
@@ -395,10 +429,13 @@ def vers(nom, parent_dir_bone, deg):
     rot(nom, axe.normalized(), deg)
 
 
+ECH = hips_z / 0.968  # les poses sont réglées sur Faris : on les met à l'échelle des corps plus petits
+
+
 def bouge_hanches(dz, dx=0.0):
     pb = P["Hips"]
     M = pb.matrix.copy()
-    M.translation += Vector((dx, 0, dz))
+    M.translation += Vector((dx, 0, dz)) * ECH
     pb.matrix = M
     vl.update()
 
@@ -441,15 +478,27 @@ def cycle(nom, images, amp_cuisse, amp_genou, genou_appui, amp_bras, coude, rebo
         raz()
         bouge_hanches(-rebond * (0.5 + 0.5 * math.cos(2 * phi)), 0.012 * math.sin(phi))
         rot("Hips", Z, -rotation_bassin * math.cos(phi))
+        if FEMININ and not ENFANT:
+            # démarche féminine : bassin qui se balance et bascule, pas posés sur une ligne, buste plus droit
+            bouge_hanches(0, 0.014 * math.sin(phi))
+            rot("Hips", Y, 4.5 * math.sin(phi))
+            rot("Spine1", Y, -3.0 * math.sin(phi))
         rot("Spine", X, penche * 0.5)
         rot("Spine1", X, penche * 0.5)
         rot("Spine2", Z, rotation_bassin * 1.2 * math.cos(phi))
         rot("Head", X, -penche * 0.6)
         jambe("Left", phi, amp_cuisse, amp_genou, genou_appui)
         jambe("Right", phi + math.pi, amp_cuisse, amp_genou, genou_appui)
-        bras_bas(31, coude)
-        rot("LeftArm", X, amp_bras * math.cos(phi))
-        rot("RightArm", X, -amp_bras * math.cos(phi))
+        if FEMININ and not ENFANT:
+            rot("LeftUpLeg", Y, 3.5)
+            rot("RightUpLeg", Y, -3.5)
+            bras_bas(27, coude * 0.8)
+            rot("LeftArm", X, amp_bras * 0.7 * math.cos(phi))
+            rot("RightArm", X, -amp_bras * 0.7 * math.cos(phi))
+        else:
+            bras_bas(31, coude)
+            rot("LeftArm", X, amp_bras * math.cos(phi))
+            rot("RightArm", X, -amp_bras * math.cos(phi))
         cle(f)
 
 
@@ -462,15 +511,27 @@ for f in range(0, 121, 6):
     rot("Spine1", X, -1.2 * math.sin(2 * p))
     rot("Spine2", X, -0.8 * math.sin(2 * p))
     rot("Head", Z, 3 * math.sin(p))
-    rot("LeftUpLeg", Y, 2)
-    rot("RightUpLeg", Y, -3)
-    rot("LeftLeg", X, 3)
-    rot("RightLeg", X, 5)
+    if FEMININ and not ENFANT:  # appui sur une hanche, l'autre genou fléchi
+        bouge_hanches(0, 0.025)
+        rot("Hips", Y, 4)
+        rot("Spine1", Y, -3)
+        rot("LeftUpLeg", Y, 2)
+        rot("RightUpLeg", Y, -6)
+        rot("RightLeg", X, 14)
+    else:
+        rot("LeftUpLeg", Y, 2)
+        rot("RightUpLeg", Y, -3)
+        rot("LeftLeg", X, 3)
+        rot("RightLeg", X, 5)
     bras_bas(31 + 1.5 * math.sin(2 * p), 22)
     cle(f)
 
-cycle("Marche", 32, 22, 48, 6, 16, 22, 0.025, 3, 5)
-cycle("Course", 20, 38, 95, 22, 38, 80, 0.05, 12, 9)
+if FEMININ and not ENFANT:
+    cycle("Marche", 34, 19, 44, 5, 13, 18, 0.018, 1, 8)
+    cycle("Course", 20, 32, 85, 20, 30, 75, 0.04, 8, 10)
+else:
+    cycle("Marche", 32, 22, 48, 6, 16, 22, 0.025, 3, 5)
+    cycle("Course", 20, 38, 95, 22, 38, 80, 0.05, 12, 9)
 
 nouvelle("Saut")
 for f in (0, 10):
@@ -519,7 +580,7 @@ def main_vers(cote, cible, pole):
     vides = []
     for pos in (cible, pole):
         e = bpy.data.objects.new("cible", None)
-        e.location = Vector(pos)
+        e.location = Vector(pos) * ECH
         bpy.context.scene.collection.objects.link(e)
         vides.append(e)
     c = pb.constraints.new("IK")

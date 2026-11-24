@@ -42,7 +42,7 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 | **Village d'Akwéri** (mission 4) : terrain aplani, 12 cases en banco et chaume, 2 maisons en planches et tôle, 5 fumoirs fumants, 9 pirogues peintes, mât au drapeau du Cobra, caisses et fûts, séchoirs à filets, cocotiers, repères de mission (départ, 3 vagues, civils, refuges) — disposition du blockout | `scripts/village_akweri.gd` | ✅ |
 | Pluie, sol mouillé, harmattan (herbe sèche) | `scripts/ambiances.gd` | ✅ |
 | Faris : vrai modèle humain (MakeHuman, morphologie africaine), chemise en wax original, pantalon, chaussures, cheveux courts | `personnages/faris.glb` | ✅ |
-| **Habitants de Talanké** : 4 corps de plus avec le même squelette et les mêmes animations — femme en pagne et foulard, femme âgée, ancien aux cheveux gris, pêcheur plus corpulent ; 4 motifs wax originaux | `personnages/femme.glb`, `femme_agee.glb`, `ancien.glb`, `villageois.glb` | ✅ |
+| **Habitants de Talanké** : 8 corps de plus avec le même squelette — 2 femmes (pagne, foulard), femme âgée, ancien, 2 hommes, **un garçon et une fille** ; chaque visage est unique ; **démarche féminine** propre (bassin qui balance, pas sur une ligne) ; 4 motifs wax originaux | `personnages/*.glb` | ✅ |
 | Animations de Faris : repos, marche, course, saut, nage, accroupi, visée, rendu, ligoté, mort | `scripts/joueur.gd` | ✅ (animations faites à la main, voir plus bas) |
 | **Mission 4 « Première Étincelle »** jouable de bout en bout (voir ci-dessous) | `scripts/mission4.gd`, `pnj.gd`, `arme.gd` | ✅ v1 |
 
@@ -55,11 +55,11 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 5. Choix final face à Dossou : **1** le laisser partir, **2** le faire prisonnier (compte pour la fin « Justice »).
 6. Libération : le drapeau du Cobra est remplacé par celui des Racines, la jauge **Confiance de l'île** apparaît. Mort de Faris : retour au refuge, la vague en cours recommence.
 
-Limites connues de la v1 : pas encore de pick-up de la milice ni de diversion d'Ama ; pas encore d'enfants ni de visages vraiment distincts ; animations faites à la main en attendant une vraie capture de mouvement.
+Limites connues de la v1 : pas encore de pick-up de la milice ni de diversion d'Ama ; les enfants sont des civils : ils ne peuvent jamais être blessés ; animations faites à la main en attendant une vraie capture de mouvement.
 
 ## Prochaines étapes
 
-1. Mission 4 : pick-up de la milice, diversion d'Ama, voix ; visages plus variés.
+1. Mission 4 : pick-up de la milice, diversion d'Ama, voix.
 2. Port-Néré : bâtiments réalistes (parpaing enduit, tôle rouillée), routes en latérite.
 3. Moto et pirogue conduisibles.
 
@@ -68,7 +68,8 @@ Limites connues de la v1 : pas encore de pick-up de la milice ni de diversion d'
 - Corps : **MakeHuman / MPFB2** (licence CC0), réglé en homme africain de 1,77 m, squelette **compatible Mixamo**.
 - Vêtements : chemise au **motif wax créé pour le jeu** (original, sans droits tiers), pantalon et chaussures en textures Poly Haven (CC0).
 - Un seul script fabrique tous les personnages : `VARIANTE=femme python outils/construire_personnage.py`
-  (variantes : faris, villageois, ancien, femme, femme_agee). Les femmes portent un vrai pagne (jupe
+  (variantes : faris, homme2, villageois, ancien, femme, femme2, femme_agee, garcon, fille). Chaque visage
+  combine ~14 traits MakeHuman (nez, lèvres, menton, pommettes, front…) tirés au hasard à partir du nom. Les femmes portent un vrai pagne (jupe
   portefeuille pondérée sur le bassin et les cuisses) et un foulard noué. Les motifs wax viennent de
   `outils/motifs_wax.py` (créés pour le jeu).
 - Animations : créées par programme dans Blender (même script). Elles sont correctes mais pas aussi
