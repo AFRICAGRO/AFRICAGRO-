@@ -19,6 +19,13 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [ ] Choisir et installer le PC de développement → suivre [installation/INSTALLATION.md](installation/INSTALLATION.md)
 - [x] Kit d'installation prêt : script Windows, configuration Unreal, `.mcp.json` (Blender + Unreal), Git LFS
 
+> **Décision du 24 novembre 2026 — moteur.** Le PC actuel ne fait pas tourner Unreal Engine 5.
+> Le prototype et la tranche verticale se font donc sous **Godot 4** (rendu « Compatibilité »), dans
+> [godot/TerreLibre/](godot/TerreLibre/README.md). Le relief, les textures, les ciels et le modèle de Faris
+> sont réutilisables tels quels dans Unreal le jour où une machine plus puissante sera disponible.
+> Déjà fait sous Godot : île réelle jouable, sol et ciels photographiés, arbres réalistes, cocotiers,
+> 5 ambiances lumineuses, Faris (corps MakeHuman, chemise wax, 5 animations).
+
 ## Phase 1 — Installation et apprentissage (mois 2–3)
 
 - [ ] Installer Unreal Engine 5, Blender, Git, Git LFS → `jeu/installation/installer-windows.ps1`

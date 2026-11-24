@@ -1,0 +1,67 @@
+# WANZALA : FREEDOM — projet Godot (dossier TerreLibre)
+
+Projet Godot 4 de l'île de Talanké. Rendu **Compatibilité** (OpenGL 3.3) pour tourner
+sur un PC modeste avec carte graphique intégrée.
+
+## Ouvrir le projet
+
+1. Lancer Godot → **Importer** → choisir `jeu/godot/TerreLibre/project.godot`.
+2. La première ouverture prend un moment : Godot prépare les fichiers.
+3. Appuyer sur **F5** (ou le bouton ▶ en haut à droite) pour jouer.
+
+## Commandes
+
+| Touche | Action |
+|---|---|
+| Clic | Contrôler la caméra avec la souris |
+| Z Q S D (ou W A S D, flèches) | Marcher |
+| Maj | Courir |
+| Espace | Sauter |
+| N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube |
+| Échap | Libérer la souris |
+
+En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
+Notez ce chiffre sur votre PC : c'est notre mesure de performance.
+
+## Ce qui est en place (v0.2 — passage au réalisme)
+
+| Élément | Fichier | État |
+|---|---|---|
+| Relief réel de l'île (5,4 km, 505 × 505 points) + collisions | `scripts/terrain.gd`, `data/talanke_505.f32` | ✅ |
+| Sol photographié : sable, latérite, herbe, sol de forêt, roche (couleur + relief fin), guidé par le satellite | `shaders/terrain.gdshader`, `data/textures/` | ✅ |
+| Ciels photographiés (HDRI) pour 5 ambiances, soleil aligné sur chaque ciel | `scripts/ambiances.gd`, `data/ciels/` | ✅ |
+| Arbres réalistes (rendus de vrais arbres scannés, sur plans croisés, balancement au vent) | `scripts/vegetation.gd`, `shaders/imposteur.gdshader`, `data/arbres/` | ✅ |
+| Cocotiers : tronc photographié, palmes découpées, courbure variée | `scripts/vegetation.gd` | ✅ |
+| Mer animée qui s'assombrit sous la pluie et la nuit, lac du cratère | `shaders/water.gdshader` | ✅ |
+| Pluie, sol mouillé, harmattan (herbe sèche) | `scripts/ambiances.gd` | ✅ |
+| Faris : vrai modèle humain (MakeHuman, morphologie africaine), chemise en wax original, pantalon, chaussures, cheveux courts | `personnages/faris.glb` | ✅ |
+| Animations de Faris : repos, marche, course, saut, nage (enchaînées selon la vitesse) | `scripts/joueur.gd` | ✅ (animations faites à la main, voir plus bas) |
+
+## Prochaines étapes
+
+1. Port-Néré et Akwéri : bâtiments réalistes (parpaing enduit, tôle rouillée, cases), routes en latérite.
+3. Moto et pirogue conduisibles.
+4. Mission 4 « Première Étincelle » : miliciens, combat, civils, libération.
+
+## Faris : comment il est fait
+
+- Corps : **MakeHuman / MPFB2** (licence CC0), réglé en homme africain de 1,77 m, squelette **compatible Mixamo**.
+- Vêtements : chemise au **motif wax créé pour le jeu** (original, sans droits tiers), pantalon et chaussures en textures Poly Haven (CC0).
+- Animations : créées par programme dans Blender (`outils/construire_faris.py`). Elles sont correctes mais pas aussi
+  naturelles qu'une capture de mouvement. Comme le squelette est compatible Mixamo, on pourra plus tard remplacer
+  ces animations par des captures de mouvement Mixamo (gratuites avec un compte Adobe), sans rien refaire.
+
+## Règles du projet
+
+- Tout le code est en GDScript, commenté en français.
+- Unités : 1 unité = 1 mètre. Le centre de l'île est en (0, 0, 0) ; le nord est vers −Z.
+- Le dossier `.godot/` est un cache : ne pas le copier ni le mettre sur GitHub.
+- Mentions obligatoires (relief et image) : voir `jeu/terrains/README.md` (Copernicus).
+
+## Crédits des ressources
+
+- Textures de sol, écorce de palmier, ciels HDRI et modèles d'arbres : **Poly Haven** (polyhaven.com), licence **CC0**
+  (domaine public, usage commercial libre). Arbres : Island Tree 01 et 02, Jacaranda Tree.
+- Palmes et motif wax : textures créées pour le projet.
+- Corps de Faris : MakeHuman / MPFB2 (makehumancommunity), licence CC0.
+- Relief et image satellite : Copernicus (voir `jeu/terrains/README.md`).

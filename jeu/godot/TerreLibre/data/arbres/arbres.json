@@ -1,0 +1,50 @@
+{
+ "island_tree_01": [
+  {
+   "image": "island_tree_01_v0.png",
+   "gauche": -2.346,
+   "droite": 2.407,
+   "bas": -0.019,
+   "haut": 5.006
+  },
+  {
+   "image": "island_tree_01_v1.png",
+   "gauche": -2.235,
+   "droite": 2.569,
+   "bas": -0.019,
+   "haut": 5.0
+  }
+ ],
+ "island_tree_02": [
+  {
+   "image": "island_tree_02_v0.png",
+   "gauche": -2.051,
+   "droite": 2.154,
+   "bas": -0.015,
+   "haut": 3.387
+  },
+  {
+   "image": "island_tree_02_v1.png",
+   "gauche": -2.955,
+   "droite": 1.113,
+   "bas": -0.019,
+   "haut": 3.387
+  }
+ ],
+ "jacaranda_tree": [
+  {
+   "image": "jacaranda_tree_v0.png",
+   "gauche": -12.913,
+   "droite": 11.464,
+   "bas": -0.133,
+   "haut": 19.309
+  },
+  {
+   "image": "jacaranda_tree_v1.png",
+   "gauche": -9.171,
+   "droite": 9.949,
+   "bas": -0.158,
+   "haut": 19.309
+  }
+ ]
+}

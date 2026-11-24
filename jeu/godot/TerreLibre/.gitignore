@@ -1,0 +1,4 @@
+# Cache d'import de Godot (régénéré automatiquement)
+.godot/
+*.import
+export/

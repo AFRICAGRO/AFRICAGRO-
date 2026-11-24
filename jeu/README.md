@@ -23,6 +23,8 @@
 | [OUTILS.md](OUTILS.md) | Logiciels, connecteurs Claude (gratuits en priorité), matériel |
 | [FEUILLE-DE-ROUTE.md](FEUILLE-DE-ROUTE.md) | Phases de production, jalons, ce qu'il faut pour commencer |
 | [prototype/](prototype/README.md) | Prototype gris de la mission 4 : étapes, script de blockout d'Akwéri, règles de jeu, test |
+| [godot/TerreLibre/](godot/TerreLibre/README.md) | **Projet jouable sous Godot 4** : île réelle, sol et ciels photographiés, végétation, Faris animé, 5 ambiances |
+| [direction-artistique/](direction-artistique/) | Études de lumière et d'ambiance (heure dorée, harmattan, pluie, nuit occupée / libérée) |
 | [installation/](installation/INSTALLATION.md) | Installation du PC et des connecteurs Claude (Unreal, Blender…) |
 
 ---
