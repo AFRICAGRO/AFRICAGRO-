@@ -162,6 +162,8 @@ func _soleil() -> DirectionalLight3D:
 	s.shadow_enabled = true
 	s.directional_shadow_max_distance = 220.0
 	s.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	s.directional_shadow_split_1 = 0.12  # première tranche serrée : ombres nettes près du joueur
+	s.shadow_blur = 1.5  # bords d’ombre adoucis (ombre des bras sur les vêtements)
 	add_child(s)
 	return s
 

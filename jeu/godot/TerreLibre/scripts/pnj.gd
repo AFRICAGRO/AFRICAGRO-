@@ -34,7 +34,7 @@ var vitesse := 0.0
 var regard := Vector3.FORWARD
 
 
-func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise: Color, texture_chemise: String = "") -> void:
+func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise: Color, texture_chemise: String = "", modele := "faris") -> void:
 	role = p_role
 	mission = p_mission
 	joueur = p_joueur
@@ -47,7 +47,8 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 	cs.shape = cap
 	cs.position.y = 0.89
 	add_child(cs)
-	corps = (load("res://personnages/faris.glb") as PackedScene).instantiate()
+	# corps : faris, villageois, ancien, femme, femme_agee (personnages/*.glb, même squelette et animations)
+	corps = (load("res://personnages/%s.glb" % modele) as PackedScene).instantiate()
 	add_child(corps)
 	anim = corps.find_child("AnimationPlayer", true, false)
 	for nom in ["Repos", "Marche", "Course", "Accroupi", "AccroupiMarche", "Rendu", "Ligote", "Visee"]:
@@ -57,7 +58,10 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 	anim_haut.root_node = anim.root_node
 	anim_haut.add_animation_library("", anim.get_animation_library(""))
 	# tenue : chemise teintée (ou autre motif), pantalon foncé pour la milice
-	var mesh_inst: MeshInstance3D = corps.find_child("Faris", true, false)
+	var mesh_inst: MeshInstance3D = null
+	var maillages := corps.find_children("*", "MeshInstance3D", true, false)
+	if maillages.size() > 0:
+		mesh_inst = maillages[0]
 	if mesh_inst:
 		for s in mesh_inst.mesh.get_surface_count():
 			var nom: String = mesh_inst.mesh.surface_get_material(s).resource_name
@@ -65,13 +69,13 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 				var m: StandardMaterial3D = mesh_inst.mesh.surface_get_material(s).duplicate()
 				if texture_chemise != "":
 					m.albedo_texture = load(texture_chemise)
-				m.albedo_color = teinte_chemise
+				m.albedo_color = m.albedo_color * teinte_chemise
 				mesh_inst.set_surface_override_material(s, m)
 			elif nom == "Pantalon" and role != "civil":
 				var mp: StandardMaterial3D = mesh_inst.mesh.surface_get_material(s).duplicate()
 				mp.albedo_color = Color(0.25, 0.27, 0.2)
 				mesh_inst.set_surface_override_material(s, mp)
-	var sc := randf_range(0.95, 1.04)
+	var sc := randf_range(0.96, 1.03) * (1.05 if role == "dossou" else 1.0)
 	corps.scale = Vector3(sc, sc, sc)
 	agent = NavigationAgent3D.new()
 	agent.radius = 0.4

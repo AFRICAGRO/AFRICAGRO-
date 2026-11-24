@@ -21,12 +21,38 @@ TargetService = imp("mpfb.services.targetservice", "TargetService")
 LocationService = imp("mpfb.services.locationservice", "LocationService")
 import os
 
+# ---------- variantes : Faris et les habitants de Talanké ----------
+VARIANTE = os.environ.get("VARIANTE", "faris")
+L = ("rough_linen_diff.jpg", "rough_linen_nor.jpg")
+D = ("denim_fabric_03_diff.jpg", "denim_fabric_03_nor.jpg")
+VARIANTES = {
+    # macros MPFB, peau, cheveux, haut (texture, teinte), bas (texture, teinte), pagne, foulard (texture, teinte)
+    "faris": dict(macros=dict(gender=1.0, age=0.5, muscle=0.62, weight=0.48, height=0.38),
+                  peau=(0.10, 0.042, 0.02), cheveux=(0.012, 0.009, 0.008),
+                  haut=("wax_diff.jpg", (1, 1, 1)), bas=(D[0], (0.06, 0.075, 0.11))),
+    "villageois": dict(macros=dict(gender=1.0, age=0.42, muscle=0.5, weight=0.66, height=0.55),
+                       peau=(0.075, 0.032, 0.016), cheveux=(0.012, 0.009, 0.008),
+                       haut=(L[0], (0.32, 0.17, 0.07)), bas=(L[0], (0.09, 0.085, 0.075))),
+    "ancien": dict(macros=dict(gender=1.0, age=0.84, muscle=0.35, weight=0.42, height=0.42),
+                   peau=(0.085, 0.038, 0.02), cheveux=(0.16, 0.155, 0.15),
+                   haut=("wax_bandes_indigo.jpg", (1, 1, 1)), bas=(L[0], (0.38, 0.34, 0.27))),
+    "femme": dict(macros=dict(gender=0.0, age=0.45, muscle=0.45, weight=0.55, height=0.4),
+                  peau=(0.095, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
+                  haut=("wax_cercles_vert.jpg", (1, 1, 1)), bas=("wax_cercles_vert.jpg", (1, 1, 1)),
+                  pagne=True, foulard=("wax_feuilles_rouge.jpg", (1, 1, 1))),
+    "femme_agee": dict(macros=dict(gender=0.0, age=0.74, muscle=0.35, weight=0.7, height=0.3),
+                       peau=(0.07, 0.03, 0.015), cheveux=(0.16, 0.155, 0.15),
+                       haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)),
+                       pagne=True, foulard=("wax_losanges_ocre.jpg", (1, 1, 1))),
+}
+V = VARIANTES[VARIANTE]
+print("VARIANTE", VARIANTE)
+
 for o in list(bpy.data.objects):
     bpy.data.objects.remove(o)
 
 h = HumanService.create_human()
-for k, v in [("african", 1.0), ("asian", 0.0), ("caucasian", 0.0), ("gender", 1.0), ("age", 0.5),
-             ("muscle", 0.62), ("weight", 0.48), ("height", 0.38), ("proportions", 0.7)]:
+for k, v in [("african", 1.0), ("asian", 0.0), ("caucasian", 0.0), ("proportions", 0.7)] + list(V["macros"].items()):
     try:
         HOP.set_value(k, v, entity_reference=h)
     except Exception as e:
@@ -100,22 +126,34 @@ def mat(nom, couleur, rough=0.8, tex=None, normal=None, vcol=False, metal=0.0):
     bsdf.inputs["Metallic"].default_value = metal
     if tex:
         t = nt.nodes.new("ShaderNodeTexImage")
-        t.image = bpy.data.images.load(TEX + tex)
+        img = bpy.data.images.load(TEX + tex)
         if couleur != (1, 1, 1):
-            mix = nt.nodes.new("ShaderNodeMix")
-            mix.data_type = "RGBA"
-            mix.blend_type = "MULTIPLY"
-            mix.inputs[0].default_value = 1.0
-            nt.links.new(t.outputs["Color"], mix.inputs[6])
-            mix.inputs[7].default_value = (*couleur, 1)
-            nt.links.new(mix.outputs[2], bsdf.inputs["Base Color"])
-        else:
-            nt.links.new(t.outputs["Color"], bsdf.inputs["Base Color"])
+            # le glTF n'exporte pas les nœuds de mélange : la teinte est cuite dans une copie de l'image
+            import numpy as np
+            px = np.empty(img.size[0] * img.size[1] * 4, dtype=np.float32)
+            img.pixels.foreach_get(px)
+            px = px.reshape(-1, 4)
+            lin = np.where(px[:, :3] <= 0.04045, px[:, :3] / 12.92, ((px[:, :3] + 0.055) / 1.055) ** 2.4)
+            lin = lin * np.array(couleur, dtype=np.float32) / np.maximum(0.02, lin.mean(axis=0))
+            lin = np.clip(lin, 0, 1)
+            px[:, :3] = np.where(lin <= 0.0031308, lin * 12.92, 1.055 * lin ** (1 / 2.4) - 0.055)
+            img2 = bpy.data.images.new(nom + "_teint", img.size[0], img.size[1])
+            img2.pixels.foreach_set(px.ravel())
+            bpy.context.scene.view_settings.view_transform = "Standard"  # pas de transformation de rendu à l'enregistrement
+            bpy.context.scene.view_settings.look = "None"
+            img2.filepath_raw = f"/tmp/{VARIANTE}_{nom}.jpg"
+            img2.file_format = "JPEG"
+            img2.save()
+            img = bpy.data.images.load(img2.filepath_raw)
+            bsdf.inputs["Base Color"].default_value = (1, 1, 1, 1)
+        t.image = img
+        nt.links.new(t.outputs["Color"], bsdf.inputs["Base Color"])
     if normal:
         t = nt.nodes.new("ShaderNodeTexImage")
         t.image = bpy.data.images.load(TEX + normal)
         t.image.colorspace_settings.name = "Non-Color"
         nm = nt.nodes.new("ShaderNodeNormalMap")
+        nm.inputs["Strength"].default_value = 0.35  # îlots UV tournés : un relief fort marbre le tissu
         nt.links.new(t.outputs["Color"], nm.inputs["Color"])
         nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
     if vcol:
@@ -126,11 +164,12 @@ def mat(nom, couleur, rough=0.8, tex=None, normal=None, vcol=False, metal=0.0):
 
 
 me.materials.clear()
-for m in [mat("Peau", (0.10, 0.042, 0.02), 0.55),
-          mat("Cheveux", (0.012, 0.009, 0.008), 0.95),
-          mat("Chemise", (1, 1, 1), 0.9, "wax_diff.jpg", "rough_linen_nor.jpg"),
-          mat("Pantalon", (0.42, 0.40, 0.33), 0.85, "denim_fabric_03_diff.jpg", "denim_fabric_03_nor.jpg"),
-          mat("Chaussures", (0.2, 0.15, 0.12), 0.6, "brown_leather_diff.jpg", "brown_leather_nor.jpg"),
+FOULARD = V.get("foulard")
+for m in [mat("Peau", V["peau"], 0.55),
+          (mat("Cheveux", FOULARD[1], 0.9, FOULARD[0], L[1]) if FOULARD else mat("Cheveux", V["cheveux"], 0.95)),
+          mat("Chemise", V["haut"][1], 0.9, V["haut"][0], L[1]),
+          mat("Pantalon", V["bas"][1], 0.85, V["bas"][0], D[1] if V["bas"][0] == D[0] else L[1]),
+          mat("Chaussures", (1, 1, 1), 0.6, "brown_leather_diff.jpg", "brown_leather_nor.jpg"),
           mat("Yeux", (1, 1, 1), 0.15, vcol=True),
           mat("Dents", (0.85, 0.82, 0.75), 0.4)]:
     me.materials.append(m)
@@ -185,7 +224,11 @@ for f in bm.faces:
             f.material_index = 4
         # cuir chevelu : haut et arrière du crâne
         rel = c.z - tete_z
-        if rel > 0.135 or (rel > 0.05 and c.y > -0.035) or (rel > 0.1 and c.y > -0.075):
+        if FOULARD:
+            # foulard noué : couvre tout le crâne jusqu'au front et derrière les oreilles
+            if rel > 0.115 or (rel > 0.03 and c.y > -0.02) or (rel > 0.085 and c.y > -0.085):
+                f.material_index = 1
+        elif rel > 0.135 or (rel > 0.05 and c.y > -0.035) or (rel > 0.1 and c.y > -0.075):
             if abs(c.x) < 0.085 or rel > 0.08:
                 f.material_index = 1
 
@@ -197,7 +240,8 @@ for f in bm.faces:
         continue
     c = centre(f)
     ab = bras(c)
-    sur_bras = ab is not None and abs(c.x) > 0.16 and ab[1] < 0.12
+    # bras pendants en A : la droite prolongée du bras frôle la cuisse, d'où les bornes sur t et la distance
+    sur_bras = ab is not None and abs(c.x) > 0.16 and ab[1] < 0.075 and -0.1 < ab[0] < 2.35
     if ankle_z + 0.07 < c.z < neck_z - 0.075 and not (sur_bras and ab[0] > 0.4):
         if not (sur_bras and ab[0] > 0.4):
             cache.append(f)
@@ -206,7 +250,7 @@ bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VE
 
 # épaisseurs : chemise par-dessus le pantalon, cheveux et chaussures légèrement gonflés
 bm.normal_update()
-gonfle = {2: 0.007, 3: 0.003, 1: 0.004, 4: 0.009}
+gonfle = {2: 0.007, 3: 0.003, 1: 0.022 if FOULARD else 0.004, 4: 0.009}
 deplace = {}
 for f in bm.faces:
     g = gonfle.get(f.material_index)
@@ -215,6 +259,52 @@ for f in bm.faces:
             deplace[v] = max(deplace.get(v, 0.0), g)
 for v, g in deplace.items():
     v.co += v.normal * g
+# ---------- pagne : jupe portefeuille de la taille aux chevilles, pondérée sur bassin et cuisses ----------
+if V.get("pagne"):
+    bm.verts.ensure_lookup_table()
+    gi = {g.name: g.index for g in h.vertex_groups}
+    g_h, g_l, g_r = gi["mixamorig:Hips"], gi["mixamorig:LeftUpLeg"], gi["mixamorig:RightUpLeg"]
+    haut_z, bas_z = hips_z + 0.05, ankle_z + 0.05
+    NA, NR = 28, 14
+    anneaux = []
+    larg_max = None
+    for r in range(NR + 1):
+        t = r / NR
+        z = haut_z + (bas_z - haut_z) * t
+        pts = [v.co for v in bm.verts if abs(v.co.z - z) < 0.025 and abs(v.co.x) < 0.3]
+        if r == 0 or larg_max is None:
+            xs = [p.x for p in pts]; ys = [p.y for p in pts]
+            cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+            rx, ry = (max(xs) - min(xs)) / 2 + 0.012, (max(ys) - min(ys)) / 2 + 0.012
+            if r == 0:
+                c0 = (cx, cy)
+            larg_max = (rx, ry)
+        if pts and r > 0:
+            xs = [p.x for p in pts]; ys = [p.y for p in pts]
+            mrx, mry = (max(xs) - min(xs)) / 2 + 0.03, (max(ys) - min(ys)) / 2 + 0.03
+            larg_max = (max(larg_max[0] * 0.985, mrx), max(larg_max[1] * 0.985, mry))
+        rx, ry = larg_max
+        anneau = []
+        for a in range(NA):
+            th = 2 * math.pi * a / NA
+            x, y = c0[0] + rx * math.cos(th), c0[1] + ry * math.sin(th)
+            v = bm.verts.new((x, y, z))
+            v[lr] = NOMS_ROLES.index("helper-tights")
+            k = min(1.0, t * 1.15) * 0.9
+            s = max(0.0, min(1.0, 0.5 + math.cos(th) * 0.9))
+            v[deform][g_h] = 1.0 - k
+            if k > 0:
+                v[deform][g_l] = k * s
+                v[deform][g_r] = k * (1 - s)
+            anneau.append(v)
+        anneaux.append(anneau)
+    for r in range(NR):
+        for a in range(NA):
+            b = (a + 1) % NA
+            f = bm.faces.new((anneaux[r][a], anneaux[r + 1][a], anneaux[r + 1][b], anneaux[r][b]))
+            f.material_index = 3
+    bm.normal_update()  # ordre des sommets : normales vers l'extérieur
+
 # yeux : iris sombre vers l'avant
 col = bm.loops.layers.color.new("Col")
 for f in bm.faces:
@@ -268,7 +358,7 @@ for lay in [l.name for l in me.uv_layers if l.name != "Tissu"]:
 
 for p in me.polygons:
     p.use_smooth = True
-h.name = "Faris"
+h.name = VARIANTE.capitalize()
 rig.name = "Squelette"
 
 # ---------- animations (en place) ----------
@@ -545,12 +635,12 @@ for act in bpy.data.actions:
         for kp in fc.keyframe_points:
             kp.interpolation = "BEZIER"
 
-bpy.ops.wm.save_as_mainfile(filepath="/home/claude/faris/faris.blend")
+bpy.ops.wm.save_as_mainfile(filepath=f"/home/claude/faris/{VARIANTE}.blend")
 for o in bpy.context.selected_objects:
     o.select_set(False)
 h.select_set(True)
 rig.select_set(True)
-bpy.ops.export_scene.gltf(filepath="/home/claude/faris/faris.glb", export_format="GLB", use_selection=True,
+bpy.ops.export_scene.gltf(filepath=f"/home/claude/faris/{VARIANTE}.glb", export_format="GLB", use_selection=True,
                           export_animations=True, export_animation_mode="ACTIONS", export_skins=True,
                           export_yup=True, export_image_format="JPEG", export_jpeg_quality=88)
 print("EXPORT OK", [a.name for a in bpy.data.actions])

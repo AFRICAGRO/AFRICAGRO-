@@ -100,11 +100,11 @@ func _naviguer() -> void:
 
 
 # ---------- personnages ----------
-func _pnj(role: String, p: Vector3, teinte: Color, texture := "") -> Pnj:
+func _pnj(role: String, p: Vector3, teinte: Color, texture := "", modele := "faris") -> Pnj:
 	var n := Pnj.new()
 	add_child(n)
 	n.global_position = p + Vector3(0, 0.2, 0)
-	n.preparer(role, self, joueur, teinte, texture)
+	n.preparer(role, self, joueur, teinte, texture, modele)
 	n.refuges = village.reperes["refuges"]
 	pnjs.append(n)
 	n.neutralise.connect(_neutralise)
@@ -113,15 +113,20 @@ func _pnj(role: String, p: Vector3, teinte: Color, texture := "") -> Pnj:
 	return n
 
 
+var _n_miliciens := 0
 func _milicien(role: String, p: Vector3, teinte: Color) -> Pnj:
-	return _pnj(role, p, teinte, "res://data/textures/camouflage.jpg")
+	_n_miliciens += 1
+	var modele := "villageois" if role == "dossou" or _n_miliciens % 2 == 0 else "faris"
+	return _pnj(role, p, teinte, "res://data/textures/camouflage.jpg", modele)
 
 
 func _placer_civils() -> void:
-	var teintes := [Color(1, 0.75, 0.75), Color(0.75, 1, 0.8), Color(1, 1, 0.7), Color(0.8, 0.85, 1), Color(1, 0.85, 0.65)]
+	# habitants d'Akwéri : femmes, anciens, pêcheurs ; teintes légères pour varier les tenues
+	var modeles := ["femme", "villageois", "ancien", "femme_agee", "femme", "villageois"]
+	var teintes := [Color(1, 1, 1), Color(1, 0.85, 0.8), Color(0.85, 1, 0.9), Color(1, 1, 0.85), Color(0.85, 0.9, 1)]
 	var i := 0
 	for p in village.reperes["civils"]:
-		var c := _pnj("civil", p, teintes[i % teintes.size()])
+		var c := _pnj("civil", p, teintes[(i / 6) % teintes.size() + (i % 2)], "", modeles[i % modeles.size()])
 		c._regarder(village._monde3(20, 0), 1.0)
 		civils.append(c)
 		i += 1
