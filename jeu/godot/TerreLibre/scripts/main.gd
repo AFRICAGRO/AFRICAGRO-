@@ -15,6 +15,7 @@ var pluie: CPUParticles3D
 var etiquette: Label
 var aide: Label
 var lieu_actuel := ""
+var ville: VillePortNere
 
 
 ## Coordonnées de la carte de référence (image de 700 px) vers le monde (mètres).
@@ -29,6 +30,9 @@ func _ready() -> void:
 	# Akwéri : position du blockout (jeu/prototype/blockout_akweri.py, pixel 484 × 1129 de la heightmap)
 	var akweri := Vector2((484.0 / 2016.0 - 0.5) * Terrain.TAILLE, (1129.0 / 2016.0 - 0.5) * Terrain.TAILLE)
 	terrain.aplanissements = [{"centre": akweri, "avant_min": -80.0, "avant_max": 6.0, "cote": 58.0, "marge": 32.0, "base": 1.3, "pente": 0.15}]
+	# Port-Néré : relief adouci sous la ville
+	var port_nere := carte_vers_monde(225, 235)
+	terrain.lissages = [{"centre": port_nere + Vector2(-20, 20), "rayon": 340.0, "passes": 3}]
 	add_child(terrain)
 	_mer()
 	var env := _environnement()
@@ -42,6 +46,10 @@ func _ready() -> void:
 	add_child(village)
 	var mer: Vector2 = terrain.aplanissements[0]["mer"]
 	village.construire(terrain, akweri, mer, veg)
+	ville = VillePortNere.new()
+	ville.name = "PortNere"
+	add_child(ville)
+	ville.construire(terrain, port_nere, veg)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
@@ -54,6 +62,7 @@ func _ready() -> void:
 	ambiances.name = "Ambiances"
 	add_child(ambiances)
 	ambiances.mer_mat = ($Mer as MeshInstance3D).mesh.material
+	ambiances.eclairages.append(ville)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
 	var mission := Mission4.new()
 	mission.name = "Mission4"
@@ -67,6 +76,7 @@ func _actions_clavier() -> void:
 	var touches := {
 		"avancer": [KEY_W, KEY_UP], "reculer": [KEY_S, KEY_DOWN], "gauche": [KEY_A, KEY_LEFT],
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
+		"aller_port_nere": [KEY_P],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -203,7 +213,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : aller à Port-Néré · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
@@ -215,6 +225,11 @@ func _interface() -> void:
 
 
 func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("aller_port_nere") and ville.reperes.has("place"):
+		# déplacement rapide vers la place de l'Indépendance (en attendant les véhicules)
+		var pl: Vector3 = ville.reperes["place"]
+		joueur.global_position = pl + Vector3(14, 1.0, -8)
+		joueur.velocity = Vector3.ZERO
 	var p := joueur.global_position
 	pluie.global_position = p + Vector3(0, 18, 0)
 	var proche := "Île de Talanké"

@@ -12,6 +12,9 @@ var hauteurs := PackedFloat32Array()
 ## Chaque entrée : {"centre": Vector2, "avant_min", "avant_max", "cote", "marge", "base", "pente"} ;
 ## "mer" (direction de la mer) est calculée automatiquement.
 var aplanissements: Array = []
+## Zones adoucies (villes) : {"centre": Vector2, "rayon", "passes"} — lisse les bosses du relief
+## pour que rues et maisons suivent un sol régulier.
+var lissages: Array = []
 var pas := TAILLE / float(N - 1)
 
 
@@ -22,6 +25,7 @@ func _ready() -> void:
 		return
 	hauteurs = f.get_buffer(N * N * 4).to_float32_array()
 	_aplanir()
+	_lisser()
 	_construire_maillage()
 	_construire_collision()
 
@@ -57,6 +61,32 @@ func _aplanir() -> void:
 		hauteurs = nouv
 
 
+func _lisser() -> void:
+	var demi := TAILLE * 0.5
+	for z in lissages:
+		var c: Vector2 = z["centre"]
+		var rayon: float = z["rayon"]
+		var c0 := maxi(1, int((c.x - rayon + demi) / pas)); var c1 := mini(N - 2, int((c.x + rayon + demi) / pas) + 1)
+		var r0 := maxi(1, int((c.y - rayon + demi) / pas)); var r1 := mini(N - 2, int((c.y + rayon + demi) / pas) + 1)
+		for passe in int(z["passes"]):
+			var nouv := hauteurs.duplicate()
+			for r in range(r0, r1 + 1):
+				for col in range(c0, c1 + 1):
+					var p := Vector2(col * pas - demi, r * pas - demi)
+					var w := 1.0 - smoothstep(rayon * 0.7, rayon, p.distance_to(c))
+					if w <= 0.0:
+						continue
+					var i := r * N + col
+					if hauteurs[i] < 0.5:
+						continue # on ne touche pas au trait de côte
+					var m := 0.0
+					for dr in [-1, 0, 1]:
+						for dc in [-1, 0, 1]:
+							m += hauteurs[i + dr * N + dc] * (4.0 if dr == 0 and dc == 0 else (2.0 if dr == 0 or dc == 0 else 1.0))
+					nouv[i] = lerpf(hauteurs[i], maxf(m / 16.0, 0.8), w)
+			hauteurs = nouv
+
+
 func _h(c: int, r: int) -> float:
 	return hauteurs[clampi(r, 0, N - 1) * N + clampi(c, 0, N - 1)]
 
@@ -71,9 +101,10 @@ func hauteur(x: float, z: float) -> float:
 	var r := mini(int(v), N - 2)
 	var fu := u - c
 	var fv := v - r
-	var a := _h(c, r) * (1.0 - fu) + _h(c + 1, r) * fu
-	var b := _h(c, r + 1) * (1.0 - fu) + _h(c + 1, r + 1) * fu
-	return a * (1.0 - fv) + b * fv
+	# même découpage en triangles que le maillage affiché (diagonale de (c+1, r) à (c, r+1))
+	if fu + fv <= 1.0:
+		return _h(c, r) + fu * (_h(c + 1, r) - _h(c, r)) + fv * (_h(c, r + 1) - _h(c, r))
+	return _h(c + 1, r + 1) + (1.0 - fu) * (_h(c, r + 1) - _h(c + 1, r + 1)) + (1.0 - fv) * (_h(c + 1, r) - _h(c + 1, r + 1))
 
 
 ## Pente locale (0 = plat, 1 = vertical environ).
