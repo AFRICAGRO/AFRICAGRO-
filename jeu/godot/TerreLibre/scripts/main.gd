@@ -62,7 +62,12 @@ func _ready() -> void:
 	ambiances.name = "Ambiances"
 	add_child(ambiances)
 	ambiances.mer_mat = ($Mer as MeshInstance3D).mesh.material
+	var circulation := Circulation.new()
+	circulation.name = "Circulation"
+	add_child(circulation)
+	circulation.construire(ville, joueur)
 	ambiances.eclairages.append(ville)
+	ambiances.eclairages.append(circulation)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
 	var mission := Mission4.new()
 	mission.name = "Mission4"

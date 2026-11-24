@@ -28,6 +28,10 @@ var reperes := {}
 var nb_batiments := 0
 var arbres: Array = []     # Transform3D des arbres d'ombre
 var palmiers: Array = []
+var bati := {}             # cases de 2 m occupées par des bâtiments (pas les rues)
+var boutiques: Array = []  # [point devant la vitrine, avant, largeur, enseigne]
+var chantiers: Array = []  # [centre, avant, largeur, profondeur]
+var objets := {}           # nom du modèle (props/*.glb) -> [Transform3D]
 
 const PEINTURES := [
 	Color(0.86, 0.66, 0.42), Color(0.58, 0.72, 0.82), Color(0.93, 0.91, 0.86), Color(0.86, 0.62, 0.56),
@@ -61,6 +65,7 @@ func construire(t: Terrain, p_centre: Vector2, vegetation: Vegetation) -> void:
 	for r in rues:
 		_ruban(r)
 	_reverberes()
+	_mobilier()
 	for r in rues:
 		if r["type"] == "laterite":
 			_ligne_electrique(r)
@@ -252,7 +257,7 @@ func _finir_maillages() -> void:
 		var mi := MeshInstance3D.new()
 		mi.name = "Ville_" + (cel as String).replace("|", "_")
 		mi.mesh = par_cellule[cel]
-		mi.visibility_range_end = DISTANCE_VUE
+		# (pas de distance de visibilité ici : ces maillages ont leur origine au centre du monde)
 		add_child(mi)
 	seaux.clear()
 
@@ -284,6 +289,7 @@ func _prendre(c: Vector2, avant: Vector2, w: float, d: float, marge := 0.5) -> v
 		var z := -d * 0.5 - marge
 		while z <= d * 0.5 + marge:
 			occupe[_cle(c + r * x - avant * z)] = true
+			bati[_cle(c + r * x - avant * z)] = true
 			z += 1.0
 		x += 1.0
 
@@ -545,7 +551,10 @@ func _batiment(c: Vector2, avant: Vector2, w: float, d: float, style: Dictionary
 				_fenetre(xf, face, x, y0, w, d, volet, brut)
 	# porte ou devanture
 	var pf := xf.translated_local(Vector3(porte_x, 0, -d * 0.5 - 0.03))
+	if brut:
+		chantiers.append([c, avant, w, d])
 	if style.get("boutique", false):
+		boutiques.append([c + avant * (d * 0.5), avant, w, style.get("enseigne", ""), base])
 		_boite("sombre", pf, Vector3(3.0, 2.5, 0.06))
 		_boite("metal", pf.translated_local(Vector3(0, 1.6, -0.02)), Vector3(3.1, 0.95, 0.06), Color(0.62, 0.62, 0.6))
 		_auvent(xf, w, d, porte_x, style)
@@ -943,10 +952,9 @@ func _lieux() -> void:
 		var t := xq.translated_local(Vector3(tx, 0, tz))
 		_boite("metal", t, Vector3(0.9, 0.72, 0.9), Color(0.95, 0.95, 0.95))
 		for k in 4:
-			var a := k * PI * 0.5
-			var ch := t.translated_local(Vector3(cos(a) * 0.8, 0, sin(a) * 0.8))
-			_boite("metal", ch, Vector3(0.45, 0.45, 0.45), Color(0.15, 0.35, 0.8) if i % 2 == 0 else Color(0.85, 0.15, 0.12))
-			_boite("metal", ch.translated_local(Vector3(0, 0.45, 0)).rotated_local(Vector3.UP, a), Vector3(0.45, 0.45, 0.05), Color(0.15, 0.35, 0.8) if i % 2 == 0 else Color(0.85, 0.15, 0.12))
+			var a := k * PI * 0.5 + rng.randf_range(-0.3, 0.3)
+			_objet("plastic_monobloc_chair_01", t.translated_local(Vector3(cos(a) * 0.85, 0, sin(a) * 0.85)).rotated_local(Vector3.UP, -a - PI * 0.5))
+		_objet("plastic_crate_01", t.translated_local(Vector3(0.2, 0.72, 0.1)), 1.0)
 	for i in 14: # guirlande d'ampoules
 		_boite("ampoule", xq.translated_local(Vector3(-6.5 + i * 1.0, 2.75 - 0.15 * sin(i / 13.0 * PI), -5.0)), Vector3(0.1, 0.12, 0.1))
 	var lm := OmniLight3D.new()
@@ -1059,6 +1067,106 @@ func _reverbere(p: Vector2, vers_route: Vector2) -> void:
 	lampes.append(lum)
 
 
+## Objet tiré des modèles Poly Haven (props/*.glb), posé au sol ou à la hauteur donnée.
+func _objet(nom: String, xf: Transform3D, echelle := 1.0) -> void:
+	if not objets.has(nom):
+		objets[nom] = []
+	objets[nom].append(xf.scaled_local(Vector3.ONE * echelle))
+
+
+func _xf_sol(p: Vector2, angle: float, dy := 0.0) -> Transform3D:
+	return Transform3D(Basis(Vector3.UP, angle), Vector3(p.x, _sol(p) + dy, p.y))
+
+
+## Chaises, casiers, bidons, bouteilles de gaz, pneus, groupes électrogènes, sacs de ciment, poubelles.
+func _mobilier() -> void:
+	for b in boutiques:
+		var devant: Vector2 = b[0]
+		var avant: Vector2 = b[1]
+		var w: float = b[2]
+		var nom: String = b[3]
+		var base: float = b[4]
+		var r := Vector2(-avant.y, avant.x)
+		var dy := base - _sol(devant + avant * 1.5)
+		# deux ou trois chaises sous l'auvent
+		for k in rng.randi_range(1, 3):
+			var p := devant + avant * rng.randf_range(0.8, 1.8) + r * rng.randf_range(-w * 0.4, w * 0.4)
+			_objet("plastic_monobloc_chair_01", _xf_sol(p, rng.randf() * TAU, 0.0))
+		if rng.randf() < 0.6: # casiers de boissons empilés
+			var p := devant + avant * 0.5 + r * (w * 0.35 * (1.0 if rng.randf() < 0.5 else -1.0))
+			for h in rng.randi_range(1, 4):
+				_objet("plastic_crate_01", _xf_sol(p, rng.randf_range(-0.1, 0.1) + atan2(avant.x, avant.y), h * 0.26))
+		if nom.begins_with("ALIMENTATION") or nom.begins_with("DÉPÔT") or rng.randf() < 0.15:
+			for k in rng.randi_range(2, 4):
+				_objet("propane_tank", _xf_sol(devant + avant * 0.6 + r * (-w * 0.3 + k * 0.4), rng.randf() * TAU))
+		if nom.begins_with("ATELIER") or nom.begins_with("QUINCAILLERIE"):
+			for k in 5:
+				var pt := devant + avant * 1.2 + r * (w * 0.3)
+				_objet("old_tyre", Transform3D(Basis(Vector3.UP, rng.randf() * TAU) * Basis(Vector3.RIGHT, PI * 0.5), Vector3(pt.x, _sol(pt) + 0.08 + k * 0.17, pt.y)))
+		if rng.randf() < 0.18: # groupe électrogène contre les délestages
+			_objet("portable_generator", _xf_sol(devant + avant * 0.7 - r * (w * 0.45), atan2(avant.x, avant.y)))
+		if rng.randf() < 0.25: # vendeur de carburant en bidons
+			for k in rng.randi_range(3, 6):
+				_objet("plastic_jerrycan", _xf_sol(devant + avant * 1.4 + r * (-0.6 + k * 0.32), rng.randf_range(-0.3, 0.3)))
+	for c in chantiers:
+		var centre_c: Vector2 = c[0]
+		var avant: Vector2 = c[1]
+		var p: Vector2 = centre_c + avant * (c[3] * 0.5 + 1.3)
+		if bati.has(_cle(p)):
+			continue
+		for k in rng.randi_range(3, 8):
+			_objet("cement_bag", _xf_sol(p + Vector2(k % 3, 0) * 0.5, rng.randf_range(-0.2, 0.2), (k / 3) * 0.17))
+		if rng.randf() < 0.5:
+			_objet("barrel_01", _xf_sol(p + avant * 1.0, 0.0))
+	# poubelles le long de l'avenue et du boulevard
+	for idx in 2:
+		var pts: PackedVector2Array = rues[idx]["pts"]
+		for k in range(2, pts.size() - 2, 5):
+			var t := (pts[k + 1] - pts[k]).normalized()
+			var n := Vector2(-t.y, t.x) * (1.0 if k % 2 == 0 else -1.0)
+			var q: Vector2 = pts[k] + n * (rues[idx]["l"] * 0.5 + 1.8)
+			if not bati.has(_cle(q)) and not _dans_autre_rue(q, rues[idx], 0.2) and _sol(q) > 1.5:
+				_objet("metal_trash_can", _xf_sol(q, atan2(t.x, t.y) + PI * 0.5, 0.27), 0.55)
+	# voitures bâchées à l'abandon dans quelques cours
+	for k in 6:
+		var c := centre + Vector2(rng.randf_range(-260, 200), rng.randf_range(-120, 180))
+		var ang := rng.randf() * TAU
+		var av := Vector2(sin(ang), cos(ang))
+		if _rect_libre(c, av, 2.2, 4.8, 0.6) and _terrain_ok(c, av, 2.2, 4.8):
+			_prendre(c, av, 2.2, 4.8, 0.3)
+			_objet("covered_car", _xf_sol(c, ang))
+	_poser_objets()
+
+
+func _poser_objets() -> void:
+	for nom in objets:
+		var scene: PackedScene = load("res://props/%s.glb" % nom)
+		if scene == null:
+			continue
+		var modele := scene.instantiate()
+		add_child(modele) # temporaire, pour connaître les transformations des maillages
+		var maillages := modele.find_children("*", "MeshInstance3D", true, false)
+		var bas := INF
+		for mi in maillages:
+			var aabb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).get_aabb()
+			bas = minf(bas, aabb.position.y)
+		var liste: Array = objets[nom]
+		for mi in maillages:
+			var m := mi as MeshInstance3D
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = m.mesh
+			mm.instance_count = liste.size()
+			var local := Transform3D(Basis(), Vector3(0, -bas, 0)) * m.global_transform
+			for i in liste.size():
+				mm.set_instance_transform(i, (liste[i] as Transform3D) * local)
+			var mmi := MultiMeshInstance3D.new()
+			mmi.name = "Objets_" + nom
+			mmi.multimesh = mm
+			add_child(mmi)
+		modele.queue_free()
+
+
 ## Poteaux en bois et fils électriques qui pendent le long des ruelles.
 func _ligne_electrique(r: Dictionary) -> void:
 	var pts: PackedVector2Array = r["pts"]
@@ -1155,5 +1263,4 @@ func _vegetation(veg: Vegetation) -> void:
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "ArbresVille"
 	mmi.multimesh = mm
-	mmi.visibility_range_end = DISTANCE_VUE
 	add_child(mmi)

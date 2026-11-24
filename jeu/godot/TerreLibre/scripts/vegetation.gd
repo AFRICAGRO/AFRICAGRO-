@@ -91,10 +91,16 @@ func _creer_blocs(blocs: Dictionary, mesh: Mesh, nom: String, distance: float) -
 		mm.use_colors = true
 		mm.mesh = mesh
 		mm.instance_count = liste.size()
+		# origine du bloc en son centre : la distance de visibilité se mesure depuis là
+		var centre := Vector3.ZERO
+		for e in liste:
+			centre += (e[0] as Transform3D).origin
+		centre /= maxf(1.0, liste.size())
 		for i in liste.size():
-			mm.set_instance_transform(i, liste[i][0])
+			mm.set_instance_transform(i, (liste[i][0] as Transform3D).translated(-centre))
 			mm.set_instance_color(i, liste[i][1])
 		var mmi := MultiMeshInstance3D.new()
+		mmi.position = centre
 		mmi.name = "%s_%d_%d" % [nom, cle.x, cle.y]
 		mmi.multimesh = mm
 		mmi.visibility_range_end = distance

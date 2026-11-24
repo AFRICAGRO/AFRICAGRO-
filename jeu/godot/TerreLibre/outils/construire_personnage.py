@@ -615,6 +615,23 @@ for f in (0, 20):
     pose_visee()
     cle_haut(f)
 
+nouvelle("Moto")  # assis sur une moto, mains sur le guidon, pieds sur les repose-pieds
+for f in (0, 20):
+    raz()
+    bouge_hanches(-0.13)
+    rot("Spine", X, 10)
+    rot("Spine1", X, 4)
+    rot("Head", X, -10)
+    for cote in ("Left", "Right"):
+        rot(cote + "UpLeg", X, -68)
+        rot(cote + "Leg", X, 82)
+        rot(cote + "Foot", X, -12)
+    rot("LeftUpLeg", Z, 9)
+    rot("RightUpLeg", Z, -9)
+    main_vers("Right", (-0.31, -0.50, 1.03), (-0.75, 0.1, 0.85))
+    main_vers("Left", (0.31, -0.50, 1.03), (0.75, 0.1, 0.85))
+    cle(f)
+
 nouvelle("Accroupi")
 for f in range(0, 61, 6):
     p = 2 * math.pi * f / 60
