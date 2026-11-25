@@ -366,6 +366,8 @@ func _process(delta: float) -> void:
 		var mi = get_meta("mission")
 		if mi.phase == mi.Phase.LIBERE:
 			akweri_fait = true
+			if has_meta("foule"):
+				(get_meta("foule") as Foule).activer("akweri")
 			var v = get_meta("village")
 			var civ: Array = v.reperes["civils"]
 			pileuse(Vector2(civ[0].x + 2.0, civ[0].z + 1.5), 0.3, "femme")

@@ -882,6 +882,7 @@ func _lieux() -> void:
 					var cc: Color = [Color(0.85, 0.2, 0.1), Color(0.95, 0.6, 0.1), Color(0.3, 0.6, 0.2), Color(0.8, 0.75, 0.6), Color(0.55, 0.3, 0.15)][rng.randi() % 5]
 					_boite("mur", t.translated_local(Vector3(-1.6 + k * 0.8, 0.9, rng.randf_range(-0.3, 0.3))), Vector3(0.55, 0.22, 0.45), cc)
 		reperes["marche"] = x.origin
+		reperes["marche_xf"] = x
 
 	# Gendarmerie sur l'avenue, drapeau national
 	var av: PackedVector2Array = reperes["avenue"]

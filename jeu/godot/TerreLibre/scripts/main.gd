@@ -121,6 +121,17 @@ func _ready() -> void:
 	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
 	(get_node("VieQuotidienne") as VieQuotidienne).bome(bome)
 	(get_node("VieQuotidienne") as VieQuotidienne).tikane(tikane)
+	# foule à trois niveaux : Port-Néré, Bomé, et Akwéri une fois libéré
+	var foule := Foule.new()
+	foule.name = "Foule"
+	add_child(foule)
+	foule.preparer(terrain)
+	foule.peupler_port_nere(ville)
+	foule.peupler_bome(bome)
+	foule.peupler_akweri(village)
+	foule.finaliser()
+	ambiances.eclairages.append(foule)
+	(get_node("VieQuotidienne") as VieQuotidienne).set_meta("foule", foule)
 	(get_node("AmbianceSonore") as AmbianceSonore).bome = bome
 	(get_node("AmbianceSonore") as AmbianceSonore).preparer(terrain, joueur, ville, ambiances, get_node("VegetationProche"), get_node("Mouettes"))
 	_interface()
