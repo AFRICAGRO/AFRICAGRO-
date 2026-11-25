@@ -57,7 +57,9 @@ VARIANTES = {
                   peau=(0.08, 0.035, 0.018), cheveux=(0.012, 0.009, 0.008),
                   haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)), pagne=True),
 }
+COIFFURES = {"homme2": "afro", "femme2": "chignon", "fille": "macarons"}
 V = VARIANTES[VARIANTE]
+COIFFURE = "foulard" if V.get("foulard") else COIFFURES.get(VARIANTE, "court")
 FEMININ = V["macros"]["gender"] < 0.5
 ENFANT = V["macros"]["age"] < 0.3
 print("VARIANTE", VARIANTE)
@@ -319,8 +321,123 @@ for f in bm.faces:
     if g:
         for v in f.verts:
             deplace[v] = max(deplace.get(v, 0.0), g)
+# cheveux : épaisseur qui croît depuis la lisière (pas de marche franche « calotte »)
+v_cheveux = {v for f in bm.faces if f.material_index == 1 for v in f.verts}
+lisiere = {v for v in v_cheveux if any(f.material_index != 1 for f in v.link_faces)}
+anneau = {v: 0 for v in lisiere}
+front = list(lisiere)
+while front:
+    suivant = []
+    for v in front:
+        for e in v.link_edges:
+            o = e.other_vert(v)
+            if o in v_cheveux and o not in anneau:
+                anneau[o] = anneau[v] + 1
+                suivant.append(o)
+    front = suivant
+centre_tete = sum((v.co for v in v_cheveux), Vector()) / max(1, len(v_cheveux))
 for v, g in deplace.items():
-    v.co += v.normal * g
+    if v in v_cheveux:
+        k = anneau.get(v, 0)
+        if COIFFURE == "foulard":
+            t = max(0.0, min(1.0, (v.co.z - (tete_z + 0.07)) / 0.11))
+            plis = 0.005 * math.sin(math.atan2(v.co.x, v.co.y) * 8 + v.co.z * 70)
+            ep = min(0.022, 0.004 + 0.006 * k)
+            v.co += v.normal * (ep + plis * min(1, k / 2)) + Vector((0, 0.022 * t, 0.05 * t))
+        elif COIFFURE == "afro":
+            t = min(1.0, k / 7.0)
+            ep = 0.02 * t * t * (3 - 2 * t) + 0.0015  # volume qui monte doucement depuis la lisière
+            v.co += v.normal * ep
+        else:
+            t = min(1.0, k / 4.0)
+            v.co += v.normal * (0.0015 + 0.0095 * t * t * (3 - 2 * t))
+    else:
+        v.co += v.normal * g
+
+# ---------- éléments de coiffure ajoutés (tresses, macarons, nœud du foulard) ----------
+gi_tete = {g.name: g.index for g in h.vertex_groups}["mixamorig:Head"]
+dl_c = bm.verts.layers.deform.active
+r_tete = sum(((v.co - centre_tete).length for v in v_cheveux), 0.0) / max(1, len(v_cheveux))
+role_corps = NOMS_ROLES.index("body")
+
+
+def sommet(co):
+    v = bm.verts.new(co)
+    v[dl_c][gi_tete] = 1.0
+    v[lr] = role_corps
+    return v
+
+
+def tube(chemin, rayon, cotes=6, tresse=False):
+    anneaux_t = []
+    for i, p in enumerate(chemin):
+        t = (chemin[min(i + 1, len(chemin) - 1)] - chemin[max(i - 1, 0)]).normalized()
+        a = t.cross(Vector((0, 0, 1)) if abs(t.z) < 0.9 else Vector((1, 0, 0))).normalized()
+        b = t.cross(a)
+        rr = rayon * (1.0 - 0.45 * i / (len(chemin) - 1))
+        if tresse:
+            rr *= 1.0 + 0.35 * abs(math.sin(i * 1.7))
+        anneaux_t.append([sommet(p + (a * math.cos(2 * math.pi * k / cotes) + b * math.sin(2 * math.pi * k / cotes)) * rr) for k in range(cotes)])
+    for i in range(len(anneaux_t) - 1):
+        for k in range(cotes):
+            f = bm.faces.new((anneaux_t[i][k], anneaux_t[i][(k + 1) % cotes], anneaux_t[i + 1][(k + 1) % cotes], anneaux_t[i + 1][k]))
+            f.material_index = 1
+    bout = sommet(chemin[-1] + (chemin[-1] - chemin[-2]).normalized() * 0.004)
+    for k in range(cotes):
+        f = bm.faces.new((anneaux_t[-1][k], anneaux_t[-1][(k + 1) % cotes], bout))
+        f.material_index = 1
+
+
+def boule(c, rx, ry, rz, n=10):
+    pts = []
+    for i in range(n // 2 + 1):
+        lat = math.pi * i / (n // 2) - math.pi / 2
+        pts.append([sommet(c + Vector((math.cos(lat) * math.cos(2 * math.pi * k / n) * rx, math.cos(lat) * math.sin(2 * math.pi * k / n) * ry, math.sin(lat) * rz))) for k in range(n)])
+    for i in range(len(pts) - 1):
+        for k in range(n):
+            try:
+                f = bm.faces.new((pts[i][k], pts[i][(k + 1) % n], pts[i + 1][(k + 1) % n], pts[i + 1][k]))
+                f.material_index = 1
+            except ValueError:
+                pass
+
+
+if COIFFURE == "tresses":
+    import random as _r
+    rg = _r.Random(VARIANTE)
+    departs = [v.co.copy() for v in v_cheveux if v.co.y > centre_tete.y - 0.005 and v.co.z > centre_tete.z - 0.06]
+    rg.shuffle(departs)
+    retenus = []
+    for p in departs:
+        if all((p - q).length > 0.016 for q in retenus):
+            retenus.append(p)
+        if len(retenus) >= 36:
+            break
+    for p in retenus:
+        d = (p - centre_tete).normalized()
+        fin = Vector((p.x * 1.1 + rg.uniform(-0.01, 0.01), centre_tete.y + 0.075 + rg.uniform(0, 0.03), neck_z - rg.uniform(0.0, 0.12)))
+        chemin = []
+        for i in range(9):
+            t = i / 8
+            q = p.lerp(fin, t) + d * 0.012
+            q += Vector((0, 0.03, 0)) * math.sin(t * math.pi)
+            # rester hors du crâne
+            dq = q - centre_tete
+            if dq.length < r_tete + 0.012:
+                q = centre_tete + dq.normalized() * (r_tete + 0.012)
+            chemin.append(q)
+        tube(chemin, 0.0055, 6, tresse=True)
+elif COIFFURE == "chignon":
+    boule(centre_tete + Vector((0, 0.085, 0.045)), 0.05, 0.042, 0.045, 12)
+elif COIFFURE == "macarons":
+    for sx in (-1, 1):
+        boule(centre_tete + Vector((sx * 0.065, 0.015, 0.075)), 0.05, 0.05, 0.045)
+elif COIFFURE == "foulard":
+    # nœud du foulard sur le dessus, deux pans arrondis
+    haut = max(v.co.z for v in v_cheveux)
+    for sx in (-1, 1):
+        boule(centre_tete + Vector((sx * 0.04, -0.01, 0)) + Vector((0, 0, haut - centre_tete.z - 0.005)), 0.05, 0.028, 0.032)
+bm.normal_update()
 # ---------- pagne : jupe portefeuille de la taille aux chevilles, pondérée sur bassin et cuisses ----------
 if V.get("pagne"):
     bm.verts.ensure_lookup_table()

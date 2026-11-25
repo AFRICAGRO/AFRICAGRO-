@@ -22,6 +22,7 @@ var modeles := {}               # espèce -> [ArrayMesh, …]
 var m_herbes: Array = []        # [verte, sèche]
 var m_buissons: Array = []
 var m_cailloux: Array = []
+var m_litiere: Array = []       # deux plaques de feuilles mortes
 var mat_feuilles := {}
 var mat_ecorce: ShaderMaterial
 var file_attente: Array = []    # cases à construire (une ou deux par image, pour éviter les saccades)
@@ -53,6 +54,26 @@ func preparer(t: Terrain, p_joueur: Node3D, p_zones: Array) -> void:
 		modeles["island_tree_02"].append(_arbre(rng, {"h": 3.39, "l": 4.3, "fourche": 0.3, "branches": 4, "penche": 0.15, "couronne": 0.72, "aplati": 0.55, "rameaux": 260, "taille_rameau": 0.42, "feuille": "rameau_clair", "troncs": 2, "r_tronc": 0.15}))
 		modeles["jacaranda_tree"].append(_arbre(rng, {"h": 19.3, "l": 21.0, "fourche": 0.3, "branches": 6, "penche": 0.05, "couronne": 0.68, "aplati": 0.5, "rameaux": 420, "taille_rameau": 2.0, "feuille": "rameau_sombre", "troncs": 1, "r_tronc": 0.55}))
 	m_herbes = [_touffe(0.0), _touffe(0.5)]
+	var ml := StandardMaterial3D.new()
+	ml.albedo_texture = load("res://data/vegetation/litiere.png")
+	ml.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	ml.alpha_scissor_threshold = 0.5
+	ml.roughness = 0.95
+	ml.vertex_color_use_as_albedo = true
+	for v in 2:
+		var pm := PlaneMesh.new()
+		pm.size = Vector2(2.6, 2.6)
+		var st := SurfaceTool.new()
+		st.create_from(pm, 0)
+		var arr := st.commit_to_arrays()
+		var uv: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV]
+		for i in uv.size():
+			uv[i] = Vector2(uv[i].x * 0.5 + v * 0.5, uv[i].y)
+		arr[Mesh.ARRAY_TEX_UV] = uv
+		var m := ArrayMesh.new()
+		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+		m.surface_set_material(0, ml)
+		m_litiere.append(m)
 	for v in 3:
 		m_buissons.append(_buisson(rng))
 		m_cailloux.append(_caillou(rng))
@@ -346,6 +367,41 @@ func _construire_case(k: Vector2i) -> Node3D:
 				mm.set_instance_color(i, liste[i][2])
 			var mmi := MultiMeshInstance3D.new()
 			mmi.multimesh = mm
+			n.add_child(mmi)
+	# feuilles mortes au pied des arbres, couchées selon la pente
+	if arbres_par_case.has(k):
+		var plaques: Array = [[], []]
+		for e in arbres_par_case[k]:
+			var o: Vector3 = (e[1] as Transform3D).origin
+			for j in 3:
+				var a := rng.randf() * TAU
+				var d := rng.randf_range(0.5, 3.5)
+				var x := o.x + cos(a) * d
+				var z := o.z + sin(a) * d
+				var h := terrain.hauteur(x, z)
+				if h < 2.2:
+					continue
+				var nx := terrain.hauteur(x - 0.5, z) - terrain.hauteur(x + 0.5, z)
+				var nz := terrain.hauteur(x, z - 0.5) - terrain.hauteur(x, z + 0.5)
+				var up := Vector3(nx, 1.0, nz).normalized()
+				var b := Basis(Quaternion(Vector3.UP, up)) * Basis(Vector3.UP, rng.randf() * TAU)
+				var s := rng.randf_range(0.8, 1.4)
+				plaques[j % 2].append(Transform3D(b.scaled(Vector3(s, 1, s)), Vector3(x, h + 0.03, z) - origine))
+		for j in 2:
+			if plaques[j].is_empty():
+				continue
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.use_colors = true
+			mm.mesh = m_litiere[j]
+			mm.instance_count = plaques[j].size()
+			for i in plaques[j].size():
+				mm.set_instance_transform(i, plaques[j][i])
+				var t := rng.randf_range(0.75, 1.0)
+				mm.set_instance_color(i, Color(t, t, t))
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			n.add_child(mmi)
 	# herbes, buissons, cailloux (tirés au hasard, mais toujours les mêmes pour une case donnée)
 	var herbes: Array = []

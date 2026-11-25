@@ -105,3 +105,34 @@ atlas.save(DST + "herbes.png")
 for s, d in [("island_tree_01_branches_diff_1k.jpg", "ecorce_diff.jpg"), ("island_tree_01_branches_nor_gl_1k.jpg", "ecorce_nor.jpg")]:
     Image.open(SRC + s).convert("RGB").resize((512, 512), Image.LANCZOS).save(DST + d, quality=88)
 print("FINI")
+
+# litière : feuilles mortes et brindilles éparses, posées à plat sous les arbres
+def litiere(graine):
+    r = random.Random(graine)
+    im = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for i in range(14):  # brindilles
+        x, y = r.uniform(40, 472), r.uniform(40, 472)
+        a = r.uniform(0, math.pi)
+        l = r.uniform(40, 130)
+        d.line([(x, y), (x + math.cos(a) * l, y + math.sin(a) * l)], fill=(70, 52, 35, 255), width=r.randint(2, 4))
+    for i in range(70):
+        f = feuilles[r.randrange(len(feuilles))]
+        s = r.uniform(0.18, 0.32)
+        f2 = f.resize((max(2, int(f.width * s)), max(2, int(f.height * s))), Image.LANCZOS).rotate(r.uniform(0, 360), resample=Image.BICUBIC, expand=True)
+        arr = np.asarray(f2).astype(np.float32)
+        lum = arr[..., :3].mean(axis=2, keepdims=True)
+        brun = np.array([r.uniform(0.8, 1.05), r.uniform(0.42, 0.58), r.uniform(0.2, 0.3)], dtype=np.float32)
+        arr[..., :3] = np.clip(lum * brun * 1.25, 0, 255)
+        f2 = Image.fromarray(arr.astype(np.uint8), "RGBA")
+        # densité plus forte au centre, éparse sur les bords (raccord invisible avec le sol)
+        rr = 220 * math.sqrt(r.random())
+        t = r.uniform(0, 2 * math.pi)
+        im.alpha_composite(f2, (int(256 + rr * math.cos(t) - f2.width / 2), int(256 + rr * math.sin(t) - f2.height / 2)))
+    return im
+
+atlas = Image.new("RGBA", (1024, 512), (0, 0, 0, 0))
+atlas.alpha_composite(litiere(1), (0, 0))
+atlas.alpha_composite(litiere(2), (512, 0))
+atlas.save(DST + "litiere.png")
+print("litiere")
