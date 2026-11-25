@@ -39,29 +39,29 @@ VARIANTES = {
     "femme": dict(macros=dict(gender=0.0, age=0.45, muscle=0.45, weight=0.55, height=0.4),
                   peau=(0.095, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
                   haut=("wax_cercles_vert.jpg", (1, 1, 1)), bas=("wax_cercles_vert.jpg", (1, 1, 1)),
-                  pagne=True, foulard=("wax_feuilles_rouge.jpg", (1, 1, 1))),
+                  pagne=True, foulard=("wax_feuilles_rouge.jpg", (1, 1, 1)), sandales=True),
     "femme_agee": dict(macros=dict(gender=0.0, age=0.74, muscle=0.35, weight=0.7, height=0.3),
                        peau=(0.07, 0.03, 0.015), cheveux=(0.16, 0.155, 0.15),
                        haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)),
-                       pagne=True, foulard=("wax_losanges_ocre.jpg", (1, 1, 1))),
+                       pagne=True, foulard=("wax_losanges_ocre.jpg", (1, 1, 1)), sandales=True),
     "femme2": dict(macros=dict(gender=0.0, age=0.38, muscle=0.5, weight=0.45, height=0.55),
                    peau=(0.06, 0.026, 0.013), cheveux=(0.012, 0.009, 0.008),
-                   haut=(L[0], (0.45, 0.07, 0.06)), bas=("wax_bandes_indigo.jpg", (1, 1, 1)), pagne=True),
+                   haut=(L[0], (0.45, 0.07, 0.06)), bas=("wax_bandes_indigo.jpg", (1, 1, 1)), pagne=True, sandales=True),
     "homme2": dict(macros=dict(gender=1.0, age=0.36, muscle=0.58, weight=0.4, height=0.48),
                    peau=(0.11, 0.05, 0.025), cheveux=(0.012, 0.009, 0.008),
                    haut=("wax_feuilles_rouge.jpg", (1, 1, 1)), bas=(L[0], (0.25, 0.2, 0.12))),
     "pecheur": dict(macros=dict(gender=1.0, age=0.4, muscle=0.78, weight=0.42, height=0.52),
                     peau=(0.085, 0.037, 0.018), cheveux=(0.012, 0.009, 0.008),
-                    haut=(L[0], (1, 1, 1)), bas=(L[0], (0.12, 0.17, 0.24)), torse_nu=True, short=True),
+                    haut=(L[0], (1, 1, 1)), bas=(L[0], (0.12, 0.17, 0.24)), torse_nu=True, short=True, pieds_nus=True),
     "homme3": dict(macros=dict(gender=1.0, age=0.3, muscle=0.55, weight=0.5, height=0.45),
                    peau=(0.1, 0.045, 0.022), cheveux=(0.012, 0.009, 0.008),
                    haut=(L[0], (0.05, 0.11, 0.07)), bas=(D[0], (0.07, 0.08, 0.12))),
     "garcon": dict(macros=dict(gender=1.0, age=0.17, muscle=0.5, weight=0.45, height=0.5),
                    peau=(0.09, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
-                   haut=(L[0], (0.05, 0.09, 0.16)), bas=(L[0], (0.14, 0.12, 0.08))),
+                   haut=(L[0], (0.05, 0.09, 0.16)), bas=(L[0], (0.14, 0.12, 0.08)), pieds_nus=True),
     "fille": dict(macros=dict(gender=0.0, age=0.15, muscle=0.5, weight=0.45, height=0.5),
                   peau=(0.08, 0.035, 0.018), cheveux=(0.012, 0.009, 0.008),
-                  haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)), pagne=True),
+                  haut=("wax_losanges_ocre.jpg", (1, 1, 1)), bas=("wax_losanges_ocre.jpg", (1, 1, 1)), pagne=True, pieds_nus=True),
 }
 COIFFURES = {"homme2": "afro", "femme2": "chignon", "fille": "macarons"}
 V = VARIANTES[VARIANTE]
@@ -276,7 +276,12 @@ for f in bm.faces:
             f.material_index = 99
     else:  # peau
         f.material_index = 0
-        if c.z < ankle_z + 0.035:
+        if V.get("pieds_nus"):
+            pass
+        elif V.get("sandales"):
+            if c.z < 0.022:  # simple semelle sous le pied (sandale / tong)
+                f.material_index = 4
+        elif c.z < ankle_z + 0.035:
             f.material_index = 4
         # cuir chevelu : haut et arrière du crâne
         rel = c.z - tete_z
@@ -851,6 +856,41 @@ for f in (0, 20):
     rot("RightUpLeg", Z, -9)
     main_vers("Right", (-0.31, -0.50, 1.03), (-0.75, 0.1, 0.85))
     main_vers("Left", (0.31, -0.50, 1.03), (0.75, 0.1, 0.85))
+    cle(f)
+
+nouvelle("Piler")  # piler le manioc ou le foufou : pilon levé à deux mains puis abattu dans le mortier
+for f in range(0, 25, 2):
+    t = 0.5 + 0.5 * math.cos(2 * math.pi * f / 24)  # 1 = pilon en haut, 0 = au fond du mortier
+    raz()
+    bouge_hanches(-0.03 * (1 - t))
+    rot("Spine", X, 4 + 14 * (1 - t))
+    rot("Spine1", X, 3 + 6 * (1 - t))
+    rot("Head", X, -6 * (1 - t))
+    rot("LeftUpLeg", Y, 6)
+    rot("RightUpLeg", Y, -6)
+    rot("LeftLeg", X, 8 * (1 - t))
+    rot("RightLeg", X, 8 * (1 - t))
+    z = 0.98 + 0.6 * t
+    main_vers("Right", (-0.035, -0.34, z), (-0.6, 0.2, 1.0))
+    main_vers("Left", (0.035, -0.34, z - 0.14), (0.6, 0.2, 1.0))
+    cle(f)
+
+nouvelle("Reparer")  # accroupi, répare un filet de pêche posé devant lui
+for f in range(0, 41, 4):
+    p = 2 * math.pi * f / 40
+    raz()
+    bouge_hanches(-0.36)
+    rot("Spine", X, 22)
+    rot("Spine1", X, 10)
+    rot("Head", X, -4 + 4 * math.sin(p))
+    for cote in ("Left", "Right"):
+        rot(cote + "UpLeg", X, -62)
+        rot(cote + "Leg", X, 112)
+        rot(cote + "Foot", X, -48)
+    rot("LeftUpLeg", Z, 14)
+    rot("RightUpLeg", Z, -14)
+    main_vers("Right", (-0.1 + 0.04 * math.sin(p), -0.42, 0.42 + 0.05 * math.sin(2 * p)), (-0.6, 0.1, 0.7))
+    main_vers("Left", (0.1, -0.42, 0.42 + 0.03 * math.cos(p)), (0.6, 0.1, 0.7))
     cle(f)
 
 nouvelle("Accroupi")

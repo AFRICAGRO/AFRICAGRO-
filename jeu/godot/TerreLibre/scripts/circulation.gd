@@ -169,6 +169,21 @@ func _vehicule(type: String, ri: int, patrouille := false, gare := false, xf := 
 		spot.visible = false
 		noeud.add_child(spot)
 		spots.append(spot)
+	if not gare and type in ["moto", "taxi", "berline", "pickup"]:
+		# bruit du moteur (spatialisé), sa hauteur suit la vitesse
+		var s: AudioStreamWAV = load("res://sons/moto.wav")
+		s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		s.loop_end = int(s.get_length() * s.mix_rate)
+		var moteur := AudioStreamPlayer3D.new()
+		moteur.stream = s
+		moteur.unit_size = 6.0 if type == "moto" else 8.0
+		moteur.max_distance = 90.0
+		moteur.volume_db = -6.0 if type == "moto" else -10.0
+		moteur.pitch_scale = 1.0 if type == "moto" else 0.6
+		noeud.add_child(moteur)
+		moteur.play(rng.randf() * 1.5)
+		v["moteur"] = moteur
+		v["ton"] = moteur.pitch_scale
 	if gare:
 		noeud.transform = xf
 	else:
@@ -292,6 +307,8 @@ func _avancer(v: Dictionary, delta: float) -> void:
 	if v["type"] == "moto":
 		var inclinaison := (noeud.transform.basis.z.cross(b.z)).y
 		noeud.rotate_object_local(Vector3.FORWARD, clampf(inclinaison * 6.0, -0.35, 0.35))
+	if v.has("moteur"):
+		(v["moteur"] as AudioStreamPlayer3D).pitch_scale = v["ton"] * (0.75 + 0.5 * v["v"] / v["vmax"])
 	for roue in v["roues"]:
 		(roue as Node3D).rotate_object_local(Vector3.RIGHT, v["v"] * delta / v["r"])
 

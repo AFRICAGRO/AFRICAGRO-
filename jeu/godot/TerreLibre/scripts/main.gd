@@ -78,6 +78,14 @@ func _ready() -> void:
 	add_child(oiseaux)
 	oiseaux.preparer(terrain, joueur)
 	ambiances.eclairages.append(oiseaux)
+	var vie := VieQuotidienne.new()
+	vie.name = "VieQuotidienne"
+	add_child(vie)
+	vie.port_nere(ville)
+	var son := AmbianceSonore.new()
+	son.name = "AmbianceSonore"
+	add_child(son)
+	ambiances.eclairages.append(son)
 	ambiances.eclairages.append(ville)
 	ambiances.eclairages.append(circulation)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
@@ -85,6 +93,8 @@ func _ready() -> void:
 	mission.name = "Mission4"
 	add_child(mission)
 	mission.demarrer(village, joueur)
+	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
+	(get_node("AmbianceSonore") as AmbianceSonore).preparer(terrain, joueur, ville, ambiances, get_node("VegetationProche"), get_node("Mouettes"))
 	_interface()
 
 
