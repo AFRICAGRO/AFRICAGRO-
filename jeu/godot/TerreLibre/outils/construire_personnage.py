@@ -35,7 +35,7 @@ VARIANTES = {
                        haut=(L[0], (0.32, 0.17, 0.07)), bas=(L[0], (0.09, 0.085, 0.075))),
     "ancien": dict(macros=dict(gender=1.0, age=0.84, muscle=0.35, weight=0.42, height=0.42),
                    peau=(0.085, 0.038, 0.02), cheveux=(0.07, 0.068, 0.065),
-                   haut=("wax_bandes_indigo.jpg", (1, 1, 1)), bas=(L[0], (0.38, 0.34, 0.27))),
+                   haut=(L[0], (0.3, 0.42, 0.58)), bas=(L[0], (0.3, 0.42, 0.58)), boubou=True, manches=1.6),
     "femme": dict(macros=dict(gender=0.0, age=0.45, muscle=0.45, weight=0.55, height=0.4),
                   peau=(0.095, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
                   haut=("wax_cercles_vert.jpg", (1, 1, 1)), bas=("wax_cercles_vert.jpg", (1, 1, 1)),
@@ -50,6 +50,12 @@ VARIANTES = {
     "homme2": dict(macros=dict(gender=1.0, age=0.36, muscle=0.58, weight=0.4, height=0.48),
                    peau=(0.11, 0.05, 0.025), cheveux=(0.012, 0.009, 0.008),
                    haut=("wax_feuilles_rouge.jpg", (1, 1, 1)), bas=(L[0], (0.25, 0.2, 0.12))),
+    "pecheur": dict(macros=dict(gender=1.0, age=0.4, muscle=0.78, weight=0.42, height=0.52),
+                    peau=(0.085, 0.037, 0.018), cheveux=(0.012, 0.009, 0.008),
+                    haut=(L[0], (1, 1, 1)), bas=(L[0], (0.12, 0.17, 0.24)), torse_nu=True, short=True),
+    "homme3": dict(macros=dict(gender=1.0, age=0.3, muscle=0.55, weight=0.5, height=0.45),
+                   peau=(0.1, 0.045, 0.022), cheveux=(0.012, 0.009, 0.008),
+                   haut=(L[0], (0.05, 0.11, 0.07)), bas=(D[0], (0.07, 0.08, 0.12))),
     "garcon": dict(macros=dict(gender=1.0, age=0.17, muscle=0.5, weight=0.45, height=0.5),
                    peau=(0.09, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
                    haut=(L[0], (0.05, 0.09, 0.16)), bas=(L[0], (0.14, 0.12, 0.08))),
@@ -61,6 +67,7 @@ COIFFURES = {"homme2": "afro", "femme2": "chignon", "fille": "macarons"}
 V = VARIANTES[VARIANTE]
 COIFFURE = "foulard" if V.get("foulard") else COIFFURES.get(VARIANTE, "court")
 FEMININ = V["macros"]["gender"] < 0.5
+AGE = V["macros"]["age"] > 0.7
 ENFANT = V["macros"]["age"] < 0.3
 print("VARIANTE", VARIANTE)
 
@@ -251,6 +258,7 @@ def centre(f):
 
 
 tete_z = B["Head"].head_local.z
+genou_z = B["LeftLeg"].head_local.z
 for f in bm.faces:
     r = R(f.verts[0])
     c = centre(f)
@@ -260,9 +268,9 @@ for f in bm.faces:
         f.material_index = 6
     elif r == "helper-tights":
         ab = bras(c)
-        if c.z > hips_z - 0.12 and c.z < neck_z - 0.035 and (ab is None or ab[0] < 0.55 or abs(c.x) < 0.17):
-            f.material_index = 2
-        elif ankle_z + 0.03 < c.z < hips_z + 0.05 and (ab is None or abs(c.x) < 0.2):
+        if c.z > hips_z - 0.12 and c.z < neck_z - 0.035 and (ab is None or ab[0] < V.get("manches", 0.55) or abs(c.x) < 0.17):
+            f.material_index = 99 if V.get("torse_nu") else 2
+        elif (genou_z + 0.04 if V.get("short") else ankle_z + 0.03) < c.z < hips_z + 0.05 and (ab is None or abs(c.x) < 0.2):
             f.material_index = 3
         else:
             f.material_index = 99
@@ -306,7 +314,9 @@ for f in bm.faces:
     ab = bras(c)
     # bras pendants en A : la droite prolongée du bras frôle la cuisse, d'où les bornes sur t et la distance
     sur_bras = ab is not None and abs(c.x) > 0.16 and ab[1] < 0.075 and -0.1 < ab[0] < 2.35
-    if ankle_z + 0.07 < c.z < neck_z - 0.075 and not (sur_bras and ab[0] > 0.4):
+    bas_tissu = genou_z + 0.07 if V.get("short") else ankle_z + 0.07
+    haut_tissu = hips_z - 0.02 if V.get("torse_nu") else neck_z - 0.075
+    if bas_tissu < c.z < haut_tissu and not (sur_bras and ab[0] > max(0.4, V.get("manches", 0.55) - 0.15)):
         if not (sur_bras and ab[0] > 0.4):
             cache.append(f)
 bmesh.ops.delete(bm, geom=cache, context="FACES")
@@ -439,7 +449,7 @@ elif COIFFURE == "foulard":
         boule(centre_tete + Vector((sx * 0.04, -0.01, 0)) + Vector((0, 0, haut - centre_tete.z - 0.005)), 0.05, 0.028, 0.032)
 bm.normal_update()
 # ---------- pagne : jupe portefeuille de la taille aux chevilles, pondérée sur bassin et cuisses ----------
-if V.get("pagne"):
+if V.get("pagne") or V.get("boubou"):
     bm.verts.ensure_lookup_table()
     gi = {g.name: g.index for g in h.vertex_groups}
     g_h, g_l, g_r = gi["mixamorig:Hips"], gi["mixamorig:LeftUpLeg"], gi["mixamorig:RightUpLeg"]
@@ -481,7 +491,7 @@ if V.get("pagne"):
         for a in range(NA):
             b = (a + 1) % NA
             f = bm.faces.new((anneaux[r][a], anneaux[r + 1][a], anneaux[r + 1][b], anneaux[r][b]))
-            f.material_index = 3
+            f.material_index = 2 if V.get("boubou") else 3
     bm.normal_update()  # ordre des sommets : normales vers l'extérieur
 
 # ---------- visage et peau peints dans les couleurs de sommets ----------
@@ -682,8 +692,10 @@ def cycle(nom, images, amp_cuisse, amp_genou, genou_appui, amp_bras, coude, rebo
             bouge_hanches(0, 0.014 * math.sin(phi))
             rot("Hips", Y, 4.5 * math.sin(phi))
             rot("Spine1", Y, -3.0 * math.sin(phi))
-        rot("Spine", X, penche * 0.5)
-        rot("Spine1", X, penche * 0.5)
+        rot("Spine", X, penche * 0.5 + (9 if AGE else 0))
+        rot("Spine1", X, penche * 0.5 + (5 if AGE else 0))
+        if AGE:
+            rot("Neck", X, -9)
         rot("Spine2", Z, rotation_bassin * 1.2 * math.cos(phi))
         rot("Head", X, -penche * 0.6)
         jambe("Left", phi, amp_cuisse, amp_genou, genou_appui)
@@ -722,10 +734,20 @@ for f in range(0, 121, 6):
         rot("RightUpLeg", Y, -3)
         rot("LeftLeg", X, 3)
         rot("RightLeg", X, 5)
+    if AGE:  # dos un peu voûté, genoux légèrement fléchis
+        rot("Spine", X, 8)
+        rot("Spine1", X, 5)
+        rot("Neck", X, -8)
+        rot("LeftLeg", X, 6)
+        rot("RightLeg", X, 6)
     bras_bas(31 + 1.5 * math.sin(2 * p), 22)
     cle(f)
 
-if FEMININ and not ENFANT:
+if AGE:
+    # pas plus courts et plus lents, bras qui balancent peu
+    cycle("Marche", 42, 15, 36, 6, 8, 20, 0.012, 4, 4)
+    cycle("Course", 26, 24, 60, 14, 18, 50, 0.025, 10, 6)
+elif FEMININ and not ENFANT:
     cycle("Marche", 34, 19, 44, 5, 13, 18, 0.018, 1, 8)
     cycle("Course", 20, 32, 85, 20, 30, 75, 0.04, 8, 10)
 else:

@@ -15,6 +15,7 @@ const VARIANTES := 2
 var terrain: Terrain
 var joueur: Node3D
 var zones_vides: Array = []
+var villes: Array = []          # villes construites : pas d'herbe sur leurs rues ni sous leurs bâtiments
 var arbres_par_case := {}       # Vector2i -> [[espèce, Transform3D, Color]]
 var cases := {}                 # Vector2i -> Node3D chargé
 var case_joueur := Vector2i(999999, 999999)
@@ -330,6 +331,9 @@ func _process(_delta: float) -> void:
 
 
 func _vide(x: float, z: float) -> bool:
+	for v in villes:
+		if (v as VillePortNere).occupe.has((v as VillePortNere)._cle(Vector2(x, z))):
+			return true
 	for zv in zones_vides:
 		if Vector2(x - zv.x, z - zv.y).length() < zv.z:
 			return true
@@ -412,9 +416,9 @@ func _construire_case(k: Vector2i) -> Node3D:
 		var z := origine.z + rng.randf_range(-CASE * 0.5, CASE * 0.5)
 		var h := terrain.hauteur(x, z)
 		var pe := terrain.pente(x, z)
+		var tirage := rng.randf()
 		if h < 2.2 or _vide(x, z):
 			continue
-		var tirage := rng.randf()
 		if tirage < 0.8:
 			if pe > 0.75:
 				continue

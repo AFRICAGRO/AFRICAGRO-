@@ -55,6 +55,7 @@ func _ready() -> void:
 	ville.name = "PortNere"
 	add_child(ville)
 	ville.construire(terrain, port_nere, veg)
+	proche.villes.append(ville)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
@@ -72,6 +73,11 @@ func _ready() -> void:
 	add_child(circulation)
 	circulation.construire(ville, joueur)
 	proche.joueur = joueur
+	var oiseaux := Oiseaux.new()
+	oiseaux.name = "Mouettes"
+	add_child(oiseaux)
+	oiseaux.preparer(terrain, joueur)
+	ambiances.eclairages.append(oiseaux)
 	ambiances.eclairages.append(ville)
 	ambiances.eclairages.append(circulation)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
@@ -138,6 +144,11 @@ func _mer() -> void:
 	mer.mesh = plan
 	mer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mer)
+	# profondeur réelle pour la couleur de l'eau et l'écume
+	var img := Image.create_from_data(Terrain.N, Terrain.N, false, Image.FORMAT_RF, terrain.hauteurs.to_byte_array())
+	mat.set_shader_parameter("hauteurs", ImageTexture.create_from_image(img))
+	mat.set_shader_parameter("taille", Terrain.TAILLE)
+	mat.set_shader_parameter("relief_actif", true)
 	var lac := MeshInstance3D.new()
 	lac.name = "Lac"
 	var disque := CylinderMesh.new()

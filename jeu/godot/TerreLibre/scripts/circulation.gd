@@ -9,9 +9,9 @@ const NB_PASSANTS := 22
 const NB_MOTOS := 7
 const NB_VOITURES := 4
 const RAYON_VILLE := 520.0
-const ADULTES := ["faris", "homme2", "villageois", "ancien", "femme", "femme2", "femme_agee"]
+const ADULTES := ["homme3", "homme2", "villageois", "ancien", "femme", "femme2", "femme_agee", "pecheur"]
 const ENFANTS := ["garcon", "fille"]
-const HOMMES := ["homme2", "villageois", "ancien", "faris"]
+const HOMMES := ["homme2", "villageois", "homme3", "faris"]
 
 var ville: VillePortNere
 var terrain: Terrain

@@ -123,8 +123,8 @@ func _milicien(role: String, p: Vector3, teinte: Color) -> Pnj:
 func _placer_civils() -> void:
 	# habitants d'Akwéri : femmes, anciens, pêcheurs ; teintes légères pour varier les tenues
 	# les civils (enfants compris) ne peuvent pas être blessés : le joueur ne peut pas leur tirer dessus
-	var modeles := ["femme", "garcon", "villageois", "ancien", "femme2", "fille",
-			"femme_agee", "homme2", "femme", "villageois", "femme2", "ancien"]
+	var modeles := ["femme", "garcon", "pecheur", "ancien", "femme2", "fille",
+			"femme_agee", "pecheur", "femme", "villageois", "femme2", "homme3"]
 	var teintes := [Color(1, 1, 1), Color(1, 0.85, 0.8), Color(0.85, 1, 0.9), Color(1, 1, 0.85), Color(0.85, 0.9, 1)]
 	var i := 0
 	for p in village.reperes["civils"]:
