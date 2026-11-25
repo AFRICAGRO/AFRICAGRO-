@@ -11,7 +11,8 @@ extends VillePortNere
 
 var plan: Dictionary
 var proche: VegetationProche
-var vent := Vector2(-1, 0.3).normalized()   # le vent de l'après-midi souffle de l'est vers l'ouest
+var vent := Vector2(-1, 0.3).normalized()
+var palmiers_huile: Array = []   # Vector2 : palmiers à huile autour des concessions   # le vent de l'après-midi souffle de l'est vers l'ouest
 
 
 ## Plan du village préparé AVANT la construction du terrain (terrasses à aplanir).
@@ -174,6 +175,8 @@ func _concession(s: Dictionary) -> void:
 		_grenier_pilotis(c - lat * 5.5 - vers_place * 6.5, rng.randf_range(1.0, 1.3), sol)
 	_foyer(c + vers_place * 5.0 - lat * 1.5, sol)
 	arbres.append(c + lat * rng.randf_range(-9.0, 9.0) - vers_place * rng.randf_range(11.0, 14.0))
+	for k in 2:
+		palmiers_huile.append(c + lat * (rng.randf_range(10.0, 14.0) * (1.0 if k == 0 else -1.0)) - vers_place * rng.randf_range(4.0, 12.0))
 	_prendre(c, vers_place, 20.0, 18.0, 0.0)
 	if not reperes.has("maisons"):
 		reperes["maisons"] = []
@@ -485,7 +488,24 @@ func _manche_a_air(p: Vector2) -> void:
 			_quad("metal", o + v0 * r0, o + v1 * r0, o + dir * 0.42 + v1 * (r0 - 0.05), o + dir * 0.42 + v0 * (r0 - 0.05), col, ((v0 + v1) * 0.5).normalized())
 
 
+func _palmiers_huile(veg: Vegetation) -> void:
+	var modeles: Array = []
+	for k in 3:
+		modeles.append(veg._maillage_palmier(rng, 22, true))
+	for q in palmiers_huile:
+		var p: Vector2 = q
+		if bati.has(_cle(p)) or occupe.has(_cle(p)) or _sol(p) < 1.0:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.mesh = modeles[rng.randi() % modeles.size()]
+		var s := rng.randf_range(0.85, 1.15)
+		mi.transform = Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, _sol(p) - 0.2, p.y))
+		mi.visibility_range_end = 900.0
+		add_child(mi)
+
+
 func _arbres_bome(veg: Vegetation) -> void:
+	_palmiers_huile(veg)
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/arbres/arbres.json"))
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D

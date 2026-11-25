@@ -937,6 +937,40 @@ for f in range(0, 31, 2):
     main_vers("Left", (0.03, -0.38 - 0.3 * (1 - t), 0.62 + 0.55 * t), (0.6, 0.2, 1.0))
     cle(f)
 
+nouvelle("TournerCorde")  # faire tourner la corde à sauter : la main droite décrit un cercle devant soi (1 tour / s)
+for f in range(0, 25, 2):
+    p = 2 * math.pi * f / 24
+    raz()
+    rot("Spine", X, 4)
+    rot("Head", Z, 3 * math.sin(p))
+    rot("LeftArm", Y, 30)
+    vers("LeftForeArm", "LeftArm", 20)
+    main_vers("Right", (-0.2 + 0.16 * math.cos(p), -0.38, 0.95 + 0.16 * math.sin(p)), (-0.7, 0.2, 0.8))
+    cle(f)
+
+nouvelle("SauterCorde")  # petits sauts à pieds joints, en l'air quand la corde passe sous les pieds (à 0,75 s)
+for f in range(0, 25, 2):
+    raz()
+    if f >= 12:
+        u = (f - 12) / 12.0
+        bouge_hanches(0.15 * math.sin(math.pi * u))
+        for c in ("Left", "Right"):
+            rot(c + "UpLeg", X, -14 * math.sin(math.pi * u))
+            rot(c + "Leg", X, 26 * math.sin(math.pi * u))
+            rot(c + "Foot", X, -18 * math.sin(math.pi * u))
+    else:
+        flex = math.sin(math.pi * f / 12.0)  # amorti puis élan
+        bouge_hanches(-0.05 * flex)
+        for c in ("Left", "Right"):
+            rot(c + "UpLeg", X, -16 * flex)
+            rot(c + "Leg", X, 30 * flex)
+            rot(c + "Foot", X, -12 * flex)
+    rot("Spine", X, 6)
+    bras_bas(22, 55)
+    rot("LeftArm", X, -10)
+    rot("RightArm", X, -10)
+    cle(f)
+
 nouvelle("Assis")  # assis sur un banc ou un tronc, mains sur les cuisses
 for f in range(0, 61, 10):
     p = 2 * math.pi * f / 60

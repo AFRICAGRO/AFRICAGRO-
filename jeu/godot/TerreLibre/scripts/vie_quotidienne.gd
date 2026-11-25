@@ -16,16 +16,17 @@ func _sol(x: float, z: float) -> float:
 	return terrain.hauteur(x, z)
 
 
-func _perso(modele: String, anim: String, pos: Vector3, angle: float) -> Node3D:
+func _perso(modele: String, anim: String, pos: Vector3, angle: float, phase_fixe := -1.0) -> Node3D:
 	var p: Node3D = (load("res://personnages/%s.glb" % modele) as PackedScene).instantiate()
 	Apparence.ameliorer(p)
 	add_child(p)
 	p.global_position = pos
 	p.rotation.y = angle
 	var ap: AnimationPlayer = p.find_child("AnimationPlayer", true, false)
+	ap.get_animation(anim).loop_mode = Animation.LOOP_LINEAR
 	ap.play(anim)
-	var phase := rng.randf() * 1.0
-	ap.seek(phase)
+	var phase := rng.randf() * 1.0 if phase_fixe < 0.0 else phase_fixe
+	ap.seek(phase, true)
 	p.set_meta("phase", phase)
 	return p
 
@@ -47,38 +48,268 @@ func _son_geste(p: Node3D, nom: String, volume := 0.0) -> void:
 
 
 ## Femme qui pile : mortier en bois devant elle, pilon tenu dans les mains.
-func pileuse(pos: Vector2, angle: float, modele := "femme") -> void:
+func pileuse(pos: Vector2, angle: float, modele := "femme", phase := -1.0, avec_mortier := true) -> void:
 	var h := _sol(pos.x, pos.y)
-	var p := _perso(modele, "Piler", Vector3(pos.x, h, pos.y), angle)
-	var bois := StandardMaterial3D.new()
-	bois.albedo_texture = load("res://data/textures/weathered_brown_planks_diff.jpg")
-	bois.uv1_triplanar = true
-	bois.albedo_color = Color(0.75, 0.6, 0.45)
-	var mortier := MeshInstance3D.new()
-	var cy := CylinderMesh.new()
-	cy.top_radius = 0.24
-	cy.bottom_radius = 0.18
-	cy.height = 0.62
-	mortier.mesh = cy
-	mortier.material_override = bois
-	add_child(mortier)
+	var p := _perso(modele, "Piler", Vector3(pos.x, h, pos.y), angle, phase)
 	var devant := Vector3(sin(angle), 0, cos(angle))
-	mortier.global_position = Vector3(pos.x, h + 0.31, pos.y) + devant * 0.36
+	if avec_mortier:
+		_mortier(Vector3(pos.x, h, pos.y) + devant * 0.36)
 	var sq: Skeleton3D = p.find_child("Skeleton3D", true, false)
 	var att := BoneAttachment3D.new()
 	att.bone_name = "mixamorig_RightHand"
 	sq.add_child(att)
 	var pilon := MeshInstance3D.new()
 	var cp := CylinderMesh.new()
-	cp.top_radius = 0.045
-	cp.bottom_radius = 0.045
-	cp.height = 1.7
+	cp.top_radius = 0.05
+	cp.bottom_radius = 0.06
+	cp.height = 1.8
+	cp.radial_segments = 10
 	pilon.mesh = cp
-	pilon.material_override = bois
+	pilon.material_override = _bois()
 	pilon.top_level = true
 	att.add_child(pilon)
 	pilons.append([pilon, att])
 	_son_geste(p, "pilon", -2.0)
+
+
+## Deux femmes qui pilent ensemble dans le même mortier, en alternance (un coup chacune).
+func pilage_duo(pos: Vector2, angle: float, modele_a := "femme", modele_b := "femme_agee") -> void:
+	var dir := Vector2(sin(angle), cos(angle))
+	var h := _sol(pos.x, pos.y)
+	_mortier(Vector3(pos.x, h, pos.y))
+	var phase := rng.randf()
+	pileuse(pos - dir * 0.42, angle, modele_a, phase, false)
+	pileuse(pos + dir * 0.42, angle + PI, modele_b, fmod(phase + 0.5, 1.0), false)
+
+
+var _maillage_mortier: ArrayMesh
+## Mortier creusé dans un tronc : pied évasé, taille étroite, panse large, bord épais (≈ 75 cm).
+func _mortier(base: Vector3) -> void:
+	if _maillage_mortier == null:
+		var profil := [Vector2(0.0, 0.0), Vector2(0.27, 0.0), Vector2(0.28, 0.05), Vector2(0.2, 0.14), Vector2(0.15, 0.28),
+			Vector2(0.2, 0.42), Vector2(0.26, 0.58), Vector2(0.27, 0.74), Vector2(0.2, 0.75), Vector2(0.17, 0.62), Vector2(0.0, 0.5)]
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var cotes := 18
+		for i in profil.size() - 1:
+			var a: Vector2 = profil[i]
+			var b: Vector2 = profil[i + 1]
+			for k in cotes:
+				var t0 := TAU * k / cotes
+				var t1 := TAU * (k + 1) / cotes
+				var q := [Vector3(cos(t0) * a.x, a.y, sin(t0) * a.x), Vector3(cos(t1) * a.x, a.y, sin(t1) * a.x),
+					Vector3(cos(t1) * b.x, b.y, sin(t1) * b.x), Vector3(cos(t0) * b.x, b.y, sin(t0) * b.x)]
+				var n: Vector3 = (q[1] - q[0]).cross(q[3] - q[0]).normalized()
+				for j in [0, 1, 2, 0, 2, 3]:
+					st.set_normal(-n)
+					st.set_uv(Vector2(float(k) / cotes * 2.0, q[j].y * 2.0))
+					st.add_vertex(q[j])
+		_maillage_mortier = st.commit()
+		var m := _bois()
+		m.albedo_color = Color(0.62, 0.46, 0.32)
+		m.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_maillage_mortier.surface_set_material(0, m)
+	var mi := MeshInstance3D.new()
+	mi.mesh = _maillage_mortier
+	add_child(mi)
+	mi.global_position = base
+	mi.rotation.y = rng.randf() * TAU
+
+
+# ---------------------------------------------------------------------
+# Objets de cour : panier de manioc, canaris en terre, bassine émaillée, tabouret
+# ---------------------------------------------------------------------
+var _mats_cour := {}
+func _mat_cour(nom: String) -> StandardMaterial3D:
+	if not _mats_cour.has(nom):
+		var m := StandardMaterial3D.new()
+		match nom:
+			"terre_cuite":
+				m.albedo_color = Color(0.62, 0.32, 0.18)
+				m.roughness = 0.9
+			"vannerie":
+				m.albedo_texture = load("res://data/textures/thatch_roof_angled_diff.jpg")
+				m.uv1_triplanar = true
+				m.uv1_scale = Vector3(4, 4, 4)
+				m.albedo_color = Color(0.95, 0.8, 0.6)
+			"manioc":
+				m.albedo_color = Color(0.92, 0.88, 0.78)
+				m.roughness = 0.7
+			"peau_manioc":
+				m.albedo_color = Color(0.45, 0.28, 0.16)
+				m.roughness = 0.95
+			"verdure":
+				m.albedo_color = Color(0.22, 0.45, 0.15)
+				m.roughness = 0.8
+		_mats_cour[nom] = m
+	return _mats_cour[nom]
+
+
+func _forme(mesh: Mesh, mat: Material, pos: Vector3, rot := 0.0, echelle := Vector3.ONE) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	add_child(mi)
+	mi.global_transform = Transform3D(Basis(Vector3.UP, rot).scaled(echelle), pos)
+	return mi
+
+
+func _canari(base: Vector3, r: float) -> void:
+	var sp := SphereMesh.new()
+	sp.radius = r
+	sp.height = r * 1.7
+	sp.radial_segments = 14
+	sp.rings = 8
+	_forme(sp, _mat_cour("terre_cuite"), base + Vector3(0, r * 0.8, 0))
+	var col := CylinderMesh.new()
+	col.top_radius = r * 0.55
+	col.bottom_radius = r * 0.5
+	col.height = r * 0.3
+	col.radial_segments = 14
+	_forme(col, _mat_cour("terre_cuite"), base + Vector3(0, r * 1.65, 0))
+
+
+func _panier(base: Vector3, contenu: String) -> void:
+	var cy := CylinderMesh.new()
+	cy.top_radius = 0.3
+	cy.bottom_radius = 0.22
+	cy.height = 0.2
+	cy.radial_segments = 16
+	_forme(cy, _mat_cour("vannerie"), base + Vector3(0, 0.1, 0))
+	if contenu == "manioc":
+		var cap := CapsuleMesh.new()
+		cap.radius = 0.05
+		cap.height = 0.42
+		for k in 6:
+			var a := rng.randf() * TAU
+			var pos := base + Vector3(cos(a) * 0.12, 0.22 + (k / 3) * 0.06, sin(a) * 0.12)
+			var mi := _forme(cap, _mat_cour("manioc" if k % 2 == 0 else "peau_manioc"), pos, rng.randf() * TAU)
+			mi.rotate_object_local(Vector3.RIGHT, PI * 0.5 + rng.randf_range(-0.2, 0.2))
+	else:  # légumes verts (feuilles de manioc, gombo)
+		var sp := SphereMesh.new()
+		sp.radius = 0.24
+		sp.height = 0.16
+		_forme(sp, _mat_cour("verdure"), base + Vector3(0, 0.22, 0))
+
+
+func _bassine(base: Vector3) -> void:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = [Color(0.15, 0.2, 0.22), Color(0.85, 0.85, 0.82), Color(0.2, 0.45, 0.7), Color(0.75, 0.15, 0.12)][rng.randi() % 4]
+	m.roughness = 0.25
+	m.metallic = 0.1
+	var cy := CylinderMesh.new()
+	cy.top_radius = 0.36
+	cy.bottom_radius = 0.24
+	cy.height = 0.15
+	cy.radial_segments = 20
+	_forme(cy, m, base + Vector3(0, 0.075, 0))
+	var eau := CylinderMesh.new()  # manioc pilé ou eau dedans
+	eau.top_radius = 0.33
+	eau.bottom_radius = 0.33
+	eau.height = 0.01
+	_forme(eau, _mat_cour("manioc"), base + Vector3(0, 0.13, 0))
+
+
+func _tabouret(base: Vector3, rot: float) -> void:
+	var b := _bois()
+	var dessus := BoxMesh.new()
+	dessus.size = Vector3(0.36, 0.05, 0.26)
+	_forme(dessus, b, base + Vector3(0, 0.3, 0), rot)
+	var pied := BoxMesh.new()
+	pied.size = Vector3(0.05, 0.28, 0.05)
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			_forme(pied, b, base + Basis(Vector3.UP, rot) * Vector3(sx * 0.14, 0.14, sz * 0.09), rot)
+
+
+## Une cour qui vit : objets posés autour d'un point (manioc, canaris, bassine, tabouret).
+func objets_cour(c: Vector2, angle: float) -> void:
+	var dir := Vector2(sin(angle), cos(angle))
+	var lat := dir.orthogonal()
+	var pts := [c + lat * 1.3 + dir * 0.6, c + lat * 1.9 - dir * 0.3, c - lat * 1.5 + dir * 0.8, c - lat * 2.2 - dir * 0.5,
+		c + dir * 1.7, c - lat * 0.9 - dir * 1.4]
+	var y := func(q: Vector2) -> Vector3: return Vector3(q.x, _sol(q.x, q.y), q.y)
+	_panier(y.call(pts[0]), "manioc")
+	_panier(y.call(pts[1]), "verdure")
+	_canari(y.call(pts[2]), 0.2)
+	_canari(y.call(pts[3]), 0.16)
+	_bassine(y.call(pts[4]))
+	_tabouret(y.call(pts[5]), angle + 0.4)
+
+
+## Ancien assis sur une chaise en plastique (djellaba ou boubou, bonnet).
+func ancien_chaise(pos: Vector2, angle: float, modele := "ancien") -> void:
+	var h := _sol(pos.x, pos.y)
+	var chaise: Node3D = (load("res://props/plastic_monobloc_chair_01.glb") as PackedScene).instantiate()
+	add_child(chaise)
+	chaise.global_transform = Transform3D(Basis(Vector3.UP, angle), Vector3(pos.x, h, pos.y))
+	var p := _perso(modele, "Assis", Vector3(pos.x, h + 0.02, pos.y) + Vector3(sin(angle), 0, cos(angle)) * 0.08, angle)
+	p.set_meta("assis", true)
+
+
+# ---------------------------------------------------------------------
+# Corde à sauter : deux enfants font tourner la corde, un troisième saute, d'autres attendent
+# ---------------------------------------------------------------------
+var cordes: Array = []   # [mesh immédiat, main A, main B, lecteur d'animation du sauteur]
+
+func corde_a_sauter(c: Vector2, angle: float) -> void:
+	var dir := Vector2(sin(angle), cos(angle))
+	var h := _sol(c.x, c.y)
+	var a := c - dir * 1.9
+	var b := c + dir * 1.9
+	var t1 := _perso("garcon", "TournerCorde", Vector3(a.x, _sol(a.x, a.y), a.y), angle, 0.0)
+	var t2 := _perso("fille", "TournerCorde", Vector3(b.x, _sol(b.x, b.y), b.y), angle + PI, 0.0)
+	var sauteur := _perso(["fille", "garcon"][rng.randi() % 2], "SauterCorde", Vector3(c.x, h, c.y), angle + PI * 0.5, 0.0)
+	for k in 2:  # ceux qui attendent leur tour
+		var q := c + dir.orthogonal() * (2.6 + k * 0.7) + dir * rng.randf_range(-0.6, 0.6)
+		_perso(["garcon", "fille"][k], "Repos", Vector3(q.x, _sol(q.x, q.y), q.y), atan2(c.x - q.x, c.y - q.y))
+	var mains: Array = []
+	for t in [t1, t2]:
+		var sq: Skeleton3D = t.find_child("Skeleton3D", true, false)
+		var att := BoneAttachment3D.new()
+		att.bone_name = "mixamorig_RightHand"
+		sq.add_child(att)
+		mains.append(att)
+	var im := ImmediateMesh.new()
+	var mi := MeshInstance3D.new()
+	mi.mesh = im
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.85, 0.2, 0.15)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	m.roughness = 0.8
+	mi.material_override = m
+	mi.top_level = true
+	add_child(mi)
+	cordes.append([im, mains[0], mains[1], sauteur.find_child("AnimationPlayer", true, false)])
+
+
+func _dessiner_cordes() -> void:
+	var cam := get_viewport().get_camera_3d()
+	for co in cordes:
+		var im: ImmediateMesh = co[0]
+		var a: Vector3 = (co[1] as Node3D).global_position
+		var b: Vector3 = (co[2] as Node3D).global_position
+		var ap: AnimationPlayer = co[3]
+		var t := ap.current_animation_position
+		var theta := TAU * t   # en bas (sous les pieds) à t = 0,75, quand le sauteur est en l'air
+		var corde := b - a
+		var cote := corde.cross(Vector3.UP).normalized()
+		var bombe := Vector3.UP * sin(theta) + cote * cos(theta)
+		var milieu := (a + b) * 0.5
+		var r := milieu.y - _sol(milieu.x, milieu.z) - 0.03   # assez ample pour frôler le sol
+		im.clear_surfaces()
+		im.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+		var vue := (cam.global_position - (a + b) * 0.5).normalized() if cam else Vector3.FORWARD
+		for i in 21:
+			var s := float(i) / 20.0
+			var p := a.lerp(b, s) + bombe * r * sin(PI * s)
+			var tangente := (corde + bombe * r * PI * cos(PI * s)).normalized()
+			var large := tangente.cross(vue).normalized() * 0.008
+			im.surface_set_normal(vue)
+			im.surface_add_vertex(p - large)
+			im.surface_set_normal(vue)
+			im.surface_add_vertex(p + large)
+		im.surface_end()
 
 
 ## Pêcheur accroupi qui répare un filet étalé devant lui.
@@ -173,6 +404,15 @@ func port_nere(ville: VillePortNere) -> void:
 	if r.has("eglise"):
 		var e: Vector3 = r["eglise"]
 		jeu_enfants(Vector2(e.x - 18, e.z + 4), 2)
+	if r.has("maison_faris"):
+		var mf: Vector3 = r["maison_faris"]
+		objets_cour(Vector2(mf.x + 4.5, mf.z - 2.0), 2.4)
+	if r.has("maquis"):
+		var mq: Vector3 = r["maquis"]
+		ancien_chaise(Vector2(mq.x + 3.0, mq.z + 3.5), 0.8)
+	if r.has("place"):
+		var pl2: Vector3 = r["place"]
+		corde_a_sauter(Vector2(pl2.x - 22, pl2.z + 16), 1.2)
 
 
 ## Bomé : anciens assis sous l'arbre à palabres, Baya Efua devant le grenier de la coopérative,
@@ -199,11 +439,16 @@ func bome(v: VillageBome) -> void:
 	# femmes qui pilent dans les cours
 	var maisons: Array = r["maisons"]
 	var modeles := ["femme", "femme2", "femme_agee", "femme"]
-	for i in range(0, maisons.size(), 3):
+	for i in maisons.size():
 		var m: Vector3 = maisons[i]
 		var vm := Vector2(c.x - m.x, c.z - m.z).normalized()
 		var q := Vector2(m.x, m.z) + vm * 6.5 + vm.orthogonal() * 2.0
-		pileuse(q, atan2(-vm.x, -vm.y) + rng.randf_range(-0.6, 0.6), modeles[(i / 3) % modeles.size()])
+		var a := atan2(-vm.x, -vm.y) + rng.randf_range(-0.6, 0.6)
+		objets_cour(Vector2(m.x, m.z) + vm * 3.2 - vm.orthogonal() * 3.0, a)
+		if i % 3 == 0:
+			pilage_duo(q, a, modeles[(i / 3) % modeles.size()], ["femme_agee", "femme2", "femme"][i % 3])
+		elif i % 3 == 1 and i < 8:
+			ancien_chaise(Vector2(m.x, m.z) + vm * 4.0 + vm.orthogonal() * 4.5, atan2(vm.x, vm.y))
 	# cultivateurs à la houe dans les champs de manioc et de maïs
 	var champs: Array = r["champs"]
 	for k in champs.size():
@@ -215,6 +460,7 @@ func bome(v: VillageBome) -> void:
 			var bineur := _perso(["cultivateur", "homme2", "cultivateur", "villageois"][(k + j) % 4], "Biner", Vector3(q.x, _sol(q.x, q.y), q.y), rng.randf() * TAU)
 			_houe(bineur)
 	jeu_enfants(Vector2(c.x - 12.0, c.z + 10.0), 3)
+	corde_a_sauter(Vector2(c.x + 9.0, c.z - 11.0), 0.6)
 
 
 ## Tikané occupé : les familles sont enfermées, seuls les gardes adultes du Cobra sont dehors.
@@ -319,9 +565,63 @@ func _houe(p: Node3D) -> void:
 func akweri(village: Node, mission: Node) -> void:
 	set_meta("village", village)
 	set_meta("mission", mission)
+	terrain = village.terrain
+	var pa: Vector2 = village.centre + village.mer * -1.0 + village.plage * 38.0
+	apatam(pa, atan2(village.mer.x, village.mer.y))
+	set_meta("apatam", pa)
+
+
+## Abri de palmes séchées sur six poteaux, au bord de l'eau : on s'y assoit pour parler, à l'ombre.
+func apatam(c: Vector2, angle: float) -> void:
+	var h := _sol(c.x, c.y)
+	var base := Transform3D(Basis(Vector3.UP, angle), Vector3(c.x, h, c.y))
+	var b := _bois()
+	b.albedo_color = Color(0.55, 0.45, 0.35)
+	var poteau := CylinderMesh.new()
+	poteau.top_radius = 0.07
+	poteau.bottom_radius = 0.09
+	poteau.height = 2.6
+	poteau.radial_segments = 7
+	for sx in [-1.0, 0.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			var q := base * Vector3(sx * 2.4, 1.3 - (0.15 if sz > 0 else 0.0), sz * 1.7)
+			_forme(poteau, b, q, rng.randf() * TAU)
+	var palmes := StandardMaterial3D.new()
+	palmes.albedo_texture = load("res://data/textures/thatch_roof_angled_diff.jpg")
+	palmes.normal_enabled = true
+	palmes.normal_texture = load("res://data/textures/thatch_roof_angled_nor.jpg")
+	palmes.uv1_triplanar = true
+	palmes.uv1_scale = Vector3(0.6, 0.6, 0.6)
+	palmes.albedo_color = Color(0.95, 0.85, 0.65)
+	palmes.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var toit := BoxMesh.new()
+	toit.size = Vector3(6.2, 0.22, 4.4)
+	var mi := _forme(toit, palmes, base * Vector3(0, 2.55, 0), angle)
+	mi.rotate_object_local(Vector3.RIGHT, 0.06)
+	var traverse := BoxMesh.new()
+	traverse.size = Vector3(5.2, 0.1, 0.1)
+	for sz in [-1.0, 1.0]:
+		_forme(traverse, b, base * Vector3(0, 2.42 - (0.15 if sz > 0 else 0.0), sz * 1.7), angle)
+
+
+## Akwéri libéré : la vie reprend (appelé une seule fois, au moment de la libération).
+func _akweri_revit(v) -> void:
+	var cv: Vector2 = v.centre
+	var mer: Vector2 = v.mer
+	var plage: Vector2 = v.plage
+	var vers_mer := atan2(mer.x, mer.y)
+	pilage_duo(cv + mer * -20.0 + plage * -10.0, vers_mer + 0.7, "femme", "femme2")
+	objets_cour(cv + mer * -21.0 + plage * -6.0, vers_mer)
+	objets_cour(cv + mer * -38.0 + plage * 14.0, vers_mer + PI)
+	corde_a_sauter(cv + mer * -16.0 + plage * 16.0, vers_mer + 1.2)
+	# sous l'abri de palmes : les anciens sur leurs chaises, face à l'eau
+	var pa: Vector2 = get_meta("apatam")
+	for k in 3:
+		ancien_chaise(pa + plage * (k - 1) * 1.6 - mer * 0.6, vers_mer + rng.randf_range(-0.4, 0.4), ["ancien", "villageois", "pecheur"][k])
 
 
 func _process(delta: float) -> void:
+	_dessiner_cordes()
 	for pa in pilons:
 		var main: Node3D = pa[1]
 		(pa[0] as Node3D).global_transform = Transform3D(Basis(), main.global_position + Vector3(0, -0.3, 0))
@@ -370,6 +670,7 @@ func _process(delta: float) -> void:
 				(get_meta("foule") as Foule).activer("akweri")
 			var v = get_meta("village")
 			var civ: Array = v.reperes["civils"]
+			_akweri_revit(v)
 			pileuse(Vector2(civ[0].x + 2.0, civ[0].z + 1.5), 0.3, "femme")
 			pileuse(Vector2(civ[4].x - 1.5, civ[4].z + 2.0), 2.0, "femme_agee")
 			pecheur(Vector2(civ[2].x + 3.0, civ[2].z - 2.0), 1.2)

@@ -144,7 +144,8 @@ func _maillage_imposteur(vues: Array) -> ArrayMesh:
 
 
 ## Cocotier : tronc courbe texturé + couronne de palmes retombantes.
-func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
+## huile = vrai : palmier à huile (tronc plus court, épais et droit, couronne dense de palmes arquées).
+func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int, huile := false) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	# --- tronc ---
 	var st := SurfaceTool.new()
@@ -153,13 +154,20 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
 	var cotes := 8
 	var hauteur := rng.randf_range(9.0, 13.0)
 	var courbure := rng.randf_range(0.6, 1.6)
+	var r_bas := 0.24
+	var r_haut := 0.15
+	if huile:
+		hauteur = rng.randf_range(4.5, 8.0)
+		courbure = rng.randf_range(0.0, 0.35)
+		r_bas = 0.36
+		r_haut = 0.33
 	var centres: Array = []
 	for i in segs + 1:
 		var t := float(i) / segs
 		centres.append(Vector3(courbure * t * t * 1.6, t * hauteur, 0))
 	for i in segs:
-		var r0 := lerpf(0.24, 0.15, float(i) / segs)
-		var r1 := lerpf(0.24, 0.15, float(i + 1) / segs)
+		var r0 := lerpf(r_bas, r_haut, float(i) / segs)
+		var r1 := lerpf(r_bas, r_haut, float(i + 1) / segs)
 		for j in cotes:
 			var a0 := TAU * j / cotes
 			var a1 := TAU * (j + 1) / cotes
@@ -181,6 +189,10 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
 	mt.normal_enabled = true
 	mt.normal_texture = load("res://data/textures/palmier_nor.jpg")
 	mt.roughness = 0.9
+	if huile:  # écorce hérissée des bases de palmes coupées : plus sombre et plus rugueuse
+		mt.albedo_color = Color(0.62, 0.55, 0.45)
+		mt.normal_scale = 2.0
+		mt.uv1_scale = Vector3(2.0, 0.6, 1.0)
 	mesh.surface_set_material(0, mt)
 	# --- palmes ---
 	var sp := SurfaceTool.new()
@@ -191,6 +203,13 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
 		var longueur := rng.randf_range(4.0, 5.8)
 		var montee := rng.randf_range(0.2, 1.3)
 		var largeur := rng.randf_range(2.3, 2.9)
+		var chute := 2.2
+		if huile:  # deux étages : palmes dressées au centre, arquées autour
+			var haute := f % 2 == 0
+			longueur = rng.randf_range(3.8, 5.2) if haute else rng.randf_range(4.5, 6.0)
+			montee = rng.randf_range(1.8, 2.6) if haute else rng.randf_range(0.9, 1.5)
+			largeur = rng.randf_range(1.6, 2.1)
+			chute = 1.2 if haute else 2.0
 		var dir := Vector3(cos(az), 0, sin(az))
 		var cote := dir.cross(Vector3.UP).normalized()
 		var n := 8
@@ -198,7 +217,7 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
 		for i in n + 1:
 			var t := float(i) / n
 			# arc : monte puis retombe
-			pts.append(sommet + dir * longueur * t + Vector3.UP * (montee * sin(t * PI * 0.8) - t * t * 2.2))
+			pts.append(sommet + dir * longueur * t + Vector3.UP * (montee * sin(t * PI * 0.8) - t * t * chute))
 		for i in n:
 			var w0 := largeur * 0.5 * sin(PI * clampf(float(i) / n * 1.05, 0.05, 1.0))
 			var w1 := largeur * 0.5 * sin(PI * clampf(float(i + 1) / n * 1.05, 0.05, 1.0))
@@ -222,5 +241,7 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int) -> ArrayMesh:
 	mp.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mp.vertex_color_use_as_albedo = false
 	mp.roughness = 0.85
+	if huile:
+		mp.albedo_color = Color(0.72, 0.85, 0.6)
 	mesh.surface_set_material(1, mp)
 	return mesh
