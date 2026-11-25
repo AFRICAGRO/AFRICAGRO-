@@ -197,6 +197,7 @@ func _camoufler(perso: Node3D) -> void:
 
 func _personnage(modele: String, anim: String) -> Node3D:
 	var p: Node3D = (load("res://personnages/%s.glb" % modele) as PackedScene).instantiate()
+	Apparence.ameliorer(p)
 	var ap: AnimationPlayer = p.find_child("AnimationPlayer", true, false)
 	if ap:
 		ap.play(anim)

@@ -37,10 +37,15 @@ func _ready() -> void:
 	_mer()
 	var env := _environnement()
 	var soleil := _soleil()
+	var proche := VegetationProche.new()
+	proche.name = "VegetationProche"
 	var veg := Vegetation.new()
+	veg.proche = proche
 	veg.name = "Vegetation"
 	add_child(veg)
+	proche.preparer(terrain, null, _zones_construites())
 	veg.construire(terrain, _zones_construites())
+	add_child(proche)
 	var village := VillageAkweri.new()
 	village.name = "Akweri"
 	add_child(village)
@@ -66,6 +71,7 @@ func _ready() -> void:
 	circulation.name = "Circulation"
 	add_child(circulation)
 	circulation.construire(ville, joueur)
+	proche.joueur = joueur
 	ambiances.eclairages.append(ville)
 	ambiances.eclairages.append(circulation)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)

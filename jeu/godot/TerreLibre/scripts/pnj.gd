@@ -49,6 +49,7 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 	add_child(cs)
 	# corps : faris, villageois, ancien, femme, femme_agee (personnages/*.glb, même squelette et animations)
 	corps = (load("res://personnages/%s.glb" % modele) as PackedScene).instantiate()
+	Apparence.ameliorer(corps)
 	add_child(corps)
 	anim = corps.find_child("AnimationPlayer", true, false)
 	for nom in ["Repos", "Marche", "Course", "Accroupi", "AccroupiMarche", "Rendu", "Ligote", "Visee"]:

@@ -16,6 +16,8 @@ const ESPECES := {
 }
 
 var terrain: Terrain
+## Végétation détaillée autour du joueur : reçoit la position de chaque arbre (pour l'arbre 3D proche).
+var proche: VegetationProche
 
 
 ## zones_vides : liste de Vector3(x, z, rayon) où rien ne pousse (villes, villages, piste).
@@ -81,6 +83,8 @@ func _ajouter(lots: Dictionary, nom: String, cle: Vector2i, x: float, h: float, 
 	b = b.scaled(Vector3(s, s * rng.randf_range(0.9, 1.15), s))
 	var teinte := Color(rng.randf_range(0.82, 1.08), rng.randf_range(0.88, 1.08), rng.randf_range(0.8, 1.0))
 	lots[nom][cle].append([Transform3D(b, Vector3(x, h - 0.3, z)), teinte])
+	if proche and not palmier:
+		proche.ajouter_arbre(nom, Transform3D(b, Vector3(x, h - 0.3, z)), teinte)
 
 
 func _creer_blocs(blocs: Dictionary, mesh: Mesh, nom: String, distance: float) -> void:

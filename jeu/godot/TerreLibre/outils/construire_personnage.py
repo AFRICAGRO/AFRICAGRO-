@@ -199,7 +199,7 @@ def mat(nom, couleur, rough=0.8, tex=None, normal=None, vcol=False, metal=0.0):
 
 me.materials.clear()
 FOULARD = V.get("foulard")
-for m in [mat("Peau", V["peau"], 0.55),
+for m in [mat("Peau", (1, 1, 1), 0.55, vcol=True),  # teinte de peau portée par les couleurs de sommets
           (mat("Cheveux", FOULARD[1], 0.9, FOULARD[0], L[1]) if FOULARD else mat("Cheveux", V["cheveux"], 0.95)),
           mat("Chemise", V["haut"][1], 0.9, V["haut"][0], L[1]),
           mat("Pantalon", V["bas"][1], 0.85, V["bas"][0], D[1] if V["bas"][0] == D[0] else L[1]),
@@ -224,9 +224,21 @@ def R(v):
 
 
 
+def centre_f(f):
+    return sum((v.co for v in f.verts), Vector()) / len(f.verts)
+
+
 GARDER = {"body", "helper-tights", "helper-l-eye", "helper-r-eye", "helper-upper-teeth", "helper-lower-teeth", "helper-tongue"}
 a_suppr = [f for f in bm.faces if any(R(v) not in GARDER for v in f.verts)]
 bmesh.ops.delete(bm, geom=a_suppr, context="FACES")
+
+# maillage affiné autour de la tête et de l'encolure : lisière des cheveux et col sans dents de scie
+fins = [f for f in bm.faces
+        if (R(f.verts[0]) == "body" and centre_f(f).z > neck_z - 0.04)
+        or (R(f.verts[0]) == "helper-tights" and abs(centre_f(f).z - (neck_z - 0.035)) < 0.07)]
+aretes = list({e for f in fins for e in f.edges})
+bmesh.ops.subdivide_edges(bm, edges=aretes, cuts=1, use_grid_fill=True)
+bm.verts.ensure_lookup_table()
 
 # matériaux : 0 peau, 1 cheveux, 2 chemise, 3 pantalon, 4 chaussures, 5 yeux, 6 dents
 NOMS = ["Peau", "Cheveux", "Chemise", "Pantalon", "Chaussures", "Yeux", "Dents"]
@@ -267,6 +279,22 @@ for f in bm.faces:
                 f.material_index = 1
 
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index == 99], context="FACES")
+
+# bords des vêtements (encolure, manches) : on lisse la ligne brisée qui suit les facettes
+bord = [e for e in bm.edges if len(e.link_faces) == 1 and e.link_faces[0].material_index in (2, 3)]
+voisins = {}
+for e in bord:
+    a_, b_ = e.verts
+    voisins.setdefault(a_, []).append(b_)
+    voisins.setdefault(b_, []).append(a_)
+for _ in range(10):
+    nouv = {}
+    for v, vs in voisins.items():
+        if len(vs) == 2:
+            nouv[v] = v.co * 0.5 + (vs[0].co + vs[1].co) * 0.25
+    for v, c in nouv.items():
+        v.co = c
+print("bords de vêtements lissés :", len(voisins))
 # peau cachée sous les vêtements : supprimée (évite qu'elle traverse le tissu)
 cache = []
 for f in bm.faces:
@@ -339,15 +367,69 @@ if V.get("pagne"):
             f.material_index = 3
     bm.normal_update()  # ordre des sommets : normales vers l'extérieur
 
+# ---------- visage et peau peints dans les couleurs de sommets ----------
+# teinte de base, sourcils, lèvres, paupières, paumes des mains plus claires, légère marbrure
+yeux_v = {v for f in bm.faces if f.material_index == 5 for v in f.verts}
+oeil = {}
+for cote in (1, -1):
+    vs = [v.co for v in yeux_v if v.co.x * cote > 0]
+    oeil[cote] = sum(vs, Vector((0, 0, 0))) / max(1, len(vs))
+k_tete = abs(oeil[1].x - oeil[-1].x) / 0.062
+ez = (oeil[1].z + oeil[-1].z) / 2
+ey = (oeil[1].y + oeil[-1].y) / 2
+peau_v = [v for v in bm.verts if any(f.material_index == 0 for f in v.link_faces)]
+nez = min((v for v in peau_v if abs(v.co.x) < 0.015 * k_tete and ez - 0.075 * k_tete < v.co.z < ez - 0.01 * k_tete), key=lambda v: v.co.y, default=None)
+dl = bm.verts.layers.deform.active
+mains = {g.index for g in h.vertex_groups if "Hand" in g.name}
+bruit_peau = __import__("random").Random(VARIANTE)
+graines = [(Vector((bruit_peau.uniform(-1, 1), bruit_peau.uniform(-1, 1), bruit_peau.uniform(0, 2))), bruit_peau.uniform(-0.07, 0.07)) for _ in range(40)]
+teinte_v = {}
+TP = Vector(V["peau"])
+for v in peau_v:
+    c = v.co
+    f = 1.0
+    # marbrure douce (peau vivante, pas une couleur unie)
+    for g, a in graines:
+        f += a * math.exp(-((c - g).length / 0.25) ** 2)
+    m = Vector((f, f, f))
+    if abs(c.y - ey) < 0.06 * k_tete or c.y < ey:
+        for cote in (1, -1):
+            o = oeil[cote]
+            dx = (c.x - o.x) * cote  # > 0 vers l'extérieur du visage
+            # sourcils : arc au-dessus de l'œil, plus fin vers l'extérieur
+            haut = ez + (0.019 + 0.004 * max(0, 1 - abs(dx) / 0.02)) * k_tete
+            epais = (0.0048 - 0.0018 * max(0, dx) / (0.028 * k_tete)) * k_tete
+            if -0.018 * k_tete < dx < 0.028 * k_tete and abs(c.z - haut) < epais and c.y < ey + 0.01:
+                w = 1.0 - (abs(c.z - haut) / epais) ** 2  # bords adoucis
+                m = m.lerp(Vector((0.3, 0.26, 0.23)), 0.35 + 0.6 * w)
+            # paupières et cernes un peu plus sombres
+            elif (c - o).length < 0.019 * k_tete and c.y < o.y + 0.006:
+                m = m * 0.78
+    if nez is not None:
+        zl = nez.co.z - 0.037 * k_tete
+        larg = 0.026 * k_tete * max(0.0, 1 - ((c.z - zl) / (0.016 * k_tete)) ** 2) ** 0.5
+        if abs(c.z - zl) < 0.016 * k_tete and abs(c.x) < larg and c.y < nez.co.y + 0.04 * k_tete:
+            m = Vector((m.x * 0.82, m.y * 0.6, m.z * 0.62))  # lèvres
+    if dl is not None and any(gi in mains and w > 0.4 for gi, w in v[dl].items()):
+        n = v.normal
+        if n.x * (1 if c.x > 0 else -1) < -0.3 or n.z < -0.5:
+            m = Vector((1.75, 1.5, 1.4))  # paumes et intérieur des doigts
+    teinte_v[v] = Vector((TP.x * m.x, TP.y * m.y, TP.z * m.z))
+print("visage : facteur tête", round(k_tete, 2), "nez", nez is not None)
+
 # yeux : iris sombre vers l'avant
 col = bm.loops.layers.color.new("Col")
 for f in bm.faces:
     for l in f.loops:
-        if f.material_index == 5:
+        if f.material_index == 0:
+            t = teinte_v.get(l.vert, TP)
+            # la couche de couleur est stockée en sRGB : on convertit la teinte linéaire
+            l[col] = tuple(min(1.0, max(0.0, x)) ** (1 / 2.2) for x in (t.x, t.y, t.z)) + (1,)
+        elif f.material_index == 5:
             n = l.vert.normal
             iris = n.y < -0.86
             pup = n.y < -0.975
-            l[col] = (0.02, 0.015, 0.01, 1) if pup else ((0.16, 0.08, 0.04, 1) if iris else (0.9, 0.88, 0.85, 1))
+            l[col] = (0.02, 0.015, 0.01, 1) if pup else ((0.16, 0.08, 0.04, 1) if iris else (0.74, 0.7, 0.64, 1))
         else:
             l[col] = (1, 1, 1, 1)
 bm.to_mesh(me)

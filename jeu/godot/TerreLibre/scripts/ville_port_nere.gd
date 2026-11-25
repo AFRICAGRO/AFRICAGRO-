@@ -1258,8 +1258,12 @@ func _vegetation(veg: Vegetation) -> void:
 	for i in arbres.size():
 		var c: Vector2 = arbres[i]
 		var s := rng.randf_range(1.6, 2.4)
-		mm.set_instance_transform(i, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(c.x, _sol(c) - 0.2, c.y)))
-		mm.set_instance_color(i, Color(rng.randf_range(0.85, 1.0), rng.randf_range(0.9, 1.0), rng.randf_range(0.85, 1.0)))
+		var xa := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(c.x, _sol(c) - 0.2, c.y))
+		var ca := Color(rng.randf_range(0.85, 1.0), rng.randf_range(0.9, 1.0), rng.randf_range(0.85, 1.0))
+		mm.set_instance_transform(i, xa)
+		mm.set_instance_color(i, ca)
+		if veg.proche:
+			veg.proche.ajouter_arbre("island_tree_01", xa, ca)
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "ArbresVille"
 	mmi.multimesh = mm

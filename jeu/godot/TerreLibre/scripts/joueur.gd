@@ -80,6 +80,7 @@ func _ready() -> void:
 
 func _construire_corps() -> void:
 	corps = (load("res://personnages/faris.glb") as PackedScene).instantiate()
+	Apparence.ameliorer(corps)
 	add_child(corps)
 	anim = corps.find_child("AnimationPlayer", true, false)
 	for nom in ["Repos", "Marche", "Course", "Nage", "Accroupi", "AccroupiMarche", "Visee"]:
