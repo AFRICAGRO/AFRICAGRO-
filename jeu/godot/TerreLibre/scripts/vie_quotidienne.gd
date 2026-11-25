@@ -217,6 +217,39 @@ func bome(v: VillageBome) -> void:
 	jeu_enfants(Vector2(c.x - 12.0, c.z + 10.0), 3)
 
 
+## Tikané occupé : les familles sont enfermées, seuls les gardes adultes du Cobra sont dehors.
+## (Les jeunes recrues ne sont pas montrées ici : la mission 8 les gère, sans jamais en faire des cibles.)
+func tikane(v: VillageTikane) -> void:
+	terrain = v.terrain
+	rng.seed = 808
+	var c: Vector3 = v.reperes["place"]
+	var gardes: Array = v.reperes["gardes"]
+	var modeles := ["homme2", "villageois", "homme3", "homme2", "villageois", "homme3", "homme2"]
+	for i in gardes.size():
+		var g: Vector3 = gardes[i]
+		var regard := Vector2(g.x - c.x, g.z - c.z)
+		if i < 2:
+			regard = -regard   # devant la prison : face à la place
+		var garde := _perso(modeles[i], "Repos", g, atan2(regard.x, regard.y) + rng.randf_range(-0.4, 0.4))
+		_camoufler(garde)
+
+
+func _camoufler(perso: Node3D) -> void:
+	var camo: Texture2D = load("res://data/textures/camouflage.jpg")
+	for mi in perso.find_children("*", "MeshInstance3D", true, false):
+		var m := mi as MeshInstance3D
+		for k in m.mesh.get_surface_count():
+			var mat := m.mesh.surface_get_material(k)
+			if mat and mat.resource_name == "Chemise":
+				var m2: StandardMaterial3D = (mat as StandardMaterial3D).duplicate()
+				m2.albedo_texture = camo
+				m2.albedo_color = Color(0.8, 0.85, 0.75)
+				m.set_surface_override_material(k, m2)
+	var arme := Arme.new()
+	perso.add_child(arme)
+	arme.tenir(perso)
+
+
 func _bois() -> StandardMaterial3D:
 	var bois := StandardMaterial3D.new()
 	bois.albedo_texture = load("res://data/textures/weathered_brown_planks_diff.jpg")

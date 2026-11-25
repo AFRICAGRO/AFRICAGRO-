@@ -17,6 +17,8 @@ var aide: Label
 var lieu_actuel := ""
 var ville: VillePortNere
 var bome: VillageBome
+var tikane: VillageTikane
+var plan_tikane: Dictionary
 
 
 func centre_bome() -> Vector2:
@@ -41,6 +43,10 @@ func _ready() -> void:
 	# Bomé : village en terrasses sur la colline (plan préparé avant le terrain)
 	var plan_bome := VillageBome.preparer_plan(centre_bome())
 	terrain.plateformes = plan_bome["plateformes"]
+	# Tikané : replat au-dessus de la crique, rivière creusée dans le relief
+	plan_tikane = VillageTikane.preparer_plan(carte_vers_monde(405, 470))
+	terrain.plateformes.append_array(plan_tikane["plateformes"])
+	terrain.lits = [plan_tikane["lit"]]
 	add_child(terrain)
 	_mer()
 	var env := _environnement()
@@ -69,6 +75,11 @@ func _ready() -> void:
 	add_child(bome)
 	bome.construire_bome(terrain, plan_bome, veg, proche)
 	proche.villes.append(bome)
+	tikane = VillageTikane.new()
+	tikane.name = "Tikane"
+	add_child(tikane)
+	tikane.construire_tikane(terrain, plan_tikane, veg, proche)
+	proche.villes.append(tikane)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
@@ -100,6 +111,7 @@ func _ready() -> void:
 	add_child(son)
 	ambiances.eclairages.append(son)
 	ambiances.eclairages.append(ville)
+	ambiances.eclairages.append(tikane)
 	ambiances.eclairages.append(circulation)
 	ambiances.preparer(soleil, env, terrain.materiau(), pluie)
 	var mission := Mission4.new()
@@ -108,6 +120,7 @@ func _ready() -> void:
 	mission.demarrer(village, joueur)
 	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
 	(get_node("VieQuotidienne") as VieQuotidienne).bome(bome)
+	(get_node("VieQuotidienne") as VieQuotidienne).tikane(tikane)
 	(get_node("AmbianceSonore") as AmbianceSonore).bome = bome
 	(get_node("AmbianceSonore") as AmbianceSonore).preparer(terrain, joueur, ville, ambiances, get_node("VegetationProche"), get_node("Mouettes"))
 	_interface()
@@ -118,7 +131,7 @@ func _actions_clavier() -> void:
 	var touches := {
 		"avancer": [KEY_W, KEY_UP], "reculer": [KEY_S, KEY_DOWN], "gauche": [KEY_A, KEY_LEFT],
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
-		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B],
+		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -132,7 +145,7 @@ func _actions_clavier() -> void:
 ## Zones laissées libres pour les bâtiments : Port-Néré, villages, camp, piste d'atterrissage.
 func _zones_construites() -> Array:
 	var zones := []
-	for z in [[225, 235, 260.0], [170, 268, 90.0], [405, 470, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
+	for z in [[225, 235, 260.0], [170, 268, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
 		var c := carte_vers_monde(z[0], z[1])
 		zones.append(Vector3(c.x, c.y, z[2]))
 	var ap: Dictionary = terrain.aplanissements[0]
@@ -140,6 +153,14 @@ func _zones_construites() -> Array:
 	zones.append(Vector3(ca.x, ca.y, 78.0))
 	var cb := centre_bome()
 	zones.append(Vector3(cb.x, cb.y, 125.0))  # village de Bomé et ses champs
+	var ct: Vector2 = plan_tikane["centre"]
+	zones.append(Vector3(ct.x, ct.y, 100.0))  # village de Tikané
+	var lit: PackedVector2Array = (plan_tikane["lit"] as Dictionary)["pts"]
+	for i in lit.size() - 1:  # pas d'arbre dans le lit de la rivière
+		var nb := int(lit[i].distance_to(lit[i + 1]) / 8.0) + 1
+		for k in nb:
+			var q := lit[i].lerp(lit[i + 1], float(k) / nb)
+			zones.append(Vector3(q.x, q.y, 10.0))
 	for i in 12:
 		var c := carte_vers_monde(lerpf(198, 326, i / 11.0), lerpf(214, 218, i / 11.0))
 		zones.append(Vector3(c.x, c.y, 45.0))
@@ -262,7 +283,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
@@ -274,6 +295,10 @@ func _interface() -> void:
 
 
 func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("aller_tikane") and tikane and tikane.reperes.has("place"):
+		var pt: Vector3 = tikane.reperes["place"]
+		joueur.global_position = pt + Vector3(-10, 1.0, 6)
+		joueur.velocity = Vector3.ZERO
 	if Input.is_action_just_pressed("aller_bome") and bome and bome.reperes.has("place"):
 		var pb: Vector3 = bome.reperes["place"]
 		joueur.global_position = pb + Vector3(0, 1.0, 14)

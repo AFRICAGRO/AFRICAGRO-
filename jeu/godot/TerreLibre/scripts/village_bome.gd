@@ -51,15 +51,7 @@ func construire_bome(t: Terrain, p_plan: Dictionary, veg: Vegetation, p_proche: 
 	proche = p_proche
 	centre = plan["centre"]
 	rng.seed = 2611
-	_materiaux()
-	mats["banco"] = _materiau("clay_plaster", 2.5, Color(0.95, 0.78, 0.64), 0.95, 0.0, true)
-	mats["chaume"] = _materiau("thatch_roof_angled", 1.6, Color(0.95, 0.88, 0.78), 1.0, 0.0, true)
-	mats["pierre"] = _materiau("red_mud_stones", 1.5, Color(0.85, 0.7, 0.6))
-	mats["bois_brut"] = _materiau("weathered_brown_planks", 1.5, Color.WHITE, 0.9, 0.0, true)
-	mats["laterite"] = _materiau("laterite", 4.0, Color(0.82, 0.7, 0.6), 1.0)
-	corps = StaticBody3D.new()
-	corps.name = "Collisions"
-	add_child(corps)
+	_preparer_village()
 	_place_centrale(veg)
 	for s in plan["sites"]:
 		_concession(s)
@@ -72,6 +64,19 @@ func construire_bome(t: Terrain, p_plan: Dictionary, veg: Vegetation, p_proche: 
 	_finir_maillages()
 	_poser_objets()
 	print("Bomé : %d bâtiments, %d concessions" % [nb_batiments, plan["sites"].size()])
+
+
+## Matières communes aux villages (banco, chaume, pierre, bois brut, terre battue) et corps de collision.
+func _preparer_village() -> void:
+	_materiaux()
+	mats["banco"] = _materiau("clay_plaster", 2.5, Color(0.95, 0.78, 0.64), 0.95, 0.0, true)
+	mats["chaume"] = _materiau("thatch_roof_angled", 1.6, Color(0.95, 0.88, 0.78), 1.0, 0.0, true)
+	mats["pierre"] = _materiau("red_mud_stones", 1.5, Color(0.85, 0.7, 0.6))
+	mats["bois_brut"] = _materiau("weathered_brown_planks", 1.5, Color.WHITE, 0.9, 0.0, true)
+	mats["laterite"] = _materiau("laterite", 4.0, Color(0.82, 0.7, 0.6), 1.0)
+	corps = StaticBody3D.new()
+	corps.name = "Collisions"
+	add_child(corps)
 
 
 # ---------------------------------------------------------------------

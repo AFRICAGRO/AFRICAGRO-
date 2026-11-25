@@ -119,3 +119,16 @@ for t0 in (7.0, 21.5):
     i0 = int(t0 * SR)
     v[i0:i0 + m] += passe_bas(coq, 2500) * 0.18
 ecrire("village.wav", boucle(v), 0.5)
+
+# rivière : courant clair sur les cailloux (bruit filtré, bulles et clapotis)
+d = 20.0
+n = int(d * SR)
+x = passe_bande(bruit_rose(n), 250, 2500) * 0.6
+x += passe_bande(rng.normal(size=n), 2500, 7000) * 0.08
+for k in range(900):
+    i0 = int(rng.uniform(0, d - 0.05) * SR)
+    m = int(rng.uniform(0.008, 0.025) * SR)
+    tt = np.arange(m) / SR
+    f = rng.uniform(600, 2200) * (1 + 1.5 * tt / tt[-1])
+    x[i0:i0 + m] += np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt * 140) * rng.uniform(0.05, 0.25)
+ecrire("riviere.wav", boucle(x), 0.6)

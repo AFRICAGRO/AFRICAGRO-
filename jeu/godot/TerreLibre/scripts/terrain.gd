@@ -18,6 +18,8 @@ var lissages: Array = []
 ## Terrasses (villages de colline) : {"centre": Vector2, "rayon", "h"} — sol mis à plat à la hauteur h,
 ## raccordé en pente douce sur 14 m autour.
 var plateformes: Array = []
+## Lits de rivière creusés dans le relief : {"pts": PackedVector2Array, "niveaux": PackedFloat32Array, "largeur": float}
+var lits: Array = []
 var pas := TAILLE / float(N - 1)
 
 
@@ -30,6 +32,7 @@ func _ready() -> void:
 	_aplanir()
 	_lisser()
 	_plateformes()
+	_lits()
 	_construire_maillage()
 	_construire_collision()
 
@@ -106,6 +109,39 @@ func _plateformes() -> void:
 				var w := 1.0 - smoothstep(rayon, rayon + raccord, d)
 				if w > 0.0:
 					hauteurs[r * N + col] = lerpf(hauteurs[r * N + col], cible, w)
+
+
+func _lits() -> void:
+	var demi := TAILLE * 0.5
+	for lit in lits:
+		var pts: PackedVector2Array = lit["pts"]
+		var niv: PackedFloat32Array = lit["niveaux"]
+		var l: float = lit["largeur"]
+		var portee := l * 0.5 + 10.0
+		var mini_ := Vector2(INF, INF)
+		var maxi_ := -mini_
+		for p in pts:
+			mini_ = mini_.min(p)
+			maxi_ = maxi_.max(p)
+		var c0 := maxi(0, int((mini_.x - portee + demi) / pas)); var c1 := mini(N - 1, int((maxi_.x + portee + demi) / pas) + 1)
+		var r0 := maxi(0, int((mini_.y - portee + demi) / pas)); var r1 := mini(N - 1, int((maxi_.y + portee + demi) / pas) + 1)
+		for r in range(r0, r1 + 1):
+			for col in range(c0, c1 + 1):
+				var q := Vector2(col * pas - demi, r * pas - demi)
+				var meilleur := INF
+				var niveau := 0.0
+				for i in pts.size() - 1:
+					var ab := pts[i + 1] - pts[i]
+					var t := clampf((q - pts[i]).dot(ab) / ab.length_squared(), 0.0, 1.0)
+					var dd := q.distance_to(pts[i] + ab * t)
+					if dd < meilleur:
+						meilleur = dd
+						niveau = lerpf(niv[i], niv[i + 1], t)
+				if meilleur > portee:
+					continue
+				var ancien := hauteurs[r * N + col]
+				var cible := lerpf(niveau - 1.6, ancien, smoothstep(l * 0.3, portee, meilleur))
+				hauteurs[r * N + col] = minf(ancien, cible)
 
 
 ## Hauteur brute lue directement dans le fichier (avant tout aplanissement), pour préparer un plan
