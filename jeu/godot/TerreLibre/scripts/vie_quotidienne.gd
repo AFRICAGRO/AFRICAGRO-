@@ -24,8 +24,26 @@ func _perso(modele: String, anim: String, pos: Vector3, angle: float) -> Node3D:
 	p.rotation.y = angle
 	var ap: AnimationPlayer = p.find_child("AnimationPlayer", true, false)
 	ap.play(anim)
-	ap.seek(rng.randf() * 1.0)
+	var phase := rng.randf() * 1.0
+	ap.seek(phase)
+	p.set_meta("phase", phase)
 	return p
+
+
+## Son 3D calé sur le geste (même cycle que l'animation, même départ).
+func _son_geste(p: Node3D, nom: String, volume := 0.0) -> void:
+	var s: AudioStreamWAV = load("res://sons/%s.wav" % nom)
+	s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	s.loop_begin = 0
+	s.loop_end = int(s.get_length() * s.mix_rate)
+	var a := AudioStreamPlayer3D.new()
+	a.stream = s
+	a.unit_size = 4.0
+	a.max_distance = 45.0
+	a.volume_db = volume
+	p.add_child(a)
+	a.position.y = 0.6
+	a.play(fmod(float(p.get_meta("phase", 0.0)), s.get_length()))
 
 
 ## Femme qui pile : mortier en bois devant elle, pilon tenu dans les mains.
@@ -60,6 +78,7 @@ func pileuse(pos: Vector2, angle: float, modele := "femme") -> void:
 	pilon.top_level = true
 	att.add_child(pilon)
 	pilons.append([pilon, att])
+	_son_geste(p, "pilon", -2.0)
 
 
 ## Pêcheur accroupi qui répare un filet étalé devant lui.
@@ -156,6 +175,114 @@ func port_nere(ville: VillePortNere) -> void:
 		jeu_enfants(Vector2(e.x - 18, e.z + 4), 2)
 
 
+## Bomé : anciens assis sous l'arbre à palabres, Baya Efua devant le grenier de la coopérative,
+## cultivateurs qui binent, femmes qui pilent dans les cours, enfants sur la place.
+func bome(v: VillageBome) -> void:
+	terrain = v.terrain
+	rng.seed = 606
+	var r: Dictionary = v.reperes
+	var c: Vector3 = r["place"]
+	var bancs: Array = r["bancs"]
+	var anciens := ["ancien", "villageois", "ancien", "homme3"]
+	for i in anciens.size():
+		var b: Array = bancs[i * 2 % bancs.size()] if i < 3 else bancs[1]
+		var p: Vector3 = b[0]
+		var vers := Vector2(c.x - p.x, c.z - p.z)
+		var assis := _perso(anciens[i], "Assis", Vector3(p.x, c.y + 0.06, p.z), atan2(vers.x, vers.y))
+		assis.global_position += Vector3(vers.normalized().x, 0, vers.normalized().y) * -0.12
+	# Baya Efua, appuyée sur sa canne, devant le grenier à semences
+	var g: Vector3 = r["grenier"]
+	var vg := Vector2(c.x - g.x, c.z - g.z).normalized()
+	var pb := Vector2(g.x, g.z) + vg * 4.2
+	var baya := _perso("baya", "Repos", Vector3(pb.x, _sol(pb.x, pb.y), pb.y), atan2(vg.x, vg.y))
+	_canne(baya)
+	# femmes qui pilent dans les cours
+	var maisons: Array = r["maisons"]
+	var modeles := ["femme", "femme2", "femme_agee", "femme"]
+	for i in range(0, maisons.size(), 3):
+		var m: Vector3 = maisons[i]
+		var vm := Vector2(c.x - m.x, c.z - m.z).normalized()
+		var q := Vector2(m.x, m.z) + vm * 6.5 + vm.orthogonal() * 2.0
+		pileuse(q, atan2(-vm.x, -vm.y) + rng.randf_range(-0.6, 0.6), modeles[(i / 3) % modeles.size()])
+	# cultivateurs à la houe dans les champs de manioc et de maïs
+	var champs: Array = r["champs"]
+	for k in champs.size():
+		if k % 4 == 3:
+			continue  # cacaoyère : pas de binage
+		var cp: Vector2 = champs[k]
+		for j in 2:
+			var q := cp + Vector2(rng.randf_range(-9, 9), rng.randf_range(-6, 6))
+			var bineur := _perso(["cultivateur", "homme2", "cultivateur", "villageois"][(k + j) % 4], "Biner", Vector3(q.x, _sol(q.x, q.y), q.y), rng.randf() * TAU)
+			_houe(bineur)
+	jeu_enfants(Vector2(c.x - 12.0, c.z + 10.0), 3)
+
+
+func _bois() -> StandardMaterial3D:
+	var bois := StandardMaterial3D.new()
+	bois.albedo_texture = load("res://data/textures/weathered_brown_planks_diff.jpg")
+	bois.uv1_triplanar = true
+	bois.albedo_color = Color(0.7, 0.56, 0.42)
+	return bois
+
+
+func _main(p: Node3D, os: String) -> BoneAttachment3D:
+	var sq: Skeleton3D = p.find_child("Skeleton3D", true, false)
+	var att := BoneAttachment3D.new()
+	att.bone_name = "mixamorig_%sHand" % os
+	sq.add_child(att)
+	return att
+
+
+var cannes: Array = []   # [canne, main] : la canne descend de la main jusqu'au sol
+var houes: Array = []    # [houe, main droite, main gauche]
+
+
+func _canne(p: Node3D) -> void:
+	var cn := MeshInstance3D.new()
+	var cy := CylinderMesh.new()
+	cy.top_radius = 0.013
+	cy.bottom_radius = 0.011
+	cy.height = 1.0
+	cn.mesh = cy
+	cn.material_override = _bois()
+	cn.top_level = true
+	var main := _main(p, "Right")
+	main.add_child(cn)
+	cannes.append([cn, main])
+
+
+func _houe(p: Node3D) -> void:
+	var houe := Node3D.new()
+	houe.top_level = true
+	var manche := MeshInstance3D.new()
+	var cy := CylinderMesh.new()
+	cy.top_radius = 0.02
+	cy.bottom_radius = 0.022
+	cy.height = 1.0
+	manche.mesh = cy
+	manche.material_override = _bois()
+	manche.rotation.x = PI * 0.5
+	manche.position.z = 0.5
+	houe.add_child(manche)
+	var fer := MeshInstance3D.new()
+	var bx := BoxMesh.new()
+	bx.size = Vector3(0.2, 0.24, 0.012)
+	fer.mesh = bx
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.22, 0.2, 0.19)
+	m.metallic = 0.6
+	m.roughness = 0.55
+	fer.material_override = m
+	fer.position = Vector3(0, -0.1, 1.0)
+	fer.rotation.x = -0.35
+	houe.add_child(fer)
+	var md := _main(p, "Right")
+	var mg := _main(p, "Left")
+	md.add_child(houe)
+	houes.append([houe, md, mg])
+	_son_geste(p, "houe", -6.0)
+
+
 func akweri(village: Node, mission: Node) -> void:
 	set_meta("village", village)
 	set_meta("mission", mission)
@@ -165,6 +292,24 @@ func _process(delta: float) -> void:
 	for pa in pilons:
 		var main: Node3D = pa[1]
 		(pa[0] as Node3D).global_transform = Transform3D(Basis(), main.global_position + Vector3(0, -0.3, 0))
+	for ca in cannes:
+		var h: Vector3 = (ca[1] as Node3D).global_position
+		var sol := _sol(h.x, h.z)
+		var bas := Vector3(h.x, sol, h.z) + (ca[1] as Node3D).global_basis.z.slide(Vector3.UP).normalized() * 0.05
+		var l := maxf(0.3, h.y - sol)
+		var ay := (h - bas).normalized()
+		var ax := ay.cross(Vector3.FORWARD).normalized()
+		(ca[0] as Node3D).global_transform = Transform3D(Basis(ax, ay * l, ax.cross(ay)), (h + bas) * 0.5)
+	for ho in houes:
+		var d: Vector3 = (ho[1] as Node3D).global_position
+		var g: Vector3 = (ho[2] as Node3D).global_position
+		var axe := d - g
+		if axe.length() < 0.05:
+			continue
+		axe = axe.normalized()
+		var haut := Vector3.UP if absf(axe.y) < 0.95 else Vector3.FORWARD
+		# le manche passe dans les deux mains et dépasse côté droit jusqu'au fer
+		(ho[0] as Node3D).global_transform = Transform3D(Basis.looking_at(-axe, haut), g - axe * 0.25)
 	for b in ballons:
 		b[4] += b[3] / b[2] * delta
 		var c: Vector2 = b[1]

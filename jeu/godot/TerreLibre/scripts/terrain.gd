@@ -15,6 +15,9 @@ var aplanissements: Array = []
 ## Zones adoucies (villes) : {"centre": Vector2, "rayon", "passes"} — lisse les bosses du relief
 ## pour que rues et maisons suivent un sol régulier.
 var lissages: Array = []
+## Terrasses (villages de colline) : {"centre": Vector2, "rayon", "h"} — sol mis à plat à la hauteur h,
+## raccordé en pente douce sur 14 m autour.
+var plateformes: Array = []
 var pas := TAILLE / float(N - 1)
 
 
@@ -26,6 +29,7 @@ func _ready() -> void:
 	hauteurs = f.get_buffer(N * N * 4).to_float32_array()
 	_aplanir()
 	_lisser()
+	_plateformes()
 	_construire_maillage()
 	_construire_collision()
 
@@ -85,6 +89,44 @@ func _lisser() -> void:
 							m += hauteurs[i + dr * N + dc] * (4.0 if dr == 0 and dc == 0 else (2.0 if dr == 0 or dc == 0 else 1.0))
 					nouv[i] = lerpf(hauteurs[i], maxf(m / 16.0, 0.8), w)
 			hauteurs = nouv
+
+
+func _plateformes() -> void:
+	var demi := TAILLE * 0.5
+	var raccord := 14.0
+	for pf in plateformes:
+		var c: Vector2 = pf["centre"]
+		var rayon: float = pf["rayon"]
+		var cible: float = pf["h"]
+		var c0 := maxi(0, int((c.x - rayon - raccord + demi) / pas)); var c1 := mini(N - 1, int((c.x + rayon + raccord + demi) / pas) + 1)
+		var r0 := maxi(0, int((c.y - rayon - raccord + demi) / pas)); var r1 := mini(N - 1, int((c.y + rayon + raccord + demi) / pas) + 1)
+		for r in range(r0, r1 + 1):
+			for col in range(c0, c1 + 1):
+				var d := Vector2(col * pas - demi, r * pas - demi).distance_to(c)
+				var w := 1.0 - smoothstep(rayon, rayon + raccord, d)
+				if w > 0.0:
+					hauteurs[r * N + col] = lerpf(hauteurs[r * N + col], cible, w)
+
+
+## Hauteur brute lue directement dans le fichier (avant tout aplanissement), pour préparer un plan
+## de village avant la construction du terrain.
+static func hauteur_brute(donnees: PackedFloat32Array, x: float, z: float) -> float:
+	var pas_ := TAILLE / (N - 1)
+	var u := clampf((x + TAILLE * 0.5) / pas_, 0.0, N - 1.001)
+	var v := clampf((z + TAILLE * 0.5) / pas_, 0.0, N - 1.001)
+	var c := int(u)
+	var r := int(v)
+	var fu := u - c
+	var fv := v - r
+	var a := donnees[r * N + c] * (1.0 - fu) + donnees[r * N + c + 1] * fu
+	var b := donnees[(r + 1) * N + c] * (1.0 - fu) + donnees[(r + 1) * N + c + 1] * fu
+	return a * (1.0 - fv) + b * fv
+
+
+static func lire_donnees() -> PackedFloat32Array:
+	var f := FileAccess.open(FICHIER, FileAccess.READ)
+	var d := f.get_buffer(f.get_length()).to_float32_array()
+	return d
 
 
 func _h(c: int, r: int) -> float:

@@ -56,6 +56,13 @@ VARIANTES = {
     "homme3": dict(macros=dict(gender=1.0, age=0.3, muscle=0.55, weight=0.5, height=0.45),
                    peau=(0.1, 0.045, 0.022), cheveux=(0.012, 0.009, 0.008),
                    haut=(L[0], (0.05, 0.11, 0.07)), bas=(D[0], (0.07, 0.08, 0.12))),
+    "cultivateur": dict(macros=dict(gender=1.0, age=0.55, muscle=0.6, weight=0.45, height=0.5),
+                        peau=(0.08, 0.035, 0.018), cheveux=(0.012, 0.009, 0.008),
+                        haut=(L[0], (0.35, 0.3, 0.2)), bas=(L[0], (0.1, 0.09, 0.07)), manches=1.4, sandales=True, chapeau=True),
+    "baya": dict(macros=dict(gender=0.0, age=0.92, muscle=0.3, weight=0.25, height=0.75),
+                 peau=(0.07, 0.031, 0.016), cheveux=(0.5, 0.49, 0.47),
+                 haut=("wax_bandes_indigo.jpg", (0.13, 0.17, 0.45)), bas=("wax_bandes_indigo.jpg", (0.13, 0.17, 0.45)),
+                 pagne=True, foulard=("wax_cercles_vert.jpg", (1, 1, 1)), sandales=True, lunettes=True),
     "garcon": dict(macros=dict(gender=1.0, age=0.17, muscle=0.5, weight=0.45, height=0.5),
                    peau=(0.09, 0.04, 0.02), cheveux=(0.012, 0.009, 0.008),
                    haut=(L[0], (0.05, 0.09, 0.16)), bas=(L[0], (0.14, 0.12, 0.08)), pieds_nus=True),
@@ -214,7 +221,8 @@ for m in [mat("Peau", (1, 1, 1), 0.55, vcol=True),  # teinte de peau portée par
           mat("Pantalon", V["bas"][1], 0.85, V["bas"][0], D[1] if V["bas"][0] == D[0] else L[1]),
           mat("Chaussures", (1, 1, 1), 0.6, "brown_leather_diff.jpg", "brown_leather_nor.jpg"),
           mat("Yeux", (1, 1, 1), 0.15, vcol=True),
-          mat("Dents", (0.85, 0.82, 0.75), 0.4)]:
+          mat("Dents", (0.85, 0.82, 0.75), 0.4),
+          mat("Paille", (0.62, 0.48, 0.26), 0.85)]:
     me.materials.append(m)
 
 bm = bmesh.new()
@@ -250,7 +258,7 @@ bmesh.ops.subdivide_edges(bm, edges=aretes, cuts=1, use_grid_fill=True)
 bm.verts.ensure_lookup_table()
 
 # matériaux : 0 peau, 1 cheveux, 2 chemise, 3 pantalon, 4 chaussures, 5 yeux, 6 dents
-NOMS = ["Peau", "Cheveux", "Chemise", "Pantalon", "Chaussures", "Yeux", "Dents"]
+NOMS = ["Peau", "Cheveux", "Chemise", "Pantalon", "Chaussures", "Yeux", "Dents", "Paille"]
 
 
 def centre(f):
@@ -383,7 +391,7 @@ def sommet(co):
     return v
 
 
-def tube(chemin, rayon, cotes=6, tresse=False):
+def tube(chemin, rayon, cotes=6, tresse=False, mat_i=1):
     anneaux_t = []
     for i, p in enumerate(chemin):
         t = (chemin[min(i + 1, len(chemin) - 1)] - chemin[max(i - 1, 0)]).normalized()
@@ -396,11 +404,11 @@ def tube(chemin, rayon, cotes=6, tresse=False):
     for i in range(len(anneaux_t) - 1):
         for k in range(cotes):
             f = bm.faces.new((anneaux_t[i][k], anneaux_t[i][(k + 1) % cotes], anneaux_t[i + 1][(k + 1) % cotes], anneaux_t[i + 1][k]))
-            f.material_index = 1
+            f.material_index = mat_i
     bout = sommet(chemin[-1] + (chemin[-1] - chemin[-2]).normalized() * 0.004)
     for k in range(cotes):
         f = bm.faces.new((anneaux_t[-1][k], anneaux_t[-1][(k + 1) % cotes], bout))
-        f.material_index = 1
+        f.material_index = mat_i
 
 
 def boule(c, rx, ry, rz, n=10):
@@ -548,6 +556,26 @@ for v in peau_v:
             m = Vector((1.75, 1.5, 1.4))  # paumes et intérieur des doigts
     teinte_v[v] = Vector((TP.x * m.x, TP.y * m.y, TP.z * m.z))
 print("visage : facteur tête", round(k_tete, 2), "nez", nez is not None)
+
+if V.get("chapeau"):
+    # chapeau de paille : bord large et calotte arrondie, posé sur les cheveux
+    haut_c = max(v.co.z for v in v_cheveux)
+    base = centre_tete + Vector((0, 0, haut_c - centre_tete.z - 0.045))
+    for i in range(16):
+        a0, a1 = 2 * math.pi * i / 16, 2 * math.pi * (i + 1) / 16
+        for r0, r1, z0, z1 in ((0.105, 0.2, 0.0, -0.012), (0.103, 0.09, 0.0, 0.075)):
+            q = [base + Vector((math.cos(a0) * r0, math.sin(a0) * r0, z0)), base + Vector((math.cos(a1) * r0, math.sin(a1) * r0, z0)),
+                 base + Vector((math.cos(a1) * r1, math.sin(a1) * r1, z1)), base + Vector((math.cos(a0) * r1, math.sin(a0) * r1, z1))]
+            f = bm.faces.new([sommet(c) for c in q])
+            f.material_index = 7
+    sommet_c = sommet(base + Vector((0, 0, 0.085)))
+if V.get("lunettes"):
+    # lunettes rafistolées : deux cercles et un pont devant les yeux
+    for cote in (1, -1):
+        o = oeil[cote] + Vector((0, -0.012 * k_tete, 0))
+        anneau_l = [o + Vector((math.cos(a) * 0.017, 0, math.sin(a) * 0.014)) * k_tete for a in [2 * math.pi * i / 10 for i in range(11)]]
+        tube(anneau_l, 0.0018, 4, mat_i=4)
+    tube([oeil[1] + Vector((-0.017 * k_tete, -0.012 * k_tete, 0.002)), oeil[-1] + Vector((0.017 * k_tete, -0.012 * k_tete, 0.002))], 0.0016, 4, mat_i=4)
 
 # yeux : iris sombre vers l'avant
 col = bm.loops.layers.color.new("Col")
@@ -891,6 +919,38 @@ for f in range(0, 41, 4):
     rot("RightUpLeg", Z, -14)
     main_vers("Right", (-0.1 + 0.04 * math.sin(p), -0.42, 0.42 + 0.05 * math.sin(2 * p)), (-0.6, 0.1, 0.7))
     main_vers("Left", (0.1, -0.42, 0.42 + 0.03 * math.cos(p)), (0.6, 0.1, 0.7))
+    cle(f)
+
+nouvelle("Biner")  # travail de la terre à la houe : outil levé puis abattu devant soi
+for f in range(0, 31, 2):
+    t = 0.5 + 0.5 * math.cos(2 * math.pi * f / 30)  # 1 = houe levée
+    raz()
+    bouge_hanches(-0.06 - 0.04 * (1 - t))
+    rot("Spine", X, 18 + 22 * (1 - t))
+    rot("Spine1", X, 8 + 8 * (1 - t))
+    rot("Head", X, -10 * (1 - t))
+    rot("LeftUpLeg", X, -10)
+    rot("LeftLeg", X, 18)
+    rot("RightUpLeg", X, 12)
+    rot("RightLeg", X, 10)
+    main_vers("Right", (-0.03, -0.3 - 0.25 * (1 - t), 0.75 + 0.75 * t), (-0.6, 0.2, 1.0))
+    main_vers("Left", (0.03, -0.38 - 0.3 * (1 - t), 0.62 + 0.55 * t), (0.6, 0.2, 1.0))
+    cle(f)
+
+nouvelle("Assis")  # assis sur un banc ou un tronc, mains sur les cuisses
+for f in range(0, 61, 10):
+    p = 2 * math.pi * f / 60
+    raz()
+    bouge_hanches(-0.43)
+    rot("Spine", X, 6 + 1.5 * math.sin(p))
+    rot("Head", Z, 4 * math.sin(p))
+    for cote in ("Left", "Right"):
+        rot(cote + "UpLeg", X, -86)
+        rot(cote + "Leg", X, 86)
+    rot("LeftUpLeg", Z, 6)
+    rot("RightUpLeg", Z, -6)
+    main_vers("Right", (-0.13, -0.34, 0.56), (-0.6, 0.2, 0.8))
+    main_vers("Left", (0.13, -0.34, 0.56), (0.6, 0.2, 0.8))
     cle(f)
 
 nouvelle("Accroupi")

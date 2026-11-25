@@ -8,6 +8,7 @@ extends Node
 var terrain: Terrain
 var joueur: Node3D
 var ville: VillePortNere
+var bome: Node3D   # VillageBome, réglé par main.gd
 var ambiances: Ambiances
 var proche: VegetationProche
 var oiseaux: Oiseaux
@@ -27,7 +28,7 @@ func preparer(t: Terrain, j: Node3D, v: VillePortNere, a: Ambiances, p: Vegetati
 	ambiances = a
 	proche = p
 	oiseaux = o
-	for nom in ["vagues", "vent", "cigales", "grillons", "oiseaux", "pluie", "ville"]:
+	for nom in ["vagues", "vent", "cigales", "grillons", "oiseaux", "pluie", "ville", "village"]:
 		var s: AudioStreamWAV = load("res://sons/%s.wav" % nom)
 		s.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		s.loop_begin = 0
@@ -103,3 +104,7 @@ func _evaluer() -> void:
 	cibles["oiseaux"] = jour * foret * 0.7 * (0.3 if pluie else 1.0)
 	cibles["pluie"] = 0.8 if pluie else 0.0
 	cibles["ville"] = en_ville * (0.7 if jour > 0.5 else 0.35)
+	var au_village := 0.0
+	if bome:
+		au_village = 1.0 - smoothstep(90.0, 280.0, Vector2(p.x, p.z).distance_to(bome.centre))
+	cibles["village"] = au_village * (0.6 if jour > 0.5 else 0.12)

@@ -24,6 +24,7 @@ sur un PC modeste avec carte graphique intégrée.
 | R | Recharger |
 | 1 / 2 | Choix final face au lieutenant Dossou |
 | P | Aller directement à Port-Néré (place de l'Indépendance) |
+| B | Aller directement à Bomé (place de l'arbre à palabres) |
 | N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube |
 | Échap | Libérer la souris |
 
@@ -53,6 +54,8 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 | **Ambiance sonore** : vagues près de la mer, vent, cigales le jour et grillons la nuit, oiseaux en forêt, pluie, rumeur de la ville, cris de mouettes, moteurs des motos et voitures (sons créés par programme) | `scripts/ambiance_sonore.gd`, `sons/`, `outils/sons_ambiance.py` | ✅ |
 | **Port-Néré** : ~430 bâtiments (parpaing enduit et peint, tôle rouillée ou neuve, persiennes, boutiques avec auvent et enseigne, immeubles à citerne, chantiers inachevés, concessions), boulevard du front de mer éclairé la nuit, avenue, ruelles en latérite avec poteaux électriques ; marché, église, mosquée, gendarmerie, station-service, maquis de Mama Rokia, maison de Faris, barrages du Cobra | `scripts/ville_port_nere.gd` | ✅ v1 |
 | **Vie de Port-Néré** : passants (marchandes avec bassine sur la tête, enfants), motos-taxis avec client, taxis jaunes, voitures, pick-up de patrouille du Cobra avec deux miliciens, ~25 véhicules garés ; phares allumés la nuit ; chaises monobloc, casiers, bouteilles de gaz, bidons, pneus, groupes électrogènes, sacs de ciment, poubelles | `scripts/circulation.gd`, `vehicules/`, `props/` | ✅ v1 |
+| **Bomé**, village de cultivateurs en terrasses sur la colline : 13 concessions (maisons en banco au toit de chaume ou de tôle, cases rondes, greniers sur pilotis, foyers à trois pierres), place de l'arbre à palabres avec bancs en tronc, grenier à semences de la coopérative, sentiers en terre battue, champs de manioc, de maïs et cacaoyères bordés d'arbres ; côté Cobra : trois parcelles clôturées, deux miradors, manche à air (sens du vent pour la mission 6) | `scripts/village_bome.gd` | ✅ v1 |
+| **Vie de Bomé** : anciens assis sous l'arbre, Baya Efua (canne, lunettes, kaba indigo) devant le grenier, cultivateurs (chapeau de paille) qui binent à la houe, femmes qui pilent, enfants sur la place ; sons calés sur les gestes (coups de pilon, coups de houe) et fond de village (poules, voix, pilons lointains, coq) | `scripts/vie_quotidienne.gd`, `outils/sons_village.py` | ✅ v1 |
 | **Mission 4 « Première Étincelle »** jouable de bout en bout (voir ci-dessous) | `scripts/mission4.gd`, `pnj.gd`, `arme.gd` | ✅ v1 |
 
 ## Mission 4 « Première Étincelle » — déroulé
@@ -71,6 +74,7 @@ Limites connues de la v1 : pas encore de pick-up de la milice ni de diversion d'
 1. Mission 4 : pick-up de la milice, diversion d'Ama, voix.
 2. Port-Néré : le quai et les entrepôts (mission 5), intérieurs, conduire soi-même une moto ou une voiture.
 3. Moto et pirogue conduisibles.
+4. Mission 6 « Champs de Cendre » à Bomé, puis Tikané.
 
 ## Faris et les habitants : comment ils sont faits
 

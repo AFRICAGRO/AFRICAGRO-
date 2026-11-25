@@ -16,6 +16,11 @@ var etiquette: Label
 var aide: Label
 var lieu_actuel := ""
 var ville: VillePortNere
+var bome: VillageBome
+
+
+func centre_bome() -> Vector2:
+	return carte_vers_monde(228, 372) + Vector2(-170, 110)
 
 
 ## Coordonnées de la carte de référence (image de 700 px) vers le monde (mètres).
@@ -33,6 +38,9 @@ func _ready() -> void:
 	# Port-Néré : relief adouci sous la ville
 	var port_nere := carte_vers_monde(225, 235)
 	terrain.lissages = [{"centre": port_nere + Vector2(-20, 20), "rayon": 340.0, "passes": 3}]
+	# Bomé : village en terrasses sur la colline (plan préparé avant le terrain)
+	var plan_bome := VillageBome.preparer_plan(centre_bome())
+	terrain.plateformes = plan_bome["plateformes"]
 	add_child(terrain)
 	_mer()
 	var env := _environnement()
@@ -56,6 +64,11 @@ func _ready() -> void:
 	add_child(ville)
 	ville.construire(terrain, port_nere, veg)
 	proche.villes.append(ville)
+	bome = VillageBome.new()
+	bome.name = "Bome"
+	add_child(bome)
+	bome.construire_bome(terrain, plan_bome, veg, proche)
+	proche.villes.append(bome)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
@@ -94,6 +107,8 @@ func _ready() -> void:
 	add_child(mission)
 	mission.demarrer(village, joueur)
 	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
+	(get_node("VieQuotidienne") as VieQuotidienne).bome(bome)
+	(get_node("AmbianceSonore") as AmbianceSonore).bome = bome
 	(get_node("AmbianceSonore") as AmbianceSonore).preparer(terrain, joueur, ville, ambiances, get_node("VegetationProche"), get_node("Mouettes"))
 	_interface()
 
@@ -103,7 +118,7 @@ func _actions_clavier() -> void:
 	var touches := {
 		"avancer": [KEY_W, KEY_UP], "reculer": [KEY_S, KEY_DOWN], "gauche": [KEY_A, KEY_LEFT],
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
-		"aller_port_nere": [KEY_P],
+		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -117,12 +132,14 @@ func _actions_clavier() -> void:
 ## Zones laissées libres pour les bâtiments : Port-Néré, villages, camp, piste d'atterrissage.
 func _zones_construites() -> Array:
 	var zones := []
-	for z in [[225, 235, 260.0], [170, 268, 90.0], [228, 372, 110.0], [405, 470, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
+	for z in [[225, 235, 260.0], [170, 268, 90.0], [405, 470, 90.0], [452, 540, 110.0], [326, 232, 50.0], [290, 356, 185.0]]:
 		var c := carte_vers_monde(z[0], z[1])
 		zones.append(Vector3(c.x, c.y, z[2]))
 	var ap: Dictionary = terrain.aplanissements[0]
 	var ca: Vector2 = ap["centre"] + (ap["mer"] as Vector2) * -32.0
 	zones.append(Vector3(ca.x, ca.y, 78.0))
+	var cb := centre_bome()
+	zones.append(Vector3(cb.x, cb.y, 125.0))  # village de Bomé et ses champs
 	for i in 12:
 		var c := carte_vers_monde(lerpf(198, 326, i / 11.0), lerpf(214, 218, i / 11.0))
 		zones.append(Vector3(c.x, c.y, 45.0))
@@ -245,7 +262,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : aller à Port-Néré · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
@@ -257,6 +274,10 @@ func _interface() -> void:
 
 
 func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("aller_bome") and bome and bome.reperes.has("place"):
+		var pb: Vector3 = bome.reperes["place"]
+		joueur.global_position = pb + Vector3(0, 1.0, 14)
+		joueur.velocity = Vector3.ZERO
 	if Input.is_action_just_pressed("aller_port_nere") and ville.reperes.has("place"):
 		# déplacement rapide vers la place de l'Indépendance (en attendant les véhicules)
 		var pl: Vector3 = ville.reperes["place"]
