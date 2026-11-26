@@ -36,6 +36,7 @@ var regard := Vector3.FORWARD
 ## (dans l'entrepôt du Cobra, un homme vu sans arme est quand même suspect).
 var portee_vue := 38.0
 var zone_interdite := false
+var tolere := false        # Faris passe pour un docker : sa présence n'éveille pas la méfiance
 ## Bruit suspect (objet lancé) : le garde va voir, regarde autour de lui, puis reprend sa ronde.
 var enquete := Vector3.INF
 var t_enquete := 0.0
@@ -257,7 +258,7 @@ func _calme(delta: float) -> void:
 		soupcon += delta * (0.55 if not joueur.accroupi else 0.22) * clampf(16.0 / maxf(d, 2.0), 0.4, 3.0)
 		etat = Etat.SUSPICION
 		_regarder(joueur.global_position, delta * 2.0)
-	elif voit and not joueur.accroupi and global_position.distance_to(joueur.global_position) < 9.0:
+	elif voit and not tolere and not joueur.accroupi and global_position.distance_to(joueur.global_position) < 9.0:
 		soupcon += delta * 0.8
 		etat = Etat.SUSPICION
 		_regarder(joueur.global_position, delta * 2.0)

@@ -50,6 +50,7 @@ func _ready() -> void:
 	# mont Talanké : cuvette du lac de cratère et replat du sommet (mission 7)
 	plan_m7 = Mission7.preparer_plan(carte_vers_monde(290, 356), carte_vers_monde(347, 442))
 	terrain.plateformes.append_array(plan_m7["plateformes"])
+	terrain.anneaux = plan_m7["anneaux"]
 	add_child(terrain)
 	_mer()
 	var env := _environnement()

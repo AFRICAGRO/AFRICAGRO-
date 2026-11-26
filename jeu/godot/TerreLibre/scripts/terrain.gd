@@ -20,6 +20,9 @@ var lissages: Array = []
 var plateformes: Array = []
 ## Lits de rivière creusés dans le relief : {"pts": PackedVector2Array, "niveaux": PackedFloat32Array, "largeur": float}
 var lits: Array = []
+## Remparts de cratère : un anneau de relief ajouté au terrain (lac du mont Talanké).
+## {centre: Vector2, rayon: m, hauteur: m, largeur: m}
+var anneaux: Array = []
 var pas := TAILLE / float(N - 1)
 
 
@@ -31,6 +34,7 @@ func _ready() -> void:
 	hauteurs = f.get_buffer(N * N * 4).to_float32_array()
 	_aplanir()
 	_lisser()
+	_anneaux()
 	_plateformes()
 	_lits()
 	_construire_maillage()
@@ -92,6 +96,26 @@ func _lisser() -> void:
 							m += hauteurs[i + dr * N + dc] * (4.0 if dr == 0 and dc == 0 else (2.0 if dr == 0 or dc == 0 else 1.0))
 					nouv[i] = lerpf(hauteurs[i], maxf(m / 16.0, 0.8), w)
 			hauteurs = nouv
+
+
+func _anneaux() -> void:
+	var demi := TAILLE * 0.5
+	for an in anneaux:
+		var c: Vector2 = an["centre"]
+		var r: float = an["rayon"]
+		var hm: float = an["hauteur"]
+		var l: float = an["largeur"]
+		var ext := r + l * 2.5
+		var c0 := maxi(0, int((c.x - ext + demi) / pas)); var c1 := mini(N - 1, int((c.x + ext + demi) / pas) + 1)
+		var r0 := maxi(0, int((c.y - ext + demi) / pas)); var r1 := mini(N - 1, int((c.y + ext + demi) / pas) + 1)
+		for row in range(r0, r1 + 1):
+			for col in range(c0, c1 + 1):
+				var d := Vector2(col * pas - demi, row * pas - demi).distance_to(c)
+				var k := (d - r) / l
+				# rempart dissymétrique : flanc intérieur raide, flanc extérieur plus doux
+				if k > 0.0:
+					k *= 0.6
+				hauteurs[row * N + col] += hm * exp(-k * k)
 
 
 func _plateformes() -> void:

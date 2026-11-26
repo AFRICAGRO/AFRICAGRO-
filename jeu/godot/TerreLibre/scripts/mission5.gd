@@ -72,6 +72,7 @@ func construire(p_main: Node, quai: Vector2, veg: Vegetation) -> void:
 	_batiment()
 	_interieur()
 	_ama()
+	_quai()
 	joueur.a_tire.connect(func(p: Vector3) -> void: bruit_de_tir(p, true))
 	pluie_son = AudioStreamPlayer3D.new()
 	pluie_son.stream = load("res://sons/pluie.wav")
@@ -242,6 +243,11 @@ func _batiment() -> void:
 	# groupe électrogène derrière le bâtiment, côté quai
 	var groupe := _boite(Vector3(1.6, 1.1, 0.9), _l(hx + 1.6, terrain.hauteur(_l(hx + 1.6, 0, -hz + 2).x, _l(hx + 1.6, 0, -hz + 2).z) + 0.55, -hz + 2.0), _mat("concrete_block_wall", 0.5, Color(0.25, 0.4, 0.3), 0.5))
 	groupe.name = "Groupe"
+	groupe.transparency = 1.0          # la boîte ne sert qu'au repère ; on voit le vrai groupe électrogène
+	var modele_groupe: Node3D = (load("res://props/portable_generator.glb") as PackedScene).instantiate()
+	groupe.add_child(modele_groupe)
+	modele_groupe.position = Vector3(0, -0.55, 0)
+	modele_groupe.scale = Vector3.ONE * 1.7
 	var son_groupe := AudioStreamPlayer3D.new()
 	son_groupe.stream = load("res://sons/moto.wav")
 	(son_groupe.stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -325,6 +331,84 @@ func _maillage_sac() -> Mesh:
 	c.radial_segments = 10
 	c.rings = 4
 	return c
+
+
+var deguise := false
+var arme_cachee := false
+var poissons := Vector3.ZERO
+var caisse_poisson: MeshInstance3D
+
+
+func _quai() -> void:
+	var vq: Node = main.get_node_or_null("VieQuotidienne")
+	var k := _l(-16.0, 0, -PROF * 0.5 - 15.5)
+	k.y = terrain.hauteur(k.x, k.z)
+	if vq:
+		# Kwame « Tournevis » bricole une moto sur le quai : il fera diversion à la fin
+		var moto: Node3D = (load("res://vehicules/moto.glb") as PackedScene).instantiate()
+		add_child(moto)
+		moto.global_transform = Transform3D(base.basis.rotated(Vector3.UP, 0.4), k + base.basis.x * 1.2)
+		vq._perso("kwame", "Reparer", k, atan2(base.basis.x.x, base.basis.x.z))
+	# caisses de poisson des dockers, près de la porte
+	poissons = _l(-19.0, 0, -PROF * 0.5 - 14.0)   # sur le quai, près de Kwame, hors de vue des gardes
+	poissons.y = terrain.hauteur(poissons.x, poissons.z)
+	var bleu := StandardMaterial3D.new()
+	bleu.albedo_color = Color(0.15, 0.35, 0.6)
+	bleu.roughness = 0.6
+	for i in 5:
+		var mi := MeshInstance3D.new()
+		var bx := BoxMesh.new()
+		bx.size = Vector3(0.6, 0.32, 0.42)
+		mi.mesh = bx
+		mi.material_override = bleu
+		add_child(mi)
+		mi.global_transform = Transform3D(base.basis.rotated(Vector3.UP, randf_range(-0.3, 0.3)), poissons + Vector3((i % 3) * 0.65 - 0.65, 0.16 + (i / 3) * 0.33, 0))
+	var lab := Label3D.new()
+	lab.text = "Caisses de poisson (F : se faire passer pour un docker)"
+	lab.font_size = 36
+	lab.pixel_size = 0.004
+	lab.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lab.no_depth_test = true
+	lab.name = "AidePoisson"
+	add_child(lab)
+	lab.global_position = poissons + Vector3(0, 1.4, 0)
+
+
+func _deguiser() -> void:
+	deguise = true
+	joueur.charge = true
+	caisse_poisson = MeshInstance3D.new()
+	var bx := BoxMesh.new()
+	bx.size = Vector3(0.6, 0.32, 0.42)
+	caisse_poisson.mesh = bx
+	var bleu := StandardMaterial3D.new()
+	bleu.albedo_color = Color(0.15, 0.35, 0.6)
+	caisse_poisson.material_override = bleu
+	joueur.add_child(caisse_poisson)
+	caisse_poisson.position = Vector3(0.1, 1.75, 0)
+	# le fusil reste chez Kwame : un docker n'est pas armé
+	if joueur.a_une_arme:
+		arme_cachee = true
+		joueur.a_une_arme = false
+		if joueur.arme:
+			joueur.arme.visible = false
+	m4._annoncer("Une caisse de poisson sur la tête, le fusil caché chez Kwame : vous êtes un docker. Entrez par la grande porte, sans courir ni traîner près des gardes. Posez la caisse (F près des caisses de l'entrepôt).", 6.0)
+
+
+func _fin_deguisement(raison: String) -> void:
+	if not deguise:
+		return
+	deguise = false
+	joueur.charge = porte_sac != null
+	if caisse_poisson:
+		caisse_poisson.queue_free()
+		caisse_poisson = null
+	if arme_cachee:
+		arme_cachee = false
+		joueur.a_une_arme = true
+		if joueur.arme:
+			joueur.arme.visible = true
+	m4._annoncer(raison, 3.0)
 
 
 func _ama() -> void:
@@ -482,6 +566,14 @@ func interagir() -> void:
 	if porte_corps:
 		_poser_corps()
 		return
+	if not deguise and not porte_sac and jp.distance_to(poissons) < 2.5 and not alarme:
+		_deguiser()
+		return
+	if deguise and _dedans(jp):
+		for c in cachettes:
+			if jp.distance_to(c) < 2.5:
+				_fin_deguisement("Vous posez la caisse de poisson contre les autres. Désormais, si on vous voit, vous êtes un intrus.")
+				return
 	if porte_sac:
 		if jp.distance_to(_trappe()) < 2.2:
 			_livrer_sac()
@@ -642,9 +734,16 @@ func _en_cours(delta: float) -> void:
 	# vue des gardes : réduite dans le noir (la nuit dehors, dans l'entrepôt quand le courant est coupé)
 	var nuit: bool = (main.ambiances as Ambiances).LISTE[(main.ambiances as Ambiances).index]["nuit"] > 0.5
 	var faris_dedans := _dedans(jp)
+	var ql := base.affine_inverse() * Vector3(jp.x, 0, jp.z)
+	var zone_privee := (ql.x > 6.0 and ql.z < -3.0) or (ql.x < -5.0 and ql.z > 3.0)
+	var louche := joueur.accroupi or joueur.vitesse_affichee > 3.0 or zone_privee
+	if deguise and alarme:
+		_fin_deguisement("Le déguisement ne trompe plus personne.")
 	for g in gardes:
 		var p := g as Pnj
-		p.zone_interdite = faris_dedans
+		var colle := p.global_position.distance_to(jp) < 2.5
+		p.zone_interdite = faris_dedans and (not deguise or louche or colle)
+		p.tolere = deguise and not louche and not colle
 		var dedans := _dedans(p.global_position)
 		var vue := 26.0
 		if dedans and noir > 0.0:

@@ -66,10 +66,12 @@ func construire(p_main: Node) -> void:
 	mat_flamme.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_flamme.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	mat_flamme.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat_flamme.albedo_texture = load("res://data/textures/fumee.png")
+	mat_flamme.albedo_texture = load("res://data/textures/flamme.png")   # outils/texture_flamme.py
 	mat_flamme.vertex_color_use_as_albedo = true
-	mat_flamme.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	mat_flamme.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y        # langues de feu verticales
 	mat_fumee = mat_flamme.duplicate()
+	mat_fumee.albedo_texture = load("res://data/textures/fumee_douce.png")   # outils/texture_fumee.py
+	mat_fumee.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	mat_fumee.blend_mode = BaseMaterial3D.BLEND_MODE_MIX
 	var pc: Array = bome.reperes.get("parcelles", [])
 	var axes: Array = bome.reperes.get("parcelles_axe", [])
@@ -407,6 +409,83 @@ func _cultivateurs_s_ecartent() -> void:
 	cultivateurs.clear()
 
 
+## Ama tient le haut de la colline avec un fusil de chasse : de loin, elle blesse un milicien
+## en plein combat (il se rend), trois fois au plus.
+var ama: Node3D
+var t_ama := 9.0
+var tirs_ama := 3
+var desarmes := false
+
+
+func _ama_sur_la_colline() -> void:
+	var vq: Node = main.get_node_or_null("VieQuotidienne")
+	if vq == null or parcelles.is_empty():
+		return
+	var p0: Dictionary = parcelles[parcelles.size() / 2]
+	var vers_village := (Vector2(bome.reperes["place"].x, bome.reperes["place"].z) - (p0["c"] as Vector2)).normalized()
+	var q: Vector2 = p0["c"] - vers_village * 45.0
+	ama = vq._perso("femme2", "Visee", Vector3(q.x, terrain.hauteur(q.x, q.y), q.y), atan2(vers_village.x, vers_village.y))
+	var fusil := Arme.new()
+	ama.add_child(fusil)
+	fusil.tenir(ama)
+	m4._annoncer("AMA (radio) — Je suis au-dessus des parcelles, avec le fusil de mon oncle. Je te couvre.", 4.0)
+
+
+func _soutien_ama(delta: float) -> void:
+	if ama == null or tirs_ama <= 0:
+		return
+	t_ama -= delta
+	if t_ama > 0.0:
+		return
+	t_ama = randf_range(9.0, 14.0)
+	for g in gardes:
+		var p := g as Pnj
+		if p.etat == Pnj.Etat.COMBAT and p.global_position.distance_to(ama.global_position) < 120.0:
+			p.touche(80.0, false)          # touché à la jambe : il lâche son arme et se rend
+			if p.est_actif():
+				p._se_rendre()
+			tirs_ama -= 1
+			var son := AudioStreamPlayer3D.new()
+			son.stream = load("res://sons/tir.wav")
+			son.unit_size = 12.0
+			son.pitch_scale = 0.8
+			ama.add_child(son)
+			son.play()
+			m4._annoncer("AMA (radio) — Je le tiens ! Il ne bougera plus.", 2.5)
+			return
+
+
+## Si Faris a protégé le village (aucune maison touchée, aucun feu d'herbes), les cultivateurs,
+## en colère, reviennent et désarment eux-mêmes les contremaîtres encore debout près du village.
+func _cultivateurs_desarment() -> void:
+	if desarmes or maisons_perdues > 0 or not herbes.is_empty():
+		return
+	var brulees := 0
+	for p in parcelles:
+		if p["brulee"]:
+			brulees += 1
+	if brulees < 2:
+		return
+	desarmes = true
+	var place: Vector3 = bome.reperes["place"]
+	var vq: Node = main.get_node_or_null("VieQuotidienne")
+	var n := 0
+	for g in gardes:
+		var p := g as Pnj
+		if not p.est_actif() or p.global_position.distance_to(place) > 260.0:
+			continue
+		p._se_rendre()
+		n += 1
+		if vq:
+			for k in 2:
+				var q: Vector3 = p.global_position + Vector3(cos(k * PI) * 1.6, 0, sin(k * PI + 0.5) * 1.6)
+				var c: Node3D = vq._perso(["cultivateur", "homme3"][k], "Repos", Vector3(q.x, terrain.hauteur(q.x, q.z), q.z), 0.0)
+				var vers := p.global_position - c.global_position
+				c.rotation.y = atan2(vers.x, vers.z)
+	if n > 0:
+		m4._annoncer("Les cultivateurs, que vous avez protégés, encerclent les contremaîtres et les désarment eux-mêmes. (F pour les ligoter)", 5.0)
+
+
 func _riposte() -> void:
 	for g in gardes:
 		if (g as Pnj).est_actif():
@@ -489,6 +568,7 @@ func interagir() -> void:
 					allume = true
 					_cultivateurs_s_ecartent()
 					_riposte()
+					_ama_sur_la_colline()
 				return
 	m4.interagir()
 
@@ -579,9 +659,10 @@ func _flammes(c: Vector3, force: float) -> Node3D:
 	fl.scale_amount_max = 1.4
 	fl.gravity = Vector3(vent.x * 1.5, 1.0, vent.y * 1.5)
 	var grad := Gradient.new()
-	grad.set_color(0, Color(1.0, 0.9, 0.55, 0.95))
-	grad.add_point(0.35, Color(1.0, 0.5, 0.1, 0.8))
-	grad.set_color(2, Color(0.5, 0.08, 0.02, 0.0))
+	grad.set_color(0, Color(1.0, 0.95, 0.8, 0.0))
+	grad.add_point(0.12, Color(1.0, 0.85, 0.55, 1.0))
+	grad.add_point(0.55, Color(1.0, 0.45, 0.1, 0.85))
+	grad.set_color(3, Color(0.45, 0.06, 0.02, 0.0))
 	fl.color_ramp = grad
 	n.add_child(fl)
 	var fu := CPUParticles3D.new()
@@ -605,6 +686,26 @@ func _flammes(c: Vector3, force: float) -> Node3D:
 	fu.color_ramp = g2
 	fu.position.y = 2.0
 	n.add_child(fu)
+	var braises := CPUParticles3D.new()
+	var qb := QuadMesh.new()
+	qb.size = Vector2(0.08, 0.08)
+	var mb := StandardMaterial3D.new()
+	mb.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mb.albedo_color = Color(1.0, 0.6, 0.15)
+	mb.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	qb.material = mb
+	braises.mesh = qb
+	braises.amount = int(8 * force)
+	braises.lifetime = 2.5
+	braises.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	braises.emission_box_extents = Vector3(1.5, 0.5, 1.5)
+	braises.direction = Vector3(vent.x, 1.5, vent.y)
+	braises.spread = 30.0
+	braises.initial_velocity_min = 2.0
+	braises.initial_velocity_max = 4.5
+	braises.gravity = Vector3(vent.x * 2.0, 0.5, vent.y * 2.0)
+	braises.position.y = 1.0
+	n.add_child(braises)
 	var lum := OmniLight3D.new()
 	lum.light_color = Color(1.0, 0.55, 0.2)
 	lum.light_energy = 1.4 * force
@@ -804,6 +905,8 @@ func _en_feu(delta: float) -> void:
 		_tick_feu()
 	_tick_herbes(delta)
 	_tick_maisons(delta)
+	_soutien_ama(delta)
+	_cultivateurs_desarment()
 	if t_coupe > 0.0:
 		t_coupe -= delta
 		if t_coupe <= 0.0:

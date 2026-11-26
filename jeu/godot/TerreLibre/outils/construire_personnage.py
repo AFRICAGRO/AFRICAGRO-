@@ -69,6 +69,10 @@ VARIANTES = {
     "cultivateur": dict(macros=dict(gender=1.0, age=0.55, muscle=0.6, weight=0.45, height=0.5),
                         peau=(0.08, 0.035, 0.018), cheveux=(0.012, 0.009, 0.008),
                         haut=(L[0], (0.35, 0.3, 0.2)), bas=(L[0], (0.1, 0.09, 0.07)), manches=1.4, sandales=True, chapeau=True),
+    # Kwame « Tournevis », le mécanicien de Port-Néré : bleu de travail taché de cambouis, la quarantaine
+    "kwame": dict(macros=dict(gender=1.0, age=0.62, muscle=0.5, weight=0.62, height=0.42),
+                  peau=(0.075, 0.034, 0.018), cheveux=(0.012, 0.009, 0.008),
+                  haut=(D[0], (0.05, 0.08, 0.17)), bas=(D[0], (0.045, 0.07, 0.15))),
     "baya": dict(macros=dict(gender=0.0, age=0.92, muscle=0.3, weight=0.25, height=0.75),
                  peau=(0.07, 0.031, 0.016), cheveux=(0.5, 0.49, 0.47),
                  haut=("wax_bandes_indigo.jpg", (0.13, 0.17, 0.45)), bas=("wax_bandes_indigo.jpg", (0.13, 0.17, 0.45)),
@@ -1190,6 +1194,27 @@ for f in range(0, 41, 4):
     rot("RightUpLeg", Z, -14)
     main_vers("Right", (-0.1 + 0.04 * math.sin(p), -0.42, 0.42 + 0.05 * math.sin(2 * p)), (-0.6, 0.1, 0.7))
     main_vers("Left", (0.1, -0.42, 0.42 + 0.03 * math.cos(p)), (0.6, 0.1, 0.7))
+    cle(f)
+
+nouvelle("Grimper")  # escalade d'une paroi : mains qui montent en alternance, pieds en appui sur la roche
+for f in range(0, 25, 2):
+    p = 2 * math.pi * f / 24
+    sp = math.sin(p)
+    raz()
+    bouge_hanches(0.0, 0.0)
+    rot("Spine", X, 10)
+    rot("Spine1", X, 4)
+    rot("Neck", X, -10)
+    rot("Head", X, -16)   # le regard cherche la prise suivante
+    main_vers("Right", (-0.22, -0.26, 0.86 + 0.2 * sp), (-0.7, 0.4, 0.2))
+    main_vers("Left", (0.22, -0.26, 0.86 - 0.2 * sp), (0.7, 0.4, 0.2))
+    for cote, s_ in (("Left", -sp), ("Right", sp)):
+        leve = max(0.0, s_)
+        rot(cote + "UpLeg", X, -(22 + 38 * leve))
+        rot(cote + "Leg", X, 35 + 60 * leve)
+        rot(cote + "Foot", X, -10)
+    rot("LeftUpLeg", Z, 10)
+    rot("RightUpLeg", Z, -10)
     cle(f)
 
 nouvelle("Biner")  # travail de la terre à la houe : outil levé puis abattu devant soi

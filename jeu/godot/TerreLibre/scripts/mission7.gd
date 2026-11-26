@@ -81,6 +81,7 @@ static func preparer_plan(lieu_lac: Vector2, lieu_mont: Vector2) -> Dictionary:
 	var niveau := bord - 1.6
 	return {
 		"lac": best, "niveau": niveau, "sommet": s, "h_sommet": hs,
+		"anneaux": [{"centre": best, "rayon": 70.0, "hauteur": 17.0, "largeur": 16.0}],
 		"plateformes": [
 			{"centre": best, "rayon": 30.0, "h": niveau - 4.5},
 			{"centre": s, "rayon": 17.0, "h": hs - 1.0},
@@ -197,9 +198,9 @@ func _sanctuaire_et_vue() -> void:
 	var c := Vector2(lac.x, lac.z) + Vector2(56, 0)
 	for k in 24:
 		var a := TAU * k / 24.0
-		var q := Vector2(lac.x, lac.z) + Vector2(cos(a), sin(a)) * 54.0
+		var q := Vector2(lac.x, lac.z) + Vector2(cos(a), sin(a)) * 50.0
 		var hq := terrain.hauteur(q.x, q.y)
-		if hq > niveau_lac + 0.6 and hq < niveau_lac + 4.0:
+		if hq > niveau_lac + 0.6 and hq < niveau_lac + 6.0:
 			c = q
 			break
 	for k in 9:
@@ -213,7 +214,7 @@ func _sanctuaire_et_vue() -> void:
 	var hb := -INF
 	for k in 24:
 		var a := TAU * k / 24.0
-		var q := Vector2(lac.x, lac.z) + Vector2(cos(a), sin(a)) * 64.0
+		var q := Vector2(lac.x, lac.z) + Vector2(cos(a), sin(a)) * 72.0
 		var hq := terrain.hauteur(q.x, q.y)
 		if hq > hb:
 			hb = hq
@@ -239,7 +240,8 @@ func _paroi() -> void:
 	paroi_normale = Vector3(nord.x, 0, nord.y)
 	# le haut de la paroi rejoint le terrain juste derrière elle (on débouche sur la pente du sommet)
 	var dessus := pied - nord * 6.0
-	paroi_haut = maxf(12.0, terrain.hauteur(dessus.x, dessus.y) + 0.6 - h_pied)
+	# un éperon rocheux de 20 m au moins : la paroi dépasse la pente, on prend pied sur son sommet
+	paroi_haut = maxf(20.0, terrain.hauteur(dessus.x, dessus.y) + 0.6 - h_pied)
 	paroi_base = Vector3(pied.x, h_pied, pied.y)
 	var cote := Vector3(-paroi_normale.z, 0, paroi_normale.x)
 	var sombre := StandardMaterial3D.new()
@@ -250,24 +252,46 @@ func _paroi() -> void:
 	sombre.uv1_scale = Vector3.ONE * 0.18
 	sombre.albedo_color = Color(0.45, 0.42, 0.4)
 	var clair: StandardMaterial3D = sombre.duplicate()
-	clair.albedo_color = Color(0.85, 0.82, 0.76)   # la roche plus claire où sont les prises
+	clair.albedo_color = Color(1.15, 1.08, 0.95)   # la roche plus claire où sont les prises
 	var base := Basis(cote, Vector3.UP, paroi_normale)
-	# la paroi : un grand bloc qui s'appuie contre la montagne, la voie claire au milieu
-	for k in [-1, 0, 1]:
-		var mi := MeshInstance3D.new()
-		var bx := BoxMesh.new()
-		bx.size = Vector3(7.0 if k == 0 else 9.0, paroi_haut, 6.0)
-		mi.mesh = bx
-		mi.material_override = clair if k == 0 else sombre
-		add_child(mi)
-		mi.global_transform = Transform3D(base, paroi_base + cote * float(k) * 8.0 - paroi_normale * 3.0 + Vector3(0, paroi_haut * 0.5, 0))
-		var sb := StaticBody3D.new()
-		var cs := CollisionShape3D.new()
-		var forme := BoxShape3D.new()
-		forme.size = bx.size
-		cs.shape = forme
-		sb.add_child(cs)
-		mi.add_child(sb)
+	# la paroi : un noyau solide (collision) habillé de blocs de roche irréguliers ; la voie claire au milieu
+	var noyau := StaticBody3D.new()
+	add_child(noyau)
+	noyau.global_transform = Transform3D(base, paroi_base - paroi_normale * 3.4 + Vector3(0, paroi_haut * 0.5, 0))
+	var cs0 := CollisionShape3D.new()
+	var f0 := BoxShape3D.new()
+	f0.size = Vector3(24.0, paroi_haut, 6.0)
+	cs0.shape = f0
+	noyau.add_child(cs0)
+	var vis := MeshInstance3D.new()
+	var bx0 := BoxMesh.new()
+	bx0.size = f0.size
+	vis.mesh = bx0
+	vis.material_override = sombre
+	noyau.add_child(vis)
+	# habillage : de gros rochers bosselés qui se chevauchent (roche sombre, voie claire au milieu)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 31
+	var formes: Array = []
+	for k in 5:
+		formes.append(_rocher(k * 17 + 3))
+	var y := 0.0
+	while y < paroi_haut + 0.5:
+		var x := -12.5
+		while x < 12.5:
+			var l := rng.randf_range(2.2, 4.2)
+			var hy := rng.randf_range(1.8, 3.2)
+			var cx := x + l * 0.5
+			var bloc := MeshInstance3D.new()
+			bloc.mesh = formes[rng.randi() % formes.size()]
+			bloc.material_override = clair if absf(cx) < 3.0 else sombre
+			add_child(bloc)
+			var b2 := base.rotated(Vector3.UP, rng.randf_range(-0.5, 0.5)).rotated(cote, rng.randf_range(-0.3, 0.3))
+			b2 = b2.scaled(Vector3(l * 0.62, hy * 0.62, rng.randf_range(0.9, 1.5)))
+			var yy := minf(y + hy * 0.4, paroi_haut - hy * 0.2)
+			bloc.global_transform = Transform3D(b2, paroi_base + cote * cx - paroi_normale * rng.randf_range(0.6, 1.1) + Vector3(0, yy, 0))
+			x += l * rng.randf_range(0.65, 0.85)
+		y += rng.randf_range(1.4, 2.2)
 	# corniches où l'on reprend son souffle, et une vieille échelle de chantier rouillée
 	corniches = [0.0, paroi_haut * 0.36, paroi_haut * 0.7]
 	for hc in corniches.slice(1):
@@ -301,6 +325,31 @@ func _paroi() -> void:
 		add_child(mi)
 		mi.global_transform = Transform3D(base, paroi_base + cote * randf_range(-3.0, 3.0) + paroi_normale * 0.05 + Vector3(0, randf_range(0.6, paroi_haut - 0.5), 0))
 	reprise = paroi_base + paroi_normale * 1.5
+
+
+## Rocher bosselé : une sphère déformée par un bruit (silhouette irrégulière, facettes de roche).
+func _rocher(graine: int) -> ArrayMesh:
+	var sp := SphereMesh.new()
+	sp.radius = 1.0
+	sp.height = 2.0
+	sp.radial_segments = 12
+	sp.rings = 8
+	var arr := sp.get_mesh_arrays()
+	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var bruit := FastNoiseLite.new()
+	bruit.seed = graine
+	bruit.frequency = 0.9
+	for i in v.size():
+		var d := 1.0 + 0.32 * bruit.get_noise_3dv(v[i] * 1.3) + 0.12 * bruit.get_noise_3dv(v[i] * 3.7)
+		v[i] = v[i] * d
+		v[i].z *= 0.7
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+	for i in idx:
+		st.add_vertex(v[i])
+	st.generate_normals()
+	return st.commit()
 
 
 func _poste() -> void:
@@ -576,13 +625,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	var dev := rel.dot(paroi_normale)
 	if absf(lat) < 3.4 and dev < 1.6 and dev > -0.5 and rel.y < paroi_haut - 1.0:
 		grimpe = true
+		joueur.grimpe = true
 		pos_paroi = Vector2(lat, maxf(rel.y, 0.3))
 		joueur.set_physics_process(false)
 		joueur.velocity = Vector3.ZERO
 		jauge.visible = true
 		var ap: AnimationPlayer = joueur.corps.find_child("AnimationPlayer", true, false)
 		if ap:
-			ap.play("Reparer")
+			ap.play("Grimper")
 		get_viewport().set_input_as_handled()
 
 
@@ -599,7 +649,10 @@ func _grimper(delta: float) -> void:
 			endurance = minf(ENDURANCE, endurance + delta * 30.0)
 			reprise = paroi_base + paroi_normale * 1.0 + Vector3(0, hc + 0.3, 0)
 	jauge.value = endurance
-	var p := paroi_base + cote * pos_paroi.x + paroi_normale * 0.45 + Vector3(0, pos_paroi.y, 0)
+	var ap: AnimationPlayer = joueur.corps.find_child("AnimationPlayer", true, false)
+	if ap:
+		ap.speed_scale = 1.0 if bouge else 0.0   # immobile sur la paroi quand on ne bouge pas
+	var p := paroi_base + cote * pos_paroi.x + paroi_normale * 0.3 + Vector3(0, pos_paroi.y, 0)
 	joueur.global_position = p
 	joueur.corps.rotation.y = atan2(-paroi_normale.x, -paroi_normale.z)
 	if pos_paroi.y < 0.2:
@@ -615,6 +668,10 @@ func _grimper(delta: float) -> void:
 
 func _lacher(ou: Vector3, chute: bool) -> void:
 	grimpe = false
+	joueur.grimpe = false
+	var ap: AnimationPlayer = joueur.corps.find_child("AnimationPlayer", true, false)
+	if ap:
+		ap.speed_scale = 1.0
 	joueur.global_position = ou
 	joueur.set_physics_process(true)
 	jauge.visible = false

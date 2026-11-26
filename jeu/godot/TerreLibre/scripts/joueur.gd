@@ -108,7 +108,12 @@ func donner_arme() -> void:
 	arme.tenir(corps)
 
 
+var grimpe := false   # sur une paroi (mission 7) : l'animation est menée par l'escalade
+
+
 func _choisir_animation() -> void:
+	if grimpe:
+		return
 	var nom := "Repos"
 	var vitesse_anim := 1.0
 	if mort:
