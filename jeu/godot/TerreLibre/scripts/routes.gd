@@ -34,13 +34,25 @@ func construire(t: Terrain, troncons: Array, eviter: Array, rivieres: Array, vil
 	var grille := _grille(eviter, rivieres)
 	# bâtiments des villes et villages : la route passe entre eux, jamais au travers
 	var couverture := {}
+	var rues := {}
 	for v in villes:
 		for k in (v as VillePortNere).bati:
 			var c := _cellule(Vector2(k.x * 2.0 + 1.0, k.y * 2.0 + 1.0))
 			couverture[c] = couverture.get(c, 0) + 1
-	for c in couverture:
-		if couverture[c] > 16 and grille.is_in_boundsv(c):
+		for k in (v as VillePortNere).occupe:
+			if not (v as VillePortNere).bati.has(k):
+				rues[_cellule(Vector2(k.x * 2.0 + 1.0, k.y * 2.0 + 1.0))] = true
+	# les rues des villes existent déjà : la piste ne les double pas (elle part du bout de la rue)
+	for c in rues:
+		if grille.is_in_boundsv(c):
 			grille.set_point_solid(c, true)
+	for c in couverture:
+		if not grille.is_in_boundsv(c):
+			continue
+		if couverture[c] > 16:
+			grille.set_point_solid(c, true)
+		else:
+			grille.set_point_weight_scale(c, grille.get_point_weight_scale(c) + 25.0)
 	for tr in troncons:
 		var pts := _chemin(grille, tr[0], tr[1])
 		if pts.size() < 2:
@@ -54,7 +66,7 @@ func construire(t: Terrain, troncons: Array, eviter: Array, rivieres: Array, vil
 			complet.append(p)
 		var lisse := _reechantillonner(_chaikin(_chaikin(_chaikin(complet))), 3.0)
 		traces.append(lisse)
-		_ruban(lisse)
+		_ruban(lisse, (tr[2] as Array).is_empty(), (tr[3] as Array).is_empty())
 		_marquer(lisse)
 		if tr.size() > 4:
 			_panneau(lisse, tr[4])
@@ -88,7 +100,7 @@ func _panneau(pts: PackedVector2Array, nom: String) -> void:
 	peint.albedo_color = Color(0.92, 0.9, 0.82)
 	peint.roughness = 0.8
 	plaque.material_override = peint
-	var face := Basis(Vector3.UP, atan2(t.x, t.y) + PI * 0.5)   # la plaque se lit depuis la route
+	var face := Basis(Vector3.UP, atan2(t.x, t.y))   # la plaque fait face à la route : on la lit en roulant
 	plaque.transform = Transform3D(face, Vector3(p.x, h + 1.9, p.y))
 	add_child(plaque)
 	for cote in [1.0, -1.0]:
@@ -201,17 +213,7 @@ func _reechantillonner(p: PackedVector2Array, d: float) -> PackedVector2Array:
 # ---------------------------------------------------------------------
 # Ruban de latérite
 # ---------------------------------------------------------------------
-func _ruban(pts: PackedVector2Array) -> void:
-	# profil en long adouci (pas de bosses à chaque maille du relief), jamais sous le sol
-	var hs := PackedFloat32Array()
-	for p in pts:
-		hs.append(terrain.hauteur(p.x, p.y))
-	var lisse := hs.duplicate()
-	for passe in 3:
-		var tmp := lisse.duplicate()
-		for i in range(1, lisse.size() - 1):
-			tmp[i] = (lisse[i - 1] + lisse[i] * 2.0 + lisse[i + 1]) * 0.25
-		lisse = tmp
+func _ruban(pts: PackedVector2Array, effile_debut := false, effile_fin := false) -> void:
 	# section : bord fondu | accotement | chaussée bombée | accotement | bord fondu
 	var lat := [-(LARGEUR * 0.5 + ACCOTEMENT), -LARGEUR * 0.5, -2.1, -1.5, -1.0, 0.0, 1.0, 1.5, 2.1, LARGEUR * 0.5, LARGEUR * 0.5 + ACCOTEMENT]
 	var st := SurfaceTool.new()
@@ -230,15 +232,21 @@ func _ruban(pts: PackedVector2Array) -> void:
 		var teinte := Color(1, 1, 1) * rng.randf_range(0.9, 1.05)
 		for k in lat.size():
 			var l: float = lat[k]
-			var q: Vector2 = pts[i] + n * l
+			var largeur_k := 1.0
+			if effile_debut:
+				largeur_k = minf(largeur_k, 0.35 + 0.65 * clampf(i / 12.0, 0.0, 1.0))
+			if effile_fin:
+				largeur_k = minf(largeur_k, 0.35 + 0.65 * clampf((pts.size() - 1 - i) / 12.0, 0.0, 1.0))
+			var q: Vector2 = pts[i] + n * (l * largeur_k)
 			var sol := terrain.hauteur(q.x, q.y)
 			var bord := absf(l) > LARGEUR * 0.5 + 0.1
 			var h: float
 			if bord:
 				h = sol - 0.08          # le bord plonge sous le sol : la limite suit les irrégularités du terrain
 			else:
+				# une piste de terre suit le terrain (pas de remblai) : léger bombement pour l'écoulement des pluies
 				var bombe := 0.06 * (1.0 - absf(l) / (LARGEUR * 0.5))
-				h = maxf(lisse[i] + bombe, sol) + 0.1
+				h = sol + 0.1 + bombe
 			# deux ornières tassées et sombres (passage des roues), bande centrale plus claire, bords poussiéreux
 			var c := 1.15
 			if absf(absf(l) - 1.5) < 0.1:

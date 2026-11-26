@@ -59,12 +59,10 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 	anim_haut.root_node = anim.root_node
 	anim_haut.add_animation_library("", anim.get_animation_library(""))
 	# tenue : chemise teintée (ou autre motif), pantalon foncé pour la milice
-	var mesh_inst: MeshInstance3D = null
-	var maillages := corps.find_children("*", "MeshInstance3D", true, false)
-	if maillages.size() > 0:
-		mesh_inst = maillages[0]
-	if mesh_inst:
+	for mesh_inst in corps.find_children("*", "MeshInstance3D", true, false):
 		for s in mesh_inst.mesh.get_surface_count():
+			if mesh_inst.mesh.surface_get_material(s) == null:
+				continue
 			var nom: String = mesh_inst.mesh.surface_get_material(s).resource_name
 			if nom == "Chemise":
 				var m: StandardMaterial3D = mesh_inst.mesh.surface_get_material(s).duplicate()

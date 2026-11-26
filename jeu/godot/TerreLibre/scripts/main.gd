@@ -216,7 +216,7 @@ func _routes(veg: Vegetation, proche: VegetationProche, akweri: Vector2, mer: Ve
 	var pb := Vector2(place_bome.x, place_bome.z)
 	var piste: PackedVector2Array = tikane.reperes["piste"]
 	var fin_piste := piste[piste.size() - 1]
-	var entree_akweri := akweri - mer * 95.0
+	var entree_akweri := akweri - mer * 55.0   # sur le replat du village, au-dessus des cases
 	var troncons := [
 		[bvd[0] + d_bvd * 8.0, entree_akweri, sortie_bvd, [], "AKWÉRI"],
 		[fin_av + d_av * 8.0, pb, sortie_av, [], "BOMÉ"],
