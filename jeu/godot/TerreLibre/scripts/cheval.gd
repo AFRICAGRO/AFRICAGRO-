@@ -53,6 +53,7 @@ func _ready() -> void:
 	tronc.position = Vector3(0, 1.25, 0.1)
 	add_child(tronc)
 	modele = (load("res://personnages/cheval.glb") as PackedScene).instantiate()
+	Cheval.habiller(modele)
 	add_child(modele)
 	ap = modele.find_child("AnimationPlayer", true, false)
 	for a in ["Repos", "Pas", "Trot", "Galop"]:
@@ -78,6 +79,30 @@ func _ready() -> void:
 	aide.visible = false
 	aide.no_depth_test = true
 	add_child(aide)
+
+
+## Robe du cheval : la couleur gris pommelé (peinte sur le modèle) multipliée par le grain du poil ras,
+## avec son relief et son léger brillant ; reflet discret sur les contours.
+static func habiller(m: Node3D) -> void:
+	var robe := StandardMaterial3D.new()
+	robe.vertex_color_use_as_albedo = true
+	robe.vertex_color_is_srgb = true
+	robe.albedo_texture = load("res://data/textures/poil_diff.jpg")
+	robe.normal_enabled = true
+	robe.normal_texture = load("res://data/textures/poil_nor.jpg")
+	robe.normal_scale = 0.35
+	robe.uv1_scale = Vector3(10, 10, 1)
+	robe.roughness = 0.48
+	robe.specular = 0.42
+	robe.rim_enabled = true
+	robe.rim = 0.18
+	robe.rim_tint = 0.6
+	for mi in m.find_children("*", "MeshInstance3D", true, false):
+		var mesh := (mi as MeshInstance3D).mesh
+		for k in mesh.get_surface_count():
+			var mat := mesh.surface_get_material(k)
+			if mat and mat.resource_name == "Robe":
+				(mi as MeshInstance3D).set_surface_override_material(k, robe)
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -12,6 +12,7 @@ import os
 ICI = os.path.dirname(os.path.abspath(__file__))
 SORTIE = os.path.join(ICI, "..", "personnages", "cheval.glb")
 TAPIS = os.path.join(ICI, "tapis_selle.png")
+MECHE = os.path.join(ICI, "meche.png")
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
@@ -63,18 +64,25 @@ ellipse((0, -0.48, 1.12), V((0.25, 0.24, 0.32)), 1.0, 2.0)     # poitrail
 ellipse((0, 0.38, 1.2), V((0.27, 0.27, 0.29)), 1.0, 2.0)       # arrière-main
 ellipse((0, -0.5, 1.4), V((0.1, 0.17, 0.1)), 1.0, 2.0)         # garrot
 ellipse((0, 0.48, 1.33), V((0.2, 0.18, 0.15)), 1.0, 2.0)       # croupe
-# encolure inclinée vers l'avant (≈ 45°), plus épaisse à la base
-cou = [((0, -0.6, 1.32), 0.2), ((0, -0.8, 1.52), 0.165), ((0, -0.96, 1.7), 0.13), ((0, -1.06, 1.82), 0.11)]
+# encolure inclinée vers l'avant (≈ 45°), large à la base, plus fine à la gorge
+cou = [((0, -0.58, 1.3), 0.25), ((0, -0.78, 1.5), 0.2), ((0, -0.94, 1.68), 0.155), ((0, -1.03, 1.8), 0.125)]
 for i in range(len(cou) - 1):
     capsule(cou[i][0], cou[i + 1][0], cou[i][1] * K, 2.0)
-ellipse((0, -0.84, 1.62), V((0.07, 0.18, 0.1)), 1.0, 2.0, Quaternion((1, 0, 0), math.radians(-40)))  # crête
-# tête (≈ 0,6 m) : front large, joues rondes, chanfrein droit, naseaux
-ellipse((0, -1.12, 1.84), V((0.1, 0.12, 0.11)), 1.0, 2.0)
-ellipse((0, -1.12, 1.71), V((0.088, 0.12, 0.1)), 1.0, 2.0)
-capsule((0, -1.18, 1.78), (0, -1.42, 1.51), 0.082 * K, 2.0)
-ellipse((0, -1.44, 1.48), V((0.078, 0.07, 0.075)), 1.0, 2.0)
-for s in (1, -1):  # oreilles
-    capsule((s * 0.05, -1.05, 1.93), (s * 0.07, -1.07, 2.08), 0.026 * K, 2.0)
+ellipse((0, -0.82, 1.64), V((0.07, 0.2, 0.1)), 1.0, 2.0, Quaternion((1, 0, 0), math.radians(-40)))   # crête
+ellipse((0, -0.72, 1.3), V((0.12, 0.12, 0.16)), 1.0, 1.6)                                           # bas de l'encolure
+# tête de profil : un coin allongé (front large et plat, grosse ganache ronde en arrière,
+# chanfrein droit qui s'affine, bout du nez avec naseaux et lèvres)
+ellipse((0, -1.1, 1.86), V((0.105, 0.11, 0.08)), 1.0, 2.0)                                           # front et nuque
+ellipse((0, -1.1, 1.7), V((0.075, 0.13, 0.13)), 1.0, 2.0)                                            # ganache
+for sx in (1, -1):
+    ellipse((sx * 0.055, -1.11, 1.71), V((0.05, 0.11, 0.11)), 1.0, 1.8)                              # joues larges
+capsule((0, -1.18, 1.83), (0, -1.4, 1.58), 0.072 * K, 2.0)                                           # chanfrein
+capsule((0, -1.2, 1.66), (0, -1.4, 1.5), 0.06 * K, 2.0)                                              # mâchoire inférieure
+ellipse((0, -1.44, 1.5), V((0.07, 0.065, 0.08)), 1.0, 2.0)                                           # bout du nez
+ellipse((0, -1.41, 1.44), V((0.05, 0.05, 0.035)), 1.0, 1.8)                                          # lèvre et menton
+for s in (1, -1):  # oreilles en cornet : larges à la base, pointues
+    ellipse((s * 0.06, -1.05, 1.98), V((0.03, 0.022, 0.06)), 1.0, 2.0, Quaternion((0, 1, 0), math.radians(s * 12)))
+    capsule((s * 0.065, -1.05, 2.0), (s * 0.075, -1.07, 2.1), 0.016 * K, 2.2)
 
 # jambes : (épaule ou hanche, coude/grasset, genou/jarret, boulet, sabot)
 JAMBES = {
@@ -96,6 +104,22 @@ for nom, p in JAMBES.items():
     else:
         ellipse((p[0][0] * 0.9, p[0][1] - 0.03, p[0][2] - 0.08), V((0.1, 0.12, 0.2)), 1.0, 2.0)  # épaule et avant-bras
 
+# muscles : de petites masses qui donnent le relief vivant d'un vrai cheval
+for s in (1, -1):
+    ellipse((s * 0.2, -0.46, 1.2), V((0.06, 0.12, 0.16)), 1.0, 1.4, Quaternion((1, 0, 0), math.radians(20)))   # épaule
+    ellipse((s * 0.17, -0.4, 0.98), V((0.07, 0.1, 0.1)), 1.0, 1.4)       # triceps derrière le coude
+    ellipse((s * 0.165, -0.57, 0.76), V((0.055, 0.06, 0.12)), 1.0, 1.5)  # avant-bras
+    ellipse((s * 0.12, -0.66, 1.08), V((0.07, 0.06, 0.1)), 1.0, 1.4)     # muscles du poitrail
+    ellipse((s * 0.2, 0.46, 1.3), V((0.07, 0.16, 0.12)), 1.0, 1.4)       # fessier
+    ellipse((s * 0.17, 0.58, 1.04), V((0.07, 0.08, 0.2)), 1.0, 1.4)     # ischio-jambiers
+    ellipse((s * 0.18, 0.34, 0.9), V((0.06, 0.08, 0.12)), 1.0, 1.5)      # grasset
+    ellipse((s * 0.17, 0.42, 0.72), V((0.05, 0.08, 0.1)), 1.0, 1.5)      # gaskin (jambe)
+    ellipse((s * 0.07, -0.76, 1.42), V((0.06, 0.12, 0.08)), 1.0, 1.3, Quaternion((1, 0, 0), math.radians(-45)))  # encolure
+    ellipse((s * 0.06, -1.1, 1.72), V((0.04, 0.08, 0.07)), 1.0, 1.4)     # joue (ganache)
+    ellipse((s * 0.03, -1.46, 1.5), V((0.025, 0.035, 0.03)), 1.0, 1.6)   # naseau
+ellipse((0, -0.05, 0.9), V((0.22, 0.4, 0.06)), 1.0, 1.2)                  # ventre légèrement rond
+ellipse((0, 0.66, 1.33), V((0.06, 0.06, 0.05)), 1.0, 1.5)                 # naissance de la queue
+
 dg = bpy.context.evaluated_depsgraph_get()
 mesh = bpy.data.meshes.new_from_object(mb_obj.evaluated_get(dg))
 bpy.data.objects.remove(mb_obj)
@@ -107,13 +131,21 @@ dec = corps.modifiers.new("Allege", "DECIMATE")
 dec.ratio = min(1.0, 7500 / max(1, len(mesh.polygons)))
 lis = corps.modifiers.new("Lisse", "SMOOTH")
 lis.factor = 0.5
-lis.iterations = 3
+lis.iterations = 2
 dg = bpy.context.evaluated_depsgraph_get()
 m2 = bpy.data.meshes.new_from_object(corps.evaluated_get(dg))
 corps.modifiers.clear()
 corps.data = m2
 for p in corps.data.polygons:
     p.use_smooth = True
+# coordonnées de texture (pour le grain du poil appliqué dans Godot)
+bpy.context.view_layer.objects.active = corps
+corps.select_set(True)
+bpy.ops.object.mode_set(mode="EDIT")
+bpy.ops.mesh.select_all(action="SELECT")
+bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.004)
+bpy.ops.object.mode_set(mode="OBJECT")
+corps.select_set(False)
 print("cheval allégé :", len(corps.data.polygons), "faces")
 
 # ---------------------------------------------------------------------------
@@ -224,9 +256,10 @@ col = me.color_attributes.new("Col", "BYTE_COLOR", "CORNER")
 for poly in me.polygons:
     for li in poly.loop_indices:
         v = me.vertices[me.loops[li].vertex_index].co
-        base = Vector((0.46, 0.45, 0.43))
-        # pommelures : taches rondes plus claires sur le corps
-        pom = max(0.0, bruit(v * 1.6)) * 0.22
+        base = Vector((0.36, 0.355, 0.34))
+        # pommelures : taches rondes plus claires, cernées de gris plus sombre (comme sur un gris pommelé)
+        b0 = bruit(v * 1.7)
+        pom = max(0.0, b0) * 0.55 - max(0.0, -b0) * 0.12
         c = base * (1.0 + pom)
         if v.z < 0.9:   # jambes de plus en plus sombres vers le bas
             k = min(1.0, (0.9 - v.z) / 0.6)
@@ -267,7 +300,7 @@ lier(corps)
 # ---------------------------------------------------------------------------
 pieces = bpy.data.meshes.new("Harnais")
 bm = bmesh.new()
-MATS = ["Yeux", "Crins", "Tapis", "Cuir", "Metal", "Perles"]
+MATS = ["Yeux", "Crins", "Tapis", "Cuir", "Metal", "Perles", "Paupiere"]
 
 
 def tube(chemin, rayons, cotes, mi, plat=1.0):
@@ -301,27 +334,55 @@ def boule(c, r, mi):
         f.smooth = True
 
 
-for s in (1, -1):  # yeux
-    boule((s * 0.098, -1.16, 1.84), 0.022, 0)
+uv = bm.loops.layers.uv.new("UVMap")
+for s in (1, -1):  # yeux : globe sombre brillant, paupière autour
+    boule((s * 0.098, -1.16, 1.84), 0.021, 0)
+    paupiere = [Vector((s * 0.1, -1.16, 1.84)) + Vector((0, math.cos(a) * 0.027, math.sin(a) * 0.02)) for a in [2 * math.pi * k / 12 for k in range(13)]]
+    tube(paupiere, [0.007] * 13, 5, 6)
 
-# crinière : mèches qui partent de la crête et tombent du côté gauche
 import random
 random.seed(7)
-for i in range(26):
-    t = i / 25.0
-    racine = Vector((0.0, -1.04 + 0.5 * t, 1.92 - 0.44 * t))
-    longueur = 0.16 + 0.12 * math.sin(t * math.pi) + random.uniform(-0.03, 0.03)
-    chemin = [racine + Vector((0.035 * k, 0.01 * k, 0.0)) + Vector((0.06 * k * k, 0.0, -longueur * k)) for k in (0, 0.33, 0.66, 1.0)]
-    tube(chemin, [0.03, 0.026, 0.018, 0.006], 5, 1, plat=0.35)
+
+
+def carte(racine, pente, longueur, largeur, ondule, mi=1):
+    """Une mèche : bande courbe texturée (racine en haut de l'image, pointes en bas)."""
+    pts = []
+    for k in range(7):
+        t = k / 6.0
+        pts.append(racine + pente * longueur * t + Vector((0, 0, -0.5 * t * t * longueur)) + Vector((ondule * math.sin(t * 3.0), 0, 0)))
+    for k in range(6):
+        a, b2 = pts[k], pts[k + 1]
+        d = (b2 - a).normalized()
+        lat = d.cross(Vector((1, 0, 0))).normalized() * largeur * 0.5
+        if lat.length < 0.001:
+            lat = Vector((0, largeur * 0.5, 0))
+        q = [bm.verts.new(a - lat), bm.verts.new(a + lat), bm.verts.new(b2 + lat), bm.verts.new(b2 - lat)]
+        f = bm.faces.new(q)
+        f.material_index = mi
+        f.smooth = True
+        t0, t1 = k / 6.0, (k + 1) / 6.0
+        for l, c in zip(f.loops, ((0, 1 - t0), (1, 1 - t0), (1, 1 - t1), (0, 1 - t1))):
+            l[uv].uv = c
+
+
+# crinière : trois rangs de mèches qui tombent sur le côté gauche de l'encolure
+for rang in range(3):
+    for i in range(30):
+        t = (i + random.uniform(-0.3, 0.3)) / 29.0
+        racine = Vector((0.0 + rang * 0.012, -1.04 + 0.5 * t, 1.93 - 0.44 * t + 0.01))
+        longueur = 0.22 + 0.14 * math.sin(t * math.pi) + random.uniform(-0.04, 0.05)
+        pente = Vector((0.55 + 0.15 * rang, random.uniform(-0.1, 0.1), -0.5)).normalized()
+        carte(racine, pente, longueur, random.uniform(0.05, 0.08), random.uniform(-0.02, 0.02))
 # toupet sur le front
-tube([Vector((0, -1.06, 1.95)), Vector((0.0, -1.12, 1.93)), Vector((0.01, -1.17, 1.86))], [0.025, 0.02, 0.006], 5, 1, 0.4)
-# queue : mèches qui tombent du tronçon de queue jusqu'aux jarrets
-for i in range(14):
-    a = 2 * math.pi * i / 14
-    o = Vector((math.cos(a) * 0.03, math.sin(a) * 0.02, 0))
-    chemin = [Vector((0, 0.66, 1.3)) + o, Vector((0, 0.76, 1.08)) + o * 1.4, Vector((0, 0.82, 0.8)) + o * 1.8 + Vector((0, 0.02 * math.sin(a), 0)),
-              Vector((0, 0.8, 0.5)) + o * 2.2]
-    tube(chemin, [0.025, 0.03, 0.025, 0.008], 5, 1, 0.5)
+for i in range(5):
+    carte(Vector((random.uniform(-0.02, 0.02), -1.06, 1.97)), Vector((random.uniform(-0.2, 0.2), -0.6, -0.4)).normalized(), 0.16, 0.05, 0.01)
+# queue : fouet de mèches qui part du tronçon et tombe jusqu'aux jarrets
+for i in range(34):
+    a = 2 * math.pi * i / 34
+    o = Vector((math.cos(a) * 0.035, math.sin(a) * 0.025, 0))
+    racine = Vector((0, 0.68, 1.3)) + o
+    pente = Vector((o.x * 3.0, 0.35, -1.0)).normalized()
+    carte(racine, pente, random.uniform(0.75, 0.95), random.uniform(0.07, 0.11), random.uniform(-0.04, 0.04))
 
 # tapis de selle brodé : nappe épousant le dos et tombant sur les flancs, avec franges
 lignes = 10
@@ -342,7 +403,6 @@ for i in range(lignes + 1):
             z -= (abs(v) - 0.75) * 0.55
         rangee.append(bm.verts.new((x, y, z)))
     grille.append(rangee)
-uv = bm.loops.layers.uv.new("UVMap")
 for i in range(lignes):
     for j in range(colonnes):
         f = bm.faces.new((grille[i][j], grille[i][j + 1], grille[i + 1][j + 1], grille[i + 1][j]))
@@ -394,10 +454,18 @@ bm.to_mesh(pieces)
 bm.free()
 harnais = bpy.data.objects.new("Harnais", pieces)
 scene.collection.objects.link(harnais)
-for nom, c, r, metal in (("Yeux", (0.02, 0.015, 0.012), 0.15, 0.0), ("Crins", (0.2, 0.19, 0.18), 0.75, 0.0),
+for nom, c, r, metal in (("Yeux", (0.02, 0.015, 0.012), 0.15, 0.0), ("Crins", None, 0.7, 0.0),
                          ("Tapis", None, 0.8, 0.0), ("Cuir", (0.18, 0.09, 0.04), 0.5, 0.0),
-                         ("Metal", (0.7, 0.68, 0.62), 0.3, 0.9), ("Perles", (0.7, 0.08, 0.06), 0.35, 0.0)):
-    harnais.data.materials.append(materiau(nom, c, r, image=TAPIS if nom == "Tapis" else None, metal=metal))
+                         ("Metal", (0.7, 0.68, 0.62), 0.3, 0.9), ("Perles", (0.7, 0.08, 0.06), 0.35, 0.0),
+                         ("Paupiere", (0.08, 0.075, 0.07), 0.6, 0.0)):
+    m = materiau(nom, c, r, image=TAPIS if nom == "Tapis" else (MECHE if nom == "Crins" else None), metal=metal)
+    if nom == "Crins":   # crins : la transparence de la mèche découpe les brins
+        tex = [n for n in m.node_tree.nodes if n.type == "TEX_IMAGE"][0]
+        bsdf = m.node_tree.nodes["Principled BSDF"]
+        m.node_tree.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+        m.blend_method = "CLIP"
+        m.alpha_threshold = 0.4
+    harnais.data.materials.append(m)
 # poids du harnais : chaque pièce suit l'os le plus proche, sans fondu entre jambes
 harnais.parent = arm
 mod = harnais.modifiers.new("Armature", "ARMATURE")
@@ -448,26 +516,33 @@ def nouvelle(nom):
 
 def jambe(nom, phase, appui, amplitude, levee, flex_genou):
     """Pose d'une jambe à la phase donnée (0..1). appui = part du cycle au sol.
-    Au sol, le membre passe de l'avant vers l'arrière ; en l'air, il revient en se pliant."""
+    Au sol : le membre passe de l'avant vers l'arrière, le boulet s'enfonce sous le poids,
+    puis le sabot bascule en fin d'appui. En l'air : le membre se plie, revient, puis s'allonge
+    vers l'avant juste avant de reposer."""
     av = nom.startswith("Av")
     if phase < appui:
         u = phase / appui
-        balance = amplitude * (1 - 2 * u)           # +avant -> -arrière
-        pli = 0.0
+        balance = amplitude * (1 - 2 * u)
+        charge = math.sin(math.pi * u)                      # le boulet descend à mi-appui
+        bascule = max(0.0, (u - 0.78) / 0.22)               # le talon décolle, la pince reste au sol
+        pb[nom + "1"].rotation_euler.x = math.radians(balance)
+        pb[nom + "2"].rotation_euler.x = math.radians(2 * charge if av else -3 * charge)
+        pb[nom + "3"].rotation_euler.x = math.radians((-6 if av else 6) * bascule)
+        pb[nom + "4"].rotation_euler.x = math.radians(16 * charge - 24 * bascule)
     else:
         u = (phase - appui) / (1 - appui)
         balance = amplitude * (-1 + 2 * (0.5 - 0.5 * math.cos(math.pi * u)))
-        pli = math.sin(math.pi * u)
-    # rotation autour de X : un angle positif envoie le pied vers l'avant (-Y)
-    pb[nom + "1"].rotation_euler.x = math.radians(balance)
-    if av:
-        pb[nom + "2"].rotation_euler.x = math.radians(-8 * pli * levee)
-        pb[nom + "3"].rotation_euler.x = math.radians(-flex_genou * pli)   # le genou se plie vers l'arrière
-        pb[nom + "4"].rotation_euler.x = math.radians(-35 * pli + 6 * (1 - pli))
-    else:
-        pb[nom + "2"].rotation_euler.x = math.radians(-20 * pli * levee)
-        pb[nom + "3"].rotation_euler.x = math.radians(flex_genou * 0.9 * pli)   # le jarret se plie vers l'avant
-        pb[nom + "4"].rotation_euler.x = math.radians(-30 * pli + 5 * (1 - pli))
+        pli = math.sin(math.pi * min(1.0, u * 1.25)) if u < 0.8 else 0.0
+        tend = max(0.0, (u - 0.7) / 0.3)                    # le membre s'allonge pour se poser
+        pb[nom + "1"].rotation_euler.x = math.radians(balance + 4 * tend)
+        if av:
+            pb[nom + "2"].rotation_euler.x = math.radians(-10 * pli * levee)
+            pb[nom + "3"].rotation_euler.x = math.radians(-flex_genou * pli + 4 * tend)
+            pb[nom + "4"].rotation_euler.x = math.radians(-42 * pli + 8 * tend)
+        else:
+            pb[nom + "2"].rotation_euler.x = math.radians(-24 * pli * levee)
+            pb[nom + "3"].rotation_euler.x = math.radians(flex_genou * 0.9 * pli - 3 * tend)
+            pb[nom + "4"].rotation_euler.x = math.radians(-36 * pli + 6 * tend)
 
 
 def allure(nom, images, phases, appui, amplitude, levee, flex, saut, tangage, tete):
@@ -477,11 +552,16 @@ def allure(nom, images, phases, appui, amplitude, levee, flex, saut, tangage, te
         raz()
         for j, ph in phases.items():
             jambe(j, (t + ph) % 1.0, appui, amplitude, levee, flex)
-        pb["Corps"].location.y = saut * (0.5 + 0.5 * math.cos(4 * math.pi * t if nom != "Galop" else 2 * math.pi * t))
+        rebond = 4 if nom != "Galop" else 2   # au pas et au trot le dos rebondit deux fois par foulée
+        pb["Corps"].location.y = saut * (0.5 + 0.5 * math.cos(rebond * math.pi * t))
         pb["Corps"].rotation_euler.x = math.radians(tangage * math.sin(2 * math.pi * t))
-        pb["Cou1"].rotation_euler.x = math.radians(tete * math.sin(2 * math.pi * t + 0.6))
-        pb["Tete"].rotation_euler.x = math.radians(-tete * 0.5 * math.sin(2 * math.pi * t + 0.6))
+        pb["Corps"].rotation_euler.y = math.radians(1.5 * math.sin(2 * math.pi * t))   # roulis
+        hoche = rebond if nom == "Pas" else 2                                        # la tête hoche au pas
+        pb["Cou1"].rotation_euler.x = math.radians(tete * math.sin(hoche * math.pi * t + 0.6))
+        pb["Cou2"].rotation_euler.x = math.radians(tete * 0.4 * math.sin(hoche * math.pi * t + 0.9))
+        pb["Tete"].rotation_euler.x = math.radians(-tete * 0.5 * math.sin(hoche * math.pi * t + 0.6))
         pb["Queue1"].rotation_euler.z = math.radians(6 * math.sin(2 * math.pi * t))
+        pb["Queue2"].rotation_euler.x = math.radians(8 * math.sin(2 * math.pi * t + 1.0) * (saut * 10))
         cle(f)
 
 
