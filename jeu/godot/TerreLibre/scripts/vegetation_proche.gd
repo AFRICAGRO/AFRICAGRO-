@@ -85,6 +85,19 @@ func ajouter_arbre(espece: String, xf: Transform3D, teinte: Color) -> void:
 	if not arbres_par_case.has(cle):
 		arbres_par_case[cle] = []
 	arbres_par_case[cle].append([espece, xf, teinte])
+	ajouter_tronc(xf.origin, clampf(0.13 * xf.basis.x.length(), 0.16, 0.42))
+
+
+## Tronc solide (arbres et cocotiers) : on ne traverse plus les arbres à pied, à cheval ou à moto.
+## Les collisions ne sont créées que dans les cases chargées autour du joueur.
+var troncs_par_case := {}       # Vector2i -> [[position, rayon]]
+
+
+func ajouter_tronc(p: Vector3, rayon: float) -> void:
+	var cle := Vector2i(floori(p.x / CASE), floori(p.z / CASE))
+	if not troncs_par_case.has(cle):
+		troncs_par_case[cle] = []
+	troncs_par_case[cle].append([p, rayon])
 
 
 # =====================================================================
@@ -348,6 +361,19 @@ func _construire_case(k: Vector2i) -> Node3D:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(k)
 	var origine := n.position
+	if troncs_par_case.has(k):
+		var corps := StaticBody3D.new()
+		corps.collision_layer = 1
+		corps.collision_mask = 0
+		n.add_child(corps)
+		for e in troncs_par_case[k]:
+			var cs := CollisionShape3D.new()
+			var cy := CylinderShape3D.new()
+			cy.radius = e[1]
+			cy.height = 4.0
+			cs.shape = cy
+			cs.position = (e[0] as Vector3) - origine + Vector3(0, 2.2, 0)
+			corps.add_child(cs)
 	# arbres 3D (mêmes positions que les imposteurs)
 	if arbres_par_case.has(k):
 		var par_modele := {}

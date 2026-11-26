@@ -85,6 +85,8 @@ func _ajouter(lots: Dictionary, nom: String, cle: Vector2i, x: float, h: float, 
 	lots[nom][cle].append([Transform3D(b, Vector3(x, h - 0.3, z)), teinte])
 	if proche and not palmier:
 		proche.ajouter_arbre(nom, Transform3D(b, Vector3(x, h - 0.3, z)), teinte)
+	elif proche:
+		proche.ajouter_tronc(Vector3(x, h - 0.3, z), 0.17 * s)
 
 
 func _creer_blocs(blocs: Dictionary, mesh: Mesh, nom: String, distance: float) -> void:

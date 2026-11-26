@@ -162,6 +162,12 @@ func _ready() -> void:
 		pir.name = "Pirogue%d" % i
 		add_child(pir)
 		pir.preparer(joueur, terrain, terrain.lits, maillage_pirogue, eau[0], eau[1])
+	# barrages du Cobra à Port-Néré, tenus par des miliciens (contrôle, couvre-feu, barrage forcé)
+	var controles := Controles.new()
+	controles.name = "Controles"
+	add_child(controles)
+	controles.construire(ville, joueur, mission)
+	ambiances.eclairages.append(controles)
 	# foule à trois niveaux : Port-Néré, Bomé, et Akwéri une fois libéré
 	var foule := Foule.new()
 	foule.name = "Foule"

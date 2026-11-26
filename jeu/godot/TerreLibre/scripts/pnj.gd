@@ -312,8 +312,8 @@ func _tirer() -> void:
 	var r := get_world_3d().direct_space_state.intersect_ray(q)
 	if r.is_empty():
 		return
-	if r["collider"] == joueur:
-		joueur.blesser(9.0)
+	if r["collider"] == joueur or (joueur.a_cheval != null and r["collider"] == joueur.a_cheval):
+		joueur.blesser(9.0)   # sur une monture, la balle qui touche la moto ou le cheval atteint Faris
 	else:
 		Arme.impact(get_tree().current_scene, r["position"], r["normal"])
 

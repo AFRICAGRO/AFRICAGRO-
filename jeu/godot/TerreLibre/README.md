@@ -48,11 +48,14 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 - Mission 4 « Première Étincelle » jouable (combat, maîtrise non létale, libération d'Akwéri).
 - Cheval (G), moto (E) et pirogue à la perche (E) : la pirogue part de Port-Néré et de l'embarcadère de Tikané.
 - Personnages : mains complètes, vêtements amples, sandales, chèche drapé, marche et course réalistes.
+- Barrages du Cobra à Port-Néré tenus par des miliciens : passer au pas sans arme, barrage forcé = fusillade,
+  couvre-feu la nuit (sommation puis tirs), miliciens qui se rendent (F pour ligoter), barrage levé une fois vidé.
+- Troncs d'arbres et de cocotiers solides autour du joueur (on ne les traverse plus à moto ou à cheval).
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Ennemis : patrouilles du Cobra sur les routes, réaction à la moto, barrages.
+2. Patrouilles du Cobra en pick-up qui poursuivent Faris après une alerte.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

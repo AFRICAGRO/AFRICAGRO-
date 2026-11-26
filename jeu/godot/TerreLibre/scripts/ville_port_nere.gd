@@ -1020,6 +1020,9 @@ func _barrage(p: Vector2, t: Vector2, demi: float) -> void:
 	if not reperes.has("barrages"):
 		reperes["barrages"] = []
 	reperes["barrages"].append(Vector3(p.x, _sol(p), p.y))
+	if not reperes.has("barrages_axe"):
+		reperes["barrages_axe"] = []
+	reperes["barrages_axe"].append([t, demi])   # direction de la route et demi-largeur, pour poster les gardes
 
 
 # =====================================================================
