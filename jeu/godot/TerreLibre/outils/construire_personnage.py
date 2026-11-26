@@ -2,7 +2,7 @@
 vêtements (lin, denim, cuir), cheveux courts, yeux, et 5 animations en place.
 Sortie : faris.glb (pour Godot)."""
 import bpy, bmesh, sys, importlib, math
-from mathutils import Vector, Matrix
+from mathutils import Vector, Matrix, Quaternion
 import addon_utils
 
 addon_utils.enable("bl_ext.user_default.mpfb", default_set=True)
@@ -29,11 +29,12 @@ VARIANTES = {
     # macros MPFB, peau, cheveux, haut (texture, teinte), bas (texture, teinte), pagne, foulard (texture, teinte)
     "faris": dict(macros=dict(gender=1.0, age=0.5, muscle=0.62, weight=0.48, height=0.38),
                   peau=(0.10, 0.042, 0.02), cheveux=(0.012, 0.009, 0.008),
-                  haut=("wax_diff.jpg", (1, 1, 1)), bas=(D[0], (0.06, 0.075, 0.11))),
+                  haut=("wax_diff.jpg", (1, 1, 1)), bas=(D[0], (0.06, 0.075, 0.11)), ample=True, sandales=True),
     # Faris en tenue de nuit : chèche indigo hérité de sa mère (famille de cavaliers du Sahel), chemise sombre
     "faris_cheche": dict(macros=dict(gender=1.0, age=0.5, muscle=0.62, weight=0.48, height=0.38),
                          peau=(0.10, 0.042, 0.02), cheveux=(0.012, 0.009, 0.008),
-                         haut=(L[0], (0.06, 0.06, 0.07)), bas=(D[0], (0.05, 0.055, 0.07)), cheche=(0.012, 0.022, 0.11)),
+                         haut=(L[0], (0.06, 0.06, 0.07)), bas=(D[0], (0.05, 0.055, 0.07)), cheche=(0.006, 0.01, 0.05),
+                         ample=True, sandales=True),
     # pêcheur de lagune : boubou délavé, chapeau de paille conique, pieds nus
     "pecheur_lac": dict(macros=dict(gender=1.0, age=0.62, muscle=0.55, weight=0.4, height=0.5),
                         peau=(0.08, 0.035, 0.018), cheveux=(0.03, 0.028, 0.026),
@@ -297,8 +298,18 @@ for f in bm.faces:
         if V.get("pieds_nus"):
             pass
         elif V.get("sandales"):
-            if c.z < 0.022:  # simple semelle sous le pied (sandale / tong)
+            if c.z < 0.022:  # semelle sous le pied (sandale / tong)
                 f.material_index = 4
+            elif V.get("ample") and c.z < ankle_z + 0.01:
+                # sandale de cuir : deux brides sur le cou-de-pied et une bride derrière la cheville
+                cote_p = "Left" if c.x > 0 else "Right"
+                orteils = B[cote_p + "ToeBase"].head_local
+                talon = B[cote_p + "Foot"].head_local
+                long_ = (orteils - talon)
+                long_.z = 0
+                u = (Vector((c.x, c.y, 0)) - Vector((talon.x, talon.y, 0))).dot(long_.normalized()) / max(0.01, long_.length)
+                if abs(u - 0.95) < 0.07 or abs(u - 0.5) < 0.08 or (u < -0.15 and c.z < ankle_z - 0.015):
+                    f.material_index = 4
         elif c.z < ankle_z + 0.035:
             f.material_index = 4
         # cuir chevelu : haut et arrière du crâne
@@ -330,8 +341,12 @@ for _ in range(10):
 print("bords de vêtements lissés :", len(voisins))
 # peau cachée sous les vêtements : supprimée (évite qu'elle traverse le tissu)
 cache = []
+g_mains = {i for i, n in groupes.items() if "Hand" in n or "ForeArm" in n}
 for f in bm.faces:
     if f.material_index != 0:
+        continue
+    # avant-bras, mains et doigts : jamais cachés (la droite épaule-coude ne suit pas l'avant-bras plié)
+    if any(sum(w for gi, w in v[deform].items() if gi in g_mains) > 0.25 for v in f.verts):
         continue
     c = centre(f)
     ab = bras(c)
@@ -386,6 +401,85 @@ for v, g in deplace.items():
             v.co += v.normal * (0.0015 + 0.0095 * t * t * (3 - 2 * t))
     else:
         v.co += v.normal * g
+
+# ---------- vêtements amples : le tissu s'écarte du corps, tombe et fait des plis ----------
+if V.get("ample"):
+    def seg(p, a, b):
+        ab = b - a
+        t = max(0.0, min(1.0, (p - a).dot(ab) / ab.length_squared))
+        return a + ab * t, t
+    jambes = {s: [(B[c + "UpLeg"].head_local, B[c + "Leg"].head_local), (B[c + "Leg"].head_local, B[c + "Foot"].head_local)]
+              for s, c in ((1, "Left"), (-1, "Right"))}
+    bras_os = {s: [(B[c + "Arm"].head_local, B[c + "ForeArm"].head_local), (B[c + "ForeArm"].head_local, B[c + "Hand"].head_local)]
+               for s, c in ((1, "Left"), (-1, "Right"))}
+    genou = B["LeftLeg"].head_local.z
+    poitrine_z = B["Spine2"].head_local.z
+    # tour de poitrine : le tissu de la chemise tombe droit depuis la poitrine
+    pts_p = [v.co for v in bm.verts if abs(v.co.z - poitrine_z) < 0.02 and abs(v.co.x) < 0.2]
+    cy_t = (max(p.y for p in pts_p) + min(p.y for p in pts_p)) / 2
+    rx_p = (max(p.x for p in pts_p) - min(p.x for p in pts_p)) / 2
+    ry_p = (max(p.y for p in pts_p) - min(p.y for p in pts_p)) / 2
+    bouge = {}
+    for f in bm.faces:
+        if f.material_index not in (2, 3):
+            continue
+        for v in f.verts:
+            if v in bouge:
+                continue
+            p = v.co
+            if f.material_index == 3:   # pantalon ample, droit, qui retombe sur la cheville
+                s_ = 1 if p.x >= 0 else -1
+                (q1, t1), (q2, t2) = seg(p, *jambes[s_][0]), seg(p, *jambes[s_][1])
+                q = q1 if (p - q1).length < (p - q2).length else q2
+                rad = p - q
+                rad.z = 0
+                d = rad.length
+                if d < 1e-4:
+                    continue
+                cible = 0.1 if p.z > genou else 0.086 + 0.004 * (genou - p.z) / max(0.01, genou - ankle_z)
+                ang = math.atan2(rad.y, rad.x * s_)
+                cible *= 1.0 + 0.045 * math.sin(ang * 3 + p.z * 28)        # plis verticaux
+                if p.z < genou:
+                    cible += 0.006 * math.sin(p.z * 95)                    # plis tassés sur la cheville
+                interieur = max(0.0, -rad.normalized().x * s_)            # côté entrejambe : moins d'ampleur
+                cible = d + max(0.0, cible - d) * (1.0 - 0.55 * interieur)
+                if cible > d:
+                    bouge[v] = q + rad.normalized() * cible + Vector((0, 0, p.z - q.z))
+            else:   # chemise : tombe droit depuis la poitrine, manches larges
+                s_ = 1 if p.x >= 0 else -1
+                (a1, ta), (a2, tb) = seg(p, *bras_os[s_][0]), seg(p, *bras_os[s_][1])
+                qa = a1 if (p - a1).length < (p - a2).length else a2
+                if abs(p.x) > rx_p * 0.92 and (p - qa).length < 0.09:   # manche
+                    rad = p - qa
+                    d = rad.length
+                    cible = 0.062 + 0.006 * math.sin(math.atan2(rad.y, rad.z) * 4 + p.x * 40)
+                    if d > 1e-4 and cible > d:
+                        bouge[v] = qa + rad.normalized() * cible
+                elif p.z < poitrine_z:   # buste : le tissu reste à la largeur de la poitrine en descendant
+                    rad = Vector((p.x, p.y - cy_t, 0))
+                    d = rad.length
+                    if d < 1e-4:
+                        continue
+                    ang = math.atan2(rad.y, rad.x)
+                    ex = math.sqrt((rx_p * math.cos(ang)) ** 2 + (ry_p * math.sin(ang)) ** 2) + 0.012
+                    chute = (poitrine_z - p.z) / max(0.01, poitrine_z - hips_z)
+                    ex *= 1.0 + 0.03 * math.sin(ang * 5 + p.z * 22) * chute   # plis qui tombent
+                    if ex > d:
+                        bouge[v] = Vector((0, cy_t, p.z)) + rad.normalized() * (d + (ex - d) * min(1.0, 0.35 + chute))
+    for v, c in bouge.items():
+        v.co = c
+    # lissage du tissu (pas de facettes ni de dents de scie), bords libres exclus
+    tissu = {v for f in bm.faces if f.material_index in (2, 3) for v in f.verts
+             if all(len(e.link_faces) == 2 for e in v.link_edges)}
+    for _ in range(6):
+        nv = {}
+        for v in tissu:
+            vs = [e.other_vert(v) for e in v.link_edges]
+            if len(vs) > 2:
+                nv[v] = v.co * 0.5 + sum((o.co for o in vs), Vector()) / len(vs) * 0.5
+        for v, c in nv.items():
+            v.co = c
+    print("vêtements amples :", len(bouge), "sommets")
 
 # ---------- éléments de coiffure ajoutés (tresses, macarons, nœud du foulard) ----------
 gi_tete = {g.name: g.index for g in h.vertex_groups}["mixamorig:Head"]
@@ -609,38 +703,45 @@ if V.get("cheche"):
 
     def enveloppe(anneaux_def, fermer_haut):
         anneaux = []
-        for (z, cy, rx, ry, pli) in anneaux_def:
+        for anneau_d in anneaux_def:
+            z, cy, rx, ry, pli = anneau_d[:5]
+            ferme = anneau_d[5] if len(anneau_d) > 5 else 0.0   # ferme la fente sur les côtés et derrière
             anneau = []
             for k in range(28):
                 a = 2 * math.pi * k / 28
+                devant = max(0.0, -math.sin(a)) ** 3          # 1 face aux yeux, 0 sur les côtés et derrière
                 plis = 1.0 + pli * math.sin(a + z * 420.0) + 0.018 * math.sin(a * 5.0 + z * 90.0)
-                anneau.append(sommet(Vector((cx + math.cos(a) * rx * plis, cy + math.sin(a) * ry * plis, z))))
+                anneau.append(sommet(Vector((cx + math.cos(a) * rx * plis, cy + math.sin(a) * ry * plis,
+                                             z + ferme * (1.0 - devant)))))
             anneaux.append(anneau)
         for i in range(len(anneaux) - 1):
             for k in range(28):
                 f = bm.faces.new((anneaux[i][k], anneaux[i][(k + 1) % 28], anneaux[i + 1][(k + 1) % 28], anneaux[i + 1][k]))
                 f.material_index = 8
         if fermer_haut:
-            z, cy, rx, ry, pli = anneaux_def[-1]
+            z, cy, rx, ry, pli = anneaux_def[-1][:5]
             haut = sommet(Vector((cx, cy, z + 0.02 * k_tete)))
             for k in range(28):
                 f = bm.faces.new((anneaux[-1][k], anneaux[-1][(k + 1) % 28], haut))
                 f.material_index = 8
 
     # turban : part 2,5 cm au-dessus des yeux, monte en dôme
-    tz0 = yeux_z + 0.028 * k_tete
-    rx0 = r_tete * 1.12
-    ry0 = prof + 0.016 * k_tete
+    tz0 = yeux_z + 0.019 * k_tete
+    rx0 = r_tete * 1.05
+    ry0 = prof + 0.012 * k_tete
     cy_t = centre_tete.y + 0.004
     tours = []
-    for i in range(9):
-        u = i / 8.0
-        z = tz0 + u * 0.15 * k_tete
-        d = math.sqrt(max(0.0, 1.0 - (u * 0.93) ** 2))
-        tours.append((z, cy_t, rx0 * (1.02 * d + 0.06 * u), ry0 * (1.02 * d + 0.06 * u), 0.06 * (1 - u * 0.7)))
+    for i in range(11):
+        u = i / 10.0
+        z = tz0 + u * 0.12 * k_tete
+        d = math.sqrt(max(0.0, 1.0 - (u * 0.9) ** 2))
+        # tours de tissu bien marqués (bourrelets), le turban part un peu vers l'arrière
+        bour = 0.035 * (1 - u * 0.6) * (1 if i % 2 else -0.4)
+        tours.append((z, cy_t + 0.018 * u * k_tete, rx0 * (1.0 * d + 0.05 * u) * (1 + bour), ry0 * (1.0 * d + 0.05 * u) * (1 + bour),
+                      0.03 * (1 - u * 0.7), -0.026 * k_tete if i == 0 else 0.0))
     enveloppe(tours, True)
     # voile : de 2,2 cm sous les yeux jusqu'au cou, devant le nez et la bouche
-    vz0 = yeux_z - 0.022 * k_tete
+    vz0 = yeux_z - 0.015 * k_tete
     voile = []
     for i in range(8):
         u = i / 7.0
@@ -648,13 +749,12 @@ if V.get("cheche"):
         cy_v = centre_tete.y - 0.012 - 0.01 * u
         ry = prof + (0.058 - 0.03 * u + 0.03 * u * u) * k_tete   # bien devant le nez et la bouche
         rx = r_tete * (1.06 - 0.18 * u + 0.2 * u * u)          # s'évase sur le cou
-        voile.append((z, cy_v, rx, ry, 0.03))
+        voile.append((z, cy_v, rx, ry, 0.03, 0.022 * k_tete if i == 0 else 0.0))
     voile.reverse()
     enveloppe(voile, False)
     # le dessus des cheveux disparaît sous le turban
-    for f in bm.faces:
-        if f.material_index == 1 and all(v.co.z > tz0 for v in f.verts):
-            f.material_index = 8
+    # cheveux entièrement sous le chèche : retirés (plus de mèches qui dépassent près des yeux)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index == 1], context="FACES")
 
 # yeux : iris sombre vers l'avant
 col = bm.loops.layers.color.new("Col")
@@ -724,10 +824,20 @@ X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
 vl = bpy.context.view_layer
 
 
+DOIGTS = [pb for pb in rig.pose.bones if any(k in pb.name for k in ("Index", "Middle", "Ring", "Pinky"))]
+POUCES = [pb for pb in rig.pose.bones if "Thumb" in pb.name]
+
+
 def raz():
     for pb in rig.pose.bones:
         pb.rotation_quaternion = (1, 0, 0, 0)
         pb.location = (0, 0, 0)
+    # main au repos : doigts un peu repliés, de plus en plus vers l'auriculaire, pouce rapproché
+    for pb in DOIGTS:
+        k = 1.0 + 0.25 * ("Ring" in pb.name) + 0.45 * ("Pinky" in pb.name)
+        pb.rotation_quaternion = Quaternion((1, 0, 0), math.radians(16 * k))
+    for pb in POUCES:
+        pass
     vl.update()
 
 
@@ -790,6 +900,70 @@ def jambe(cote, phi, amp_cuisse, amp_genou, genou_appui):
     rot(cote + "Leg", X, genou)
     pointe = 12.0 * max(0.0, math.sin(phi - 0.75 * math.pi)) if 0.6 * math.pi < phi % (2 * math.pi) < math.pi * 1.1 else 0.0
     rot(cote + "Foot", X, -(cuisse + genou) * 0.85 + pointe)
+
+
+def courbe(points, t):
+    t = t % 1.0
+    for (t0, v0), (t1, v1) in zip(points, points[1:]):
+        if t0 <= t <= t1:
+            u = (t - t0) / (t1 - t0)
+            u = u * u * (3 - 2 * u)
+            return v0 + (v1 - v0) * u
+    return points[-1][1]
+
+
+# angles (degrés) d'une jambe sur un cycle : hanche (+ = cuisse vers l'avant), genou (+ = plié),
+# cheville (+ = pointe relevée). Appui de 0 à 0,6 à la marche, de 0 à 0,38 à la course.
+MARCHE_H = [(0, 26), (0.12, 22), (0.5, -10), (0.62, -6), (0.75, 14), (0.88, 27), (1, 26)]
+MARCHE_G = [(0, 4), (0.14, 16), (0.4, 4), (0.6, 36), (0.72, 58), (0.86, 24), (0.96, 3), (1, 4)]
+MARCHE_C = [(0, 0), (0.08, -6), (0.45, 9), (0.6, -16), (0.72, -2), (1, 0)]
+COURSE_H = [(0, 30), (0.18, 8), (0.38, -14), (0.5, 4), (0.7, 48), (0.86, 42), (1, 30)]
+COURSE_G = [(0, 18), (0.14, 36), (0.38, 18), (0.55, 80), (0.7, 98), (0.86, 40), (1, 18)]
+COURSE_C = [(0, 4), (0.14, 14), (0.38, -24), (0.6, -6), (1, 4)]
+
+
+def jambe_reelle(cote, t, course, echelle):
+    hh = courbe(COURSE_H if course else MARCHE_H, t) * echelle
+    gg = courbe(COURSE_G if course else MARCHE_G, t) * echelle
+    cc = courbe(COURSE_C if course else MARCHE_C, t)
+    rot(cote + "UpLeg", X, -hh)
+    rot(cote + "Leg", X, gg)
+    rot(cote + "Foot", X, (hh - gg) - cc)
+
+
+def cycle_reel(nom, images, course, echelle, amp_bras, coude, rebond, penche, rotation_bassin):
+    """Marche / course : jambes sur des courbes d'angles mesurées, bassin qui tourne et monte/descend,
+    épaules en contre-rotation, bras qui balancent à l'opposé des jambes."""
+    nouvelle(nom)
+    for f in range(0, images + 1, 2):
+        t = f / images
+        phi = 2 * math.pi * t
+        raz()
+        # le bassin est au plus bas juste après chaque pose du pied, au plus haut au milieu de l'appui
+        bouge_hanches(-rebond * (0.5 + 0.5 * math.cos(2 * phi - (0.6 if not course else 0.2))), 0.012 * math.sin(phi))
+        rot("Hips", Z, -rotation_bassin * math.cos(phi))
+        rot("Hips", Y, (2.0 if not course else 1.0) * math.sin(phi))      # la hanche du pied levé s'abaisse
+        if FEMININ and not ENFANT:
+            bouge_hanches(0, 0.014 * math.sin(phi))
+            rot("Hips", Y, 3.5 * math.sin(phi))
+            rot("Spine1", Y, -3.0 * math.sin(phi))
+        rot("Spine", X, penche * 0.5 + (9 if AGE else 0))
+        rot("Spine1", X, penche * 0.5 + (5 if AGE else 0))
+        if AGE:
+            rot("Neck", X, -9)
+        rot("Spine2", Z, rotation_bassin * 1.3 * math.cos(phi))
+        rot("Head", X, -penche * 0.6)
+        rot("Head", Z, -rotation_bassin * 0.6 * math.cos(phi))             # le regard reste droit
+        jambe_reelle("Left", t, course, echelle)
+        jambe_reelle("Right", t + 0.5, course, echelle)
+        ecart = 27 if FEMININ and not ENFANT else 30
+        bras_bas(ecart, coude)
+        k = 0.7 if FEMININ and not ENFANT else 1.0
+        rot("LeftArm", X, -amp_bras * k * math.cos(phi))
+        rot("RightArm", X, amp_bras * k * math.cos(phi))
+        vers("LeftForeArm", "LeftArm", coude * 0.25 * (1 - math.cos(phi)))
+        vers("RightForeArm", "RightArm", coude * 0.25 * (1 + math.cos(phi)))
+        cle(f)
 
 
 def cycle(nom, images, amp_cuisse, amp_genou, genou_appui, amp_bras, coude, rebond, penche, rotation_bassin):
@@ -857,14 +1031,14 @@ for f in range(0, 121, 6):
 
 if AGE:
     # pas plus courts et plus lents, bras qui balancent peu
-    cycle("Marche", 42, 15, 36, 6, 8, 20, 0.012, 4, 4)
-    cycle("Course", 26, 24, 60, 14, 18, 50, 0.025, 10, 6)
+    cycle_reel("Marche", 42, False, 0.72, 8, 20, 0.012, 4, 4)
+    cycle_reel("Course", 26, True, 0.65, 18, 50, 0.025, 10, 6)
 elif FEMININ and not ENFANT:
-    cycle("Marche", 34, 19, 44, 5, 13, 18, 0.018, 1, 8)
-    cycle("Course", 20, 32, 85, 20, 30, 75, 0.04, 8, 10)
+    cycle_reel("Marche", 34, False, 0.92, 13, 18, 0.018, 1, 8)
+    cycle_reel("Course", 20, True, 0.88, 28, 75, 0.04, 8, 10)
 else:
-    cycle("Marche", 32, 22, 48, 6, 16, 22, 0.025, 3, 5)
-    cycle("Course", 20, 38, 95, 22, 38, 80, 0.05, 12, 9)
+    cycle_reel("Marche", 32, False, 1.0, 17, 22, 0.024, 3, 6)
+    cycle_reel("Course", 20, True, 1.0, 36, 85, 0.05, 11, 9)
 
 nouvelle("Saut")
 for f in (0, 10):
