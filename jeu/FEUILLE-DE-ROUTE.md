@@ -28,19 +28,19 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 
 ## Phase 1 — Installation et apprentissage (mois 2–3)
 
-- [ ] Installer Unreal Engine 5, Blender, Git, Git LFS → `jeu/installation/installer-windows.ps1`
+- [x] ~~Unreal Engine 5~~ → moteur retenu : **Godot 4 (rendu Compatibilité)**, adapté à un PC modeste. Installer Godot, Blender, Git → `jeu/installation/installer-windows.ps1`
 - [ ] Brancher Claude Code sur Blender et Unreal (`.mcp.json` fourni) → `jeu/installation/INSTALLATION.md`
 - [ ] Créer le projet Unreal (modèle « Third Person », World Partition activé)
 - [ ] Tutoriels : Landscape, PCG, MetaHuman, Chaos Vehicles, Behavior Trees
 
 ## Phase 2 — Prototype « gris » de l'île (mois 3–5)
 
-- [ ] Heightmap de l'île importée
-- [ ] Blockout (formes simples) de Port-Néré, Akwéri, Bomé, du camp
+- [x] Heightmap de l'île importée
+- [x] Blockout (formes simples) de Port-Néré, Akwéri, Bomé, du camp
 - [ ] Personnage jouable : marcher, courir, nager, se mettre à couvert, tirer
-- [ ] Une moto et une pirogue conduisibles
+- [x] Une moto et une pirogue conduisibles
 - [ ] Un ennemi avec IA de base (patrouille, détection, combat)
-- [ ] Mission 4 « Première Étincelle » jouable en version grise
+- [x] Mission 4 « Première Étincelle » jouable en version grise
 - **Validation :** est-ce que c'est amusant même sans graphismes ?
 
 ## Phase 3 — Systèmes de base (mois 5–9)
@@ -48,7 +48,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [ ] Libération de zone + changement visuel
 - [ ] Jauge de confiance, système d'alerte
 - [ ] Coopérative (version simple)
-- [ ] Civils avec routines, cycle jour/nuit, météo
+- [x] Civils avec routines, cycle jour/nuit, météo
 - [ ] Sauvegarde/chargement, téléphone, carte en jeu
 
 ## Phase 4 — Tranche verticale (mois 9–15)

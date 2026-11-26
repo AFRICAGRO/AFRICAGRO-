@@ -142,6 +142,26 @@ func _ready() -> void:
 				pc = q
 				long_rue = ab.normalized()
 	cheval.preparer(joueur, Vector3(pc.x, terrain.hauteur(pc.x, pc.y) + 0.3, pc.y), atan2(long_rue.x, long_rue.y))
+	# la moto de Faris, garée dans la même rue, quelques mètres plus loin que le cheval
+	var moto := MotoJoueur.new()
+	moto.name = "MotoFaris"
+	add_child(moto)
+	var pm := pc + long_rue * 5.0 + Vector2(-long_rue.y, long_rue.x) * 1.2
+	moto.preparer(joueur, Vector3(pm.x, terrain.hauteur(pm.x, pm.y) + 0.4, pm.y), atan2(long_rue.x, long_rue.y))
+	# pirogues : une au bord de la mer à Port-Néré, une à l'embarcadère de Tikané (elle remonte la rivière)
+	var maillage_pirogue: Mesh = (get_node("VieQuotidienne") as VieQuotidienne)._pirogue_maillage()
+	var departs := [ville.reperes["place"]]
+	if tikane and tikane.reperes.has("embarcadere"):
+		departs.append(tikane.reperes["embarcadere"])
+	for i in departs.size():
+		var d: Vector3 = departs[i]
+		var eau := _point_eau(Vector2(d.x, d.z))
+		if eau.is_empty():
+			continue
+		var pir := PirogueJoueur.new()
+		pir.name = "Pirogue%d" % i
+		add_child(pir)
+		pir.preparer(joueur, terrain, terrain.lits, maillage_pirogue, eau[0], eau[1])
 	# foule à trois niveaux : Port-Néré, Bomé, et Akwéri une fois libéré
 	var foule := Foule.new()
 	foule.name = "Foule"
@@ -164,6 +184,7 @@ func _actions_clavier() -> void:
 		"avancer": [KEY_W, KEY_UP], "reculer": [KEY_S, KEY_DOWN], "gauche": [KEY_A, KEY_LEFT],
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
 		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
+		"vehicule": [KEY_E],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -172,6 +193,31 @@ func _actions_clavier() -> void:
 			var ev := InputEventKey.new()
 			ev.physical_keycode = k
 			InputMap.action_add_event(action, ev)
+
+
+## Point d'eau assez profonde (60 cm) le plus proche d'un lieu, pour y amarrer une pirogue ;
+## renvoie [position, cap tourné vers le large] ou [] si rien à moins de 600 m.
+func _point_eau(c: Vector2) -> Array:
+	var meilleur := INF
+	var res := []
+	for k in 48:
+		var a := TAU * k / 48.0
+		var dir := Vector2(sin(a), cos(a))
+		var r := 4.0
+		while r < 600.0 and r < meilleur:
+			var q := c + dir * r
+			var profond := true
+			for j in 6:
+				var o := q + Vector2(sin(a + TAU * j / 6.0), cos(a + TAU * j / 6.0)) * 3.6
+				if terrain.hauteur(o.x, o.y) > -0.6:
+					profond = false
+					break
+			if profond and terrain.hauteur(q.x, q.y) < -0.6:
+				meilleur = r
+				res = [q, a]
+				break
+			r += 3.0
+	return res
 
 
 ## Zones laissées libres pour les bâtiments : Port-Néré, villages, camp, piste d'atterrissage.
@@ -315,7 +361,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
@@ -351,4 +397,10 @@ func _process(_delta: float) -> void:
 			dmin = d
 			proche = l[0]
 	var mode := "nage" if joueur.nage else ("course" if joueur.vitesse_affichee > 3.0 else "à pied")
+	if joueur.a_cheval is MotoJoueur:
+		mode = "moto"
+	elif joueur.a_cheval is PirogueJoueur:
+		mode = "pirogue"
+	elif joueur.a_cheval is Cheval:
+		mode = "à cheval"
 	etiquette.text = "WANZALA : FREEDOM · %s · %s · %s · %d km/h · %d i/s" % [proche, ambiances.nom(), mode, roundi(joueur.vitesse_affichee * 3.6), Engine.get_frames_per_second()]

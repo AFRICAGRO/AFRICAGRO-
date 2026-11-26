@@ -110,7 +110,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if monte:
 		descendre()
-	elif joueur.global_position.distance_to(global_position) < PORTEE and not joueur.get("mort"):
+	elif joueur.global_position.distance_to(global_position) < PORTEE and not joueur.get("mort") and joueur.get("a_cheval") == null:
 		monter()
 
 
