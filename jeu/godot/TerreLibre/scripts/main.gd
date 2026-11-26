@@ -169,6 +169,12 @@ func _ready() -> void:
 	add_child(controles)
 	controles.construire(ville, joueur, mission)
 	ambiances.eclairages.append(controles)
+	# patrouilles du Cobra en pick-up sur les pistes : ronde, poursuite après une alerte
+	var patrouilles := Patrouilles.new()
+	patrouilles.name = "Patrouilles"
+	add_child(patrouilles)
+	patrouilles.construire(terrain, joueur, controles, reperes_routes)
+	ambiances.eclairages.append(patrouilles)
 	# foule à trois niveaux : Port-Néré, Bomé, et Akwéri une fois libéré
 	var foule := Foule.new()
 	foule.name = "Foule"

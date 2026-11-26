@@ -8,6 +8,8 @@
 class_name Controles
 extends Node
 
+signal alerte_barrage(position: Vector3)   # entendu par radio par les patrouilles
+
 const RAYON_ANNONCE := 26.0
 const RAYON_FORCE := 12.0
 const VITESSE_FORCE := 7.0      # m/s : au-delà, on force le barrage
@@ -76,6 +78,8 @@ func _alerte(_p: Vector3, i: int) -> void:
 
 func _tous_au_combat(i: int) -> void:
 	var poste: Dictionary = postes[i]
+	if not poste["alerte"]:
+		alerte_barrage.emit(poste["centre"])
 	poste["alerte"] = true
 	for g in poste["gardes"]:
 		if (g as Pnj).est_actif():

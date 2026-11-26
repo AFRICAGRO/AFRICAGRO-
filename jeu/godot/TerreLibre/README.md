@@ -54,11 +54,14 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 - Routes de latérite (≈ 6 km) qui prolongent le boulevard et l'avenue de Port-Néré au-delà des barrages :
   vers Akwéri, vers Bomé, puis de Bomé à Tikané. Tracé calculé sur le vrai relief (évite pentes, mer et maisons),
   ornières, emprise dégagée, panneaux indicateurs avec la distance.
+- Patrouilles du Cobra : trois pick-up font la ronde sur les pistes. Après une alerte (barrage forcé, coups de feu,
+  homme armé repéré), le plus proche fonce par la piste puis à travers la brousse, pile à 15 m et ses deux
+  miliciens sautent à terre pour combattre (reddition et ligotage possibles). Trop loin, il abandonne.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Patrouilles du Cobra en pick-up qui poursuivent Faris après une alerte.
+2. Couverture des miliciens (sacs de sable, véhicules) et réaction des passants pendant les fusillades.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait
