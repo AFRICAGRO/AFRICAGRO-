@@ -121,6 +121,27 @@ func _ready() -> void:
 	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
 	(get_node("VieQuotidienne") as VieQuotidienne).bome(bome)
 	(get_node("VieQuotidienne") as VieQuotidienne).tikane(tikane)
+	# le cheval de Faris, attaché devant la maison familiale à Port-Néré
+	var cheval := Cheval.new()
+	cheval.name = "Cheval"
+	add_child(cheval)
+	# dans la rue la plus proche de la maison familiale (hors de la cour fermée), le long de la rue
+	var mf: Vector3 = ville.reperes.get("maison_faris", ville.reperes["place"])
+	var meilleur := INF
+	var pc := Vector2.ZERO
+	var long_rue := Vector2(1, 0)
+	for rue in ville.rues:
+		var pts: PackedVector2Array = rue["pts"]
+		for i in pts.size() - 1:
+			var ab := pts[i + 1] - pts[i]
+			var t := clampf((Vector2(mf.x, mf.z) - pts[i]).dot(ab) / ab.length_squared(), 0.0, 1.0)
+			var q := pts[i] + ab * t
+			var d := q.distance_to(Vector2(mf.x, mf.z))
+			if d < meilleur:
+				meilleur = d
+				pc = q
+				long_rue = ab.normalized()
+	cheval.preparer(joueur, Vector3(pc.x, terrain.hauteur(pc.x, pc.y) + 0.3, pc.y), atan2(long_rue.x, long_rue.y))
 	# foule à trois niveaux : Port-Néré, Bomé, et Akwéri une fois libéré
 	var foule := Foule.new()
 	foule.name = "Foule"
@@ -142,7 +163,7 @@ func _actions_clavier() -> void:
 	var touches := {
 		"avancer": [KEY_W, KEY_UP], "reculer": [KEY_S, KEY_DOWN], "gauche": [KEY_A, KEY_LEFT],
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
-		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T],
+		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -294,7 +315,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))

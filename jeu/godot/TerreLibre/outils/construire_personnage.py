@@ -948,6 +948,24 @@ for f in (0, 20):
     pose_visee()
     cle_haut(f)
 
+nouvelle("Cavalier")  # en selle : jambes le long des flancs, pieds aux étriers, rênes dans les deux mains
+for f in (0, 20):
+    raz()
+    bouge_hanches(-0.1)
+    rot("Spine", X, 4)
+    rot("Head", X, -4)
+    for cote in ("Left", "Right"):
+        rot(cote + "UpLeg", X, -58)
+        rot(cote + "Leg", X, 72)
+        rot(cote + "Foot", X, -10)
+    rot("LeftUpLeg", Z, 26)
+    rot("RightUpLeg", Z, -26)
+    rot("LeftLeg", Z, -10)
+    rot("RightLeg", Z, 10)
+    main_vers("Right", (-0.1, -0.36, 1.02), (-0.5, 0.2, 0.85))
+    main_vers("Left", (0.1, -0.36, 1.02), (0.5, 0.2, 0.85))
+    cle(f)
+
 nouvelle("Moto")  # assis sur une moto, mains sur le guidon, pieds sur les repose-pieds
 for f in (0, 20):
     raz()

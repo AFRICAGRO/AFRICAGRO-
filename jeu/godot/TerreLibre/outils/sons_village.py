@@ -132,3 +132,28 @@ for k in range(900):
     f = rng.uniform(600, 2200) * (1 + 1.5 * tt / tt[-1])
     x[i0:i0 + m] += np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt * 140) * rng.uniform(0.05, 0.25)
 ecrire("riviere.wav", boucle(x), 0.6)
+
+
+# sabots : une boucle par allure, à la durée exacte de l'animation du cheval (24 images/s),
+# avec les coups aux temps où chaque sabot touche le sol (sur terre battue : son mat)
+def coup_sabot(n, force=1.0):
+    tt = np.arange(n) / SR
+    choc = passe_bande(rng.normal(size=n), 250, 1600) * np.exp(-tt * 70)
+    grave = np.sin(2 * np.pi * 115 * tt) * np.exp(-tt * 45) * 0.8
+    gravier = passe_bande(rng.normal(size=n), 2500, 6000) * np.exp(-tt * 30) * 0.15
+    return (choc + grave + gravier) * force
+
+
+def boucle_sabots(nom, duree, temps):
+    n = int(duree * SR)
+    x = passe_bas(bruit_rose(n), 400) * 0.01
+    for t0, force in temps:
+        i0 = int(t0 * duree * SR)
+        m = min(int(0.12 * SR), n - i0)
+        x[i0:i0 + m] += coup_sabot(m, force * rng.uniform(0.85, 1.1))
+    ecrire(nom, x, 0.8)
+
+
+boucle_sabots("sabots_pas.wav", 26 / 24, [(0.0, 0.8), (0.25, 0.7), (0.5, 0.8), (0.75, 0.7)])
+boucle_sabots("sabots_trot.wav", 16 / 24, [(0.0, 1.0), (0.012, 0.6), (0.5, 1.0), (0.512, 0.6)])
+boucle_sabots("sabots_galop.wav", 14 / 24, [(0.0, 1.0), (0.12, 1.2), (0.135, 0.8), (0.25, 1.1)])

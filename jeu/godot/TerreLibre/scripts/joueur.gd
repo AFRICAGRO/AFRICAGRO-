@@ -43,6 +43,7 @@ var son_recharge: AudioStreamPlayer
 var lacet := PI # orientation de la caméra
 var tangage := -0.28
 var mission: Node
+var a_cheval: Node = null   # le cheval sur lequel Faris est en selle (cheval.gd le conduit)
 
 
 func _ready() -> void:
@@ -185,6 +186,9 @@ func ressusciter(p: Vector3) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if a_cheval:
+		velocity = Vector3.ZERO
+		return
 	if mort:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -284,9 +288,13 @@ func _combat(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	var hauteur := 1.15 if accroupi else 1.55
+	if a_cheval:
+		hauteur = 2.55
 	var epaule := Basis(Vector3.UP, lacet) * Vector3(0.55 if vise else 0.0, 0, 0)
 	pivot.global_position = pivot.global_position.lerp(global_position + Vector3(0, hauteur, 0) + epaule, 1.0 - exp(-14.0 * delta))
 	pivot.rotation = Vector3(tangage, lacet, 0)
 	var longueur := 1.7 if vise else (5.2 if vitesse_affichee > 4.0 else 3.9)
+	if a_cheval:
+		longueur = 6.8 if vitesse_affichee > 5.0 else 5.6
 	bras.spring_length = lerpf(bras.spring_length, longueur, 8.0 * delta if vise else 2.0 * delta)
 	camera.fov = lerpf(camera.fov, 50.0 if vise else 62.0, 8.0 * delta)
