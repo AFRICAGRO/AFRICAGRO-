@@ -188,7 +188,7 @@ func _accueil() -> void:
 		if ca:
 			ca.ouverte = true
 			ca.grande.visible = true
-			ca.mini.visible = false
+			ca.mini_carte.visible = false
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE)
 
 

@@ -114,7 +114,7 @@ func _peindre(noeud: Node, couleur: Color) -> void:
 				phares.append(mat)
 
 
-func _vehicule(type: String, ri: int, patrouille := false, gare := false, xf := Transform3D()) -> Dictionary:
+func _vehicule(type: String, ri: int, _patrouille := false, gare := false, xf := Transform3D()) -> Dictionary:
 	var noeud: Node3D = (load("res://vehicules/%s.glb" % type) as PackedScene).instantiate()
 	add_child(noeud)
 	var couleurs := {

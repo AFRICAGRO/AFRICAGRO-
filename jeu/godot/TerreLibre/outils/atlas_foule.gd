@@ -60,6 +60,7 @@ func _ready() -> void:
 				im.convert(Image.FORMAT_RGBA8)
 				im.resize(TUILE.x, TUILE.y, Image.INTERPOLATE_LANCZOS)
 				var x := ((mi % COLONNES) * 9 + f) * TUILE.x
+				@warning_ignore("integer_division")
 				var y := ((mi / COLONNES) * 8 + d) * TUILE.y
 				atlas.blit_rect(im, Rect2i(Vector2i.ZERO, TUILE), Vector2i(x, y))
 		print("atlas : ", MODELES[mi], " (marche ", snappedf(duree, 0.01), " s)")

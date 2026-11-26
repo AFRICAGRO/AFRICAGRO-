@@ -111,6 +111,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if monte:
 		descendre()
 	elif joueur.global_position.distance_to(global_position) < PORTEE and not joueur.get("mort") and joueur.get("a_cheval") == null:
+		@warning_ignore("missing_await")
 		monter()
 
 

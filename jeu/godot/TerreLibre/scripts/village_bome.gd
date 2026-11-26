@@ -20,8 +20,8 @@ var bananiers: Array = []        # Vector2 : touffes de bananiers derrière les 
 static func preparer_plan(c: Vector2) -> Dictionary:
 	var d := Terrain.lire_donnees()
 	var h := func(x: float, z: float) -> float: return Terrain.hauteur_brute(d, x, z)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 6
+	var alea := RandomNumberGenerator.new()
+	alea.seed = 6
 	var plateformes: Array = []
 	var sites: Array = []
 	var hc: float = h.call(c.x, c.y)
@@ -29,10 +29,10 @@ static func preparer_plan(c: Vector2) -> Dictionary:
 	var grenier := c + Vector2(23, -8)
 	plateformes.append({"centre": grenier, "rayon": 6.0, "h": hc + 0.4})
 	for rayon in [36.0, 56.0, 76.0, 96.0, 116.0]:
-		var depart := rng.randf() * TAU
+		var depart := alea.randf() * TAU
 		for k in 16:
 			var a := depart + TAU * k / 16.0
-			var p: Vector2 = c + Vector2(cos(a), sin(a)) * (rayon + rng.randf_range(-5, 5))
+			var p: Vector2 = c + Vector2(cos(a), sin(a)) * (rayon + alea.randf_range(-5, 5))
 			var hp: float = h.call(p.x, p.y)
 			var pente: float = (absf(h.call(p.x + 8, p.y) - h.call(p.x - 8, p.y)) + absf(h.call(p.x, p.y + 8) - h.call(p.x, p.y - 8))) / 16.0
 			if pente > 0.55 or hp < 12.0 or hp > 150.0:
@@ -366,6 +366,7 @@ func _champs() -> void:
 		if k >= 9:
 			break
 		var a := TAU * essai / 36.0 + 0.2
+		@warning_ignore("integer_division")
 		var p := c + Vector2(cos(a), sin(a)) * (135.0 + 40.0 * float(essai / 36))
 		if _sol(p) < 8.0 or terrain.pente(p.x, p.y) > 0.45:
 			continue
@@ -518,11 +519,11 @@ func _palmiers_huile(veg: Vegetation) -> void:
 
 ## Bananier : faux tronc vert-brun, une dizaine de grandes feuilles arquées et déchirées par le vent,
 ## deux ou trois vieilles feuilles sèches pendantes ; parfois un régime de bananes vertes.
-static func maillage_bananier(rng: RandomNumberGenerator) -> ArrayMesh:
+static func maillage_bananier(alea: RandomNumberGenerator) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var h := rng.randf_range(2.2, 3.4)
+	var h := alea.randf_range(2.2, 3.4)
 	var cotes := 9
 	for i in 6:
 		var t0 := i / 6.0
@@ -547,22 +548,22 @@ static func maillage_bananier(rng: RandomNumberGenerator) -> ArrayMesh:
 	# feuilles : chacune est une bande courbe (nervure arquée) qui porte la texture de feuille
 	var sf := SurfaceTool.new()
 	sf.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var nb := rng.randi_range(8, 11)
+	var nb := alea.randi_range(8, 11)
 	for f in nb:
-		var az := TAU * f / nb + rng.randf_range(-0.3, 0.3)
+		var az := TAU * f / nb + alea.randf_range(-0.3, 0.3)
 		var seche := f < 2
 		var dir := Vector3(cos(az), 0, sin(az))
 		var cote := dir.cross(Vector3.UP).normalized()
-		var longueur := rng.randf_range(1.8, 2.6)
-		var largeur := rng.randf_range(0.5, 0.65)
-		var depart := Vector3(0, h - rng.randf_range(0.0, 0.25), 0)
-		var montee := rng.randf_range(0.5, 1.2)
+		var longueur := alea.randf_range(1.8, 2.6)
+		var largeur := alea.randf_range(0.5, 0.65)
+		var depart := Vector3(0, h - alea.randf_range(0.0, 0.25), 0)
+		var montee := alea.randf_range(0.5, 1.2)
 		var pts: Array = []
 		for i in 9:
 			var t := i / 8.0
 			var y := montee * sin(t * PI * 0.7) - t * t * (1.1 if not seche else 2.6)
 			pts.append(depart + dir * (0.25 + longueur * t) + Vector3.UP * y)
-		var torsion := rng.randf_range(-0.35, 0.35)
+		var torsion := alea.randf_range(-0.35, 0.35)
 		for i in 8:
 			var t0 := i / 8.0
 			var t1 := (i + 1) / 8.0
@@ -595,17 +596,17 @@ static func maillage_bananier(rng: RandomNumberGenerator) -> ArrayMesh:
 	mf.backlight = Color(0.25, 0.35, 0.1)
 	mesh.surface_set_material(1, mf)
 	# régime de bananes vertes, une fois sur deux
-	if rng.randf() < 0.5:
+	if alea.randf() < 0.5:
 		var sr := SurfaceTool.new()
 		sr.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var dirr := Vector3(cos(rng.randf() * TAU), 0, sin(rng.randf() * TAU))
-		var centre := Vector3(0, h - 0.55, 0) + dirr * 0.32
+		var dirr := Vector3(cos(alea.randf() * TAU), 0, sin(alea.randf() * TAU))
+		var centre_regime := Vector3(0, h - 0.55, 0) + dirr * 0.32
 		var sp := SphereMesh.new()
 		sp.radius = 0.2
 		sp.height = 0.55
 		sp.radial_segments = 8
 		sp.rings = 6
-		sr.append_from(sp, 0, Transform3D(Basis(), centre))
+		sr.append_from(sp, 0, Transform3D(Basis(), centre_regime))
 		var mr := StandardMaterial3D.new()
 		mr.albedo_color = Color(0.36, 0.5, 0.18)
 		mr.roughness = 0.55

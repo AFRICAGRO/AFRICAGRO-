@@ -299,6 +299,7 @@ func _interieur() -> void:
 		sac.material_override = mat_toile
 		add_child(sac)
 		var col := i % 4
+		@warning_ignore("integer_division")
 		var rang := i / 4
 		sac.global_transform = Transform3D(base.basis.rotated(Vector3.UP, randf_range(-0.2, 0.2)), _l(-11.0 + col * 0.95, plancher + 0.22 + rang * 0.42, 6.6 - (rang % 2) * 0.2))
 		tas_sacs.append(sac)
@@ -362,6 +363,7 @@ func _quai() -> void:
 		mi.mesh = bx
 		mi.material_override = bleu
 		add_child(mi)
+		@warning_ignore("integer_division")
 		mi.global_transform = Transform3D(base.basis.rotated(Vector3.UP, randf_range(-0.3, 0.3)), poissons + Vector3((i % 3) * 0.65 - 0.65, 0.16 + (i / 3) * 0.33, 0))
 	var lab := Label3D.new()
 	lab.text = "Caisses de poisson (F : se faire passer pour un docker)"
@@ -465,7 +467,9 @@ func demarrer() -> void:
 		garde += 1
 	m4._annoncer("Mission 5 — Les Graines", 4.0)
 	m4._objectif("Reprendre les 12 sacs de semences de la coopérative (chambre froide de l'entrepôt). Sans être vu : C pour s'accroupir, X pour lancer un caillou, F au groupe électrogène pour couper la lumière.")
+	@warning_ignore("missing_await")
 	_radio("AMA", "Je suis sous les pilotis, sous la trappe. Passe par l'eau, ou par la porte si tu es fou.", 0.5)
+	@warning_ignore("missing_await")
 	_radio("KWAME", "Le groupe électrogène est derrière. Coupe-le : deux minutes de noir. Pas plus. C'est moi qui l'ai réparé…", 7.0)
 
 
@@ -707,6 +711,7 @@ func _reussite(complete: bool) -> void:
 	joueur.mission = m4
 	joueur.charge = false
 	if complete:
+		@warning_ignore("missing_await")
 		_radio("KWAME", "J'ai fait péter le pot d'échappement de ma moto sur le quai. C'était un accident ! Enfin non, c'était exprès, mais j'ai eu peur quand même !", 0.5)
 		m4._annoncer("MISSION RÉUSSIE — les 12 sacs de semences sont sauvés.\nKwame « Tournevis » rejoint les Racines.", 7.0)
 	else:

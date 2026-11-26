@@ -21,7 +21,7 @@ var ombre: Texture2D
 var lieux: Array = []           # [nom, Vector2 monde]
 var grande: Control
 var cadre_carte: Control        # zone de la grande carte (découpée : rien ne déborde)
-var mini: Control
+var mini_carte: Control
 var ouverte := false
 var balise := Vector3.INF
 var colonne: MeshInstance3D
@@ -29,27 +29,27 @@ var info: Label
 var t_info := 0.0
 
 
-func construire(p_main: Node, terrain: Terrain, p_lieux: Array) -> void:
+func construire(p_main: Node, _terrain: Terrain, p_lieux: Array) -> void:
 	main = p_main
 	joueur = main.joueur
 	lieux = p_lieux
 	fond = load("res://data/talanke_satellite.jpg")
 	ombre = load("res://data/carte_ombre.png")   # ombrage du relief précalculé (outils/carte_relief.py)
 	layer = 5
-	mini = Control.new()
-	mini.size = Vector2(TAILLE_MINI, TAILLE_MINI)
-	mini.anchor_left = 1.0
-	mini.anchor_right = 1.0
-	mini.anchor_top = 1.0
-	mini.anchor_bottom = 1.0
-	mini.offset_left = -TAILLE_MINI - 18.0
-	mini.offset_right = -18.0
-	mini.offset_top = -TAILLE_MINI - 50.0
-	mini.offset_bottom = -50.0
-	mini.clip_contents = true
-	mini.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mini.draw.connect(_dessiner_mini)
-	add_child(mini)
+	mini_carte = Control.new()
+	mini_carte.size = Vector2(TAILLE_MINI, TAILLE_MINI)
+	mini_carte.anchor_left = 1.0
+	mini_carte.anchor_right = 1.0
+	mini_carte.anchor_top = 1.0
+	mini_carte.anchor_bottom = 1.0
+	mini_carte.offset_left = -TAILLE_MINI - 18.0
+	mini_carte.offset_right = -18.0
+	mini_carte.offset_top = -TAILLE_MINI - 50.0
+	mini_carte.offset_bottom = -50.0
+	mini_carte.clip_contents = true
+	mini_carte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mini_carte.draw.connect(_dessiner_mini)
+	add_child(mini_carte)
 	grande = Control.new()
 	grande.set_anchors_preset(Control.PRESET_FULL_RECT)
 	grande.visible = false
@@ -142,9 +142,9 @@ func _dessiner_mini() -> void:
 	var j := Vector2(joueur.global_position.x, joueur.global_position.z)
 	var centre := Vector2(TAILLE_MINI, TAILLE_MINI) * 0.5
 	var o := centre - (j + Vector2.ONE * Terrain.TAILLE * 0.5) / Terrain.TAILLE * s
-	mini.draw_rect(Rect2(Vector2.ZERO, mini.size), Color(0.1, 0.16, 0.22))
-	_couches(mini, o, s, 0.75)
-	mini.draw_rect(Rect2(Vector2.ZERO, mini.size), Color(0, 0, 0, 0.9), false, 3.0)
+	mini_carte.draw_rect(Rect2(Vector2.ZERO, mini_carte.size), Color(0.1, 0.16, 0.22))
+	_couches(mini_carte, o, s, 0.75)
+	mini_carte.draw_rect(Rect2(Vector2.ZERO, mini_carte.size), Color(0, 0, 0, 0.9), false, 3.0)
 
 
 func _couches(c: Control, o: Vector2, s: float, k: float) -> void:
@@ -162,10 +162,10 @@ func _couches(c: Control, o: Vector2, s: float, k: float) -> void:
 				ligne_c.append(_vers_carte(p, o, s))
 			c.draw_polyline(ligne_c, Color(0.82, 0.8, 0.76), maxf(1.0, r["l"] * e * 0.8))
 	# pistes de latérite
-	for tr in main.reperes_routes:
+	for trace in main.reperes_routes:
 		var ligne_c := PackedVector2Array()
-		for i in range(0, (tr as PackedVector2Array).size(), 3):
-			ligne_c.append(_vers_carte(tr[i], o, s))
+		for i in range(0, (trace as PackedVector2Array).size(), 3):
+			ligne_c.append(_vers_carte(trace[i], o, s))
 		c.draw_polyline(ligne_c, Color(0.15, 0.06, 0.02, 0.8), maxf(2.0, 9.0 * e) + 2.0)
 		c.draw_polyline(ligne_c, Color(0.86, 0.42, 0.18), maxf(2.0, 9.0 * e))
 	var police := ThemeDB.fallback_font
@@ -232,7 +232,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("carte"):
 		ouverte = not ouverte
 		grande.visible = ouverte
-		mini.visible = not ouverte
+		mini_carte.visible = not ouverte
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if ouverte else Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 
@@ -281,4 +281,4 @@ func _process(_delta: float) -> void:
 		grande.queue_redraw()
 		cadre_carte.queue_redraw()
 	else:
-		mini.queue_redraw()
+		mini_carte.queue_redraw()

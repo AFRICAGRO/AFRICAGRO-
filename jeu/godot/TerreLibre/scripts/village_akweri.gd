@@ -72,6 +72,7 @@ func construire(t: Terrain, p_centre: Vector2, p_mer: Vector2, vegetation: Veget
 	reperes["refuges"] = [_monde3(-40, -40), _monde3(-50, 35), _monde3(-70, 0)]
 	var civils := []
 	for k in 12:
+		@warning_ignore("integer_division")
 		civils.append(_monde3(5 + (k % 3) * 2, -2 + (k / 3) * 2))
 	reperes["civils"] = civils
 
@@ -348,7 +349,7 @@ func _pirogue(avant: float, cote: float, couleur1: Color, couleur2: Color) -> vo
 	var mesh := st.commit()
 	var m: StandardMaterial3D = mats["bois_peint"].duplicate()
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var mi := _piece(mesh, m, Transform3D(), n)
+	_piece(mesh, m, Transform3D(), n)
 	# bancs et pagaie
 	for z in [-1.6, 0.0, 1.6]:
 		_piece(_boite(Vector3(1.2, 0.05, 0.22)), mats["bois"], Transform3D(Basis(), Vector3(0, 0.5, z)), n)

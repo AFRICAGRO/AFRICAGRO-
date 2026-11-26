@@ -226,14 +226,12 @@ func _sanctuaire_et_vue() -> void:
 func _paroi() -> void:
 	# face nord : on cherche, au nord du sommet, l'endroit où le terrain est 20 à 26 m plus bas
 	var nord := Vector2(0, -1)
-	var meilleur := 0.0
 	var dist := 30.0
 	for dd in range(18, 130, 2):
 		var q := Vector2(sommet.x, sommet.z) + nord * float(dd)
 		var chute := sommet.y - terrain.hauteur(q.x, q.y)
 		if chute >= 22.0:
 			dist = float(dd)
-			meilleur = chute
 			break
 	var pied := Vector2(sommet.x, sommet.z) + nord * dist
 	var h_pied := terrain.hauteur(pied.x, pied.y)
@@ -550,6 +548,7 @@ func _process(delta: float) -> void:
 					if (g as Pnj).est_actif():
 						actifs += 1
 				if actifs == 0:
+					@warning_ignore("missing_await")
 					_joel()
 	if t_vue > 0.0:
 		t_vue -= delta
@@ -573,6 +572,7 @@ func _commencer() -> void:
 	m4._annoncer("Mission 7 — La Voix de l'Île", 4.0)
 	m4._objectif("Montez au lac du cratère, puis gagnez la face nord du mont Talanké. (Facultatif : offrande au sanctuaire, F ; le rocher du point de vue.)")
 	_balise(paroi_base)
+	@warning_ignore("missing_await")
 	_dire("KWAME (radio)", "Le chemin du sommet est gardé. Il y a la face nord. Les chèvres y montent. Les gardes, non. … Toi, je ne sais pas.", 2.0)
 
 
@@ -754,6 +754,7 @@ func _joel() -> void:
 		var ap: AnimationPlayer = joel.find_child("AnimationPlayer", true, false)
 		ap.play("Rendu")
 	m4._annoncer("JOËL — « Je ne suis pas milicien ! Je fais juste la radio ! Ils m'ont dit que sinon ma mère… »", 5.0)
+	@warning_ignore("missing_await")
 	_dire("FARIS", "« Tu sais faire marcher tout ça ? » — JOËL : « … Oui. » — FARIS : « Alors tu travailles pour l'île, maintenant. »", 5.5)
 	await get_tree().create_timer(11.5).timeout
 	choix_ui.visible = true
@@ -785,6 +786,7 @@ func _message(ton: String) -> void:
 		tel.ton_radio = ton
 		tel.allumer_radio(true)
 	_musique_au_port()
+	@warning_ignore("missing_await")
 	_dire("AMA (radio, en riant)", "Tout le port danse. Même les gardes du quai tapent du pied.", 6.0)
 	m4._objectif("Prochain objectif : un message arrive de Tikané — des otages (mission 8).")
 
@@ -817,7 +819,7 @@ func _musique_au_port() -> void:
 		emetteurs.append(e)
 
 
-func restaurer_terminee(ton: String) -> void:
+func restaurer_terminee(_ton: String) -> void:
 	phase = Phase.TERMINEE
 	_musique_au_port()
 	m4._objectif("Prochain objectif : un message arrive de Tikané — des otages (mission 8).")

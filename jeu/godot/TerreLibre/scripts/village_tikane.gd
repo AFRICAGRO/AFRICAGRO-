@@ -19,8 +19,8 @@ var feux: Array = []   # [lumière, énergie de base, phase]
 static func preparer_plan(m: Vector2) -> Dictionary:
 	var d := Terrain.lire_donnees()
 	var h := func(x: float, z: float) -> float: return Terrain.hauteur_brute(d, x, z)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 8
+	var alea := RandomNumberGenerator.new()
+	alea.seed = 8
 	# rivière : niveau d'eau qui ne remonte jamais vers l'aval
 	var pts := PackedVector2Array()
 	var niv := PackedFloat32Array()
@@ -52,10 +52,10 @@ static func preparer_plan(m: Vector2) -> Dictionary:
 		return best
 	var sites: Array = []
 	for rayon in [32.0, 50.0, 68.0, 86.0]:
-		var depart := rng.randf() * TAU
+		var depart := alea.randf() * TAU
 		for k in 14:
 			var a := depart + TAU * k / 14.0
-			var p: Vector2 = c + Vector2(cos(a), sin(a)) * (rayon + rng.randf_range(-4, 4))
+			var p: Vector2 = c + Vector2(cos(a), sin(a)) * (rayon + alea.randf_range(-4, 4))
 			var hp: float = h.call(p.x, p.y)
 			var pente: float = (absf(h.call(p.x + 8, p.y) - h.call(p.x - 8, p.y)) + absf(h.call(p.x, p.y + 8) - h.call(p.x, p.y - 8))) / 16.0
 			if pente > 0.5 or hp < 5.0 or hp > 45.0:
@@ -110,7 +110,7 @@ func construire_tikane(t: Terrain, p_plan: Dictionary, veg: Vegetation, p_proche
 	print("Tikané : %d bâtiments, %d concessions" % [nb_batiments, plan["sites"].size()])
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# flammes des braseros : la lumière vacille
 	var tps := Time.get_ticks_msec() * 0.001
 	for f in feux:
@@ -451,6 +451,7 @@ func _maillage_pirogue() -> ArrayMesh:
 			var b: Vector3 = anneaux[i][j + 1]
 			var c2: Vector3 = anneaux[i + 1][j + 1]
 			var d: Vector3 = anneaux[i + 1][j]
+			@warning_ignore("integer_division")
 			var col: Color = couleurs[0] if (j == 0 or j == profil.size() - 2) and absf(a.y) > 0.3 else couleurs[1 + (i / 3) % 2] if j in [0, 5] else couleurs[0]
 			var nrm := (b - a).cross(d - a).normalized()
 			for v in [[a, Vector2(0, 0)], [b, Vector2(1, 0)], [c2, Vector2(1, 1)], [a, Vector2(0, 0)], [c2, Vector2(1, 1)], [d, Vector2(0, 1)]]:

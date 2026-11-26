@@ -158,12 +158,12 @@ func _arbre(rng: RandomNumberGenerator, p: Dictionary) -> ArrayMesh:
 	var rx := L * 0.5
 	var bouts: Array = []
 	var r0: float = H * 0.045 * (p["r_tronc"] / 0.2) if H < 10.0 else p["r_tronc"]
-	for tr in p["troncs"]:
+	for trace in p["troncs"]:
 		# tronc (un peu penché et tordu), puis branches maîtresses vers la couronne
 		var ang0 := rng.randf() * TAU
 		var penche: Vector3 = Vector3(cos(ang0), 0, sin(ang0)) * H * p["penche"] * rng.randf_range(0.5, 1.0)
 		if p["troncs"] > 1:
-			penche = Vector3(cos(ang0 + tr * PI), 0, sin(ang0 + tr * PI)) * H * 0.18
+			penche = Vector3(cos(ang0 + trace * PI), 0, sin(ang0 + trace * PI)) * H * 0.18
 		var hf: float = H * p["fourche"] * rng.randf_range(0.85, 1.15)
 		var haut_tronc := Vector3(penche.x, hf, penche.z)
 		var tronc := _courbe(Vector3.ZERO, haut_tronc, Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)) * H * 0.04, 6)
@@ -174,7 +174,7 @@ func _arbre(rng: RandomNumberGenerator, p: Dictionary) -> ArrayMesh:
 			rayons.append(rt * (1.0 - 0.35 * t) * (1.0 + 0.6 * maxf(0.0, 0.2 - t) * 5.0)) # empattement au pied
 		_cylindre_le_long(st, tronc, rayons, 9, 0.0, 0.1)
 		for b in p["branches"]:
-			var az: float = TAU * b / p["branches"] + rng.randf_range(-0.4, 0.4) + tr
+			var az: float = TAU * b / p["branches"] + rng.randf_range(-0.4, 0.4) + trace
 			var dir := Vector3(cos(az), 0, sin(az))
 			var fin := centre + dir * rx * rng.randf_range(0.45, 0.8) + Vector3(0, ry * rng.randf_range(-0.2, 0.55), 0)
 			var br := _courbe(haut_tronc, fin, Vector3(0, H * 0.05, 0), 5)

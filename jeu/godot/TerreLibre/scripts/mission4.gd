@@ -128,6 +128,7 @@ func _placer_civils() -> void:
 	var teintes := [Color(1, 1, 1), Color(1, 0.85, 0.8), Color(0.85, 1, 0.9), Color(1, 1, 0.85), Color(0.85, 0.9, 1)]
 	var i := 0
 	for p in village.reperes["civils"]:
+		@warning_ignore("integer_division")
 		var c := _pnj("civil", p, teintes[(i / 6) % 3 + (i % 2)], "", modeles[i % modeles.size()])
 		c._regarder(village._monde3(20, 0), 1.0)
 		civils.append(c)
@@ -445,8 +446,10 @@ func _process(delta: float) -> void:
 			_reprendre()
 	if phase == Phase.CHOIX:
 		if Input.is_action_just_pressed("choix1"):
+			@warning_ignore("missing_await")
 			_choisir(false)
 		elif Input.is_action_just_pressed("choix2"):
+			@warning_ignore("missing_await")
 			_choisir(true)
 	vie.size.x = 220.0 * joueur.pv / 100.0
 	if joueur.a_une_arme:

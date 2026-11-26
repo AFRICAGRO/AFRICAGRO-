@@ -182,6 +182,7 @@ func _panier(base: Vector3, contenu: String) -> void:
 		cap.height = 0.42
 		for k in 6:
 			var a := rng.randf() * TAU
+			@warning_ignore("integer_division")
 			var pos := base + Vector3(cos(a) * 0.12, 0.22 + (k / 3) * 0.06, sin(a) * 0.12)
 			var mi := _forme(cap, _mat_cour("manioc" if k % 2 == 0 else "peau_manioc"), pos, rng.randf() * TAU)
 			mi.rotate_object_local(Vector3.RIGHT, PI * 0.5 + rng.randf_range(-0.2, 0.2))
@@ -546,7 +547,9 @@ func port_nere(ville: VillePortNere) -> void:
 	# pêcheurs sur la plage, côté mer du boulevard
 	var bvd: PackedVector2Array = r["boulevard"]
 	for i in 3:
+		@warning_ignore("integer_division")
 		var p := bvd[bvd.size() * (i + 1) / 5]
+		@warning_ignore("integer_division")
 		var t := (bvd[mini(bvd.size() - 1, bvd.size() * (i + 1) / 5 + 1)] - p).normalized()
 		var n := Vector2(-t.y, t.x)
 		if n.x > 0.0:
@@ -610,6 +613,7 @@ func bome(v: VillageBome) -> void:
 		var a := atan2(-vm.x, -vm.y) + rng.randf_range(-0.6, 0.6)
 		objets_cour(Vector2(m.x, m.z) + vm * 3.2 - vm.orthogonal() * 3.0, a)
 		if i % 3 == 0:
+			@warning_ignore("integer_division")
 			pilage_duo(q, a, modeles[(i / 3) % modeles.size()], ["femme_agee", "femme2", "femme"][i % 3])
 		elif i % 3 == 1 and i < 8:
 			ancien_chaise(Vector2(m.x, m.z) + vm * 4.0 + vm.orthogonal() * 4.5, atan2(vm.x, vm.y))

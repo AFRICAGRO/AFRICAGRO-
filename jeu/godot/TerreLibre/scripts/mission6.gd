@@ -271,7 +271,7 @@ func _valeurs() -> Dictionary:
 	var brut: int = familles * c["zlm"]
 	return {"culture": culture, "familles": familles, "part": part, "delai": c["delai"],
 			"revenu": int(brut * (100 - part) / 100.0), "village": int(brut * part / 100.0),
-			"defenseurs": FAMILLES - familles, "confiance": 4 + part / 5}
+			"defenseurs": FAMILLES - familles, "confiance": 4 + int(part / 5.0)}
 
 
 func _bilan() -> void:
@@ -344,6 +344,7 @@ func demarrer() -> void:
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca:
 		ca.poser_balise(bome.reperes["manche_a_air"])
+	@warning_ignore("missing_await")
 	_dire("BAYA EFUA", "Ils font travailler nos familles sur nos propres terres, sous les fusils. Si le feu touche une seule maison, ils diront que c'est toi le criminel. Et ils auront raison.", 1.0)
 
 
@@ -421,6 +422,7 @@ func _ama_sur_la_colline() -> void:
 	var vq: Node = main.get_node_or_null("VieQuotidienne")
 	if vq == null or parcelles.is_empty():
 		return
+	@warning_ignore("integer_division")
 	var p0: Dictionary = parcelles[parcelles.size() / 2]
 	var vers_village := (Vector2(bome.reperes["place"].x, bome.reperes["place"].z) - (p0["c"] as Vector2)).normalized()
 	var q: Vector2 = p0["c"] - vers_village * 45.0
@@ -762,6 +764,7 @@ func _tick_feu() -> void:
 			for idx in NX * NY:
 				if etat[idx] == 0:
 					etat[idx] = 2
+					@warning_ignore("integer_division")
 					_eteindre_case(k, idx % NX, idx / NX)
 			m4._annoncer("Une parcelle du Cobra est réduite en cendres.", 2.5)
 
@@ -866,9 +869,9 @@ func _process(delta: float) -> void:
 		if t_revenu >= SEMAINE:
 			t_revenu = 0.0
 			argent += revenu
-			var tel: Node = main.get_node_or_null("Telephone")
-			if tel:
-				tel.crediter(revenu, "Coopérative de Bomé")
+			var tel_paie: Node = main.get_node_or_null("Telephone")
+			if tel_paie:
+				tel_paie.crediter(revenu, "Coopérative de Bomé")
 	var tel: Node = main.get_node_or_null("Telephone")
 	var solde: int = tel.argent if tel else argent
 	if revenu > 0 and t_revenu < 0.0:
@@ -889,12 +892,14 @@ func _process(delta: float) -> void:
 			var mv: Vector3 = bome.reperes["manche_a_air"]
 			if joueur.global_position.distance_to(mv) < 25.0:
 				phase = Phase.FEU
+				@warning_ignore("missing_await")
 				_dire("BAYA EFUA (radio)", "Tu vois la manche à air ? Le vent descend vers nos maisons. Allume chaque parcelle par le bord qui regarde le village : le feu remontera contre le vent, doucement. Ou fais d'abord creuser un coupe-feu par les cultivateurs.", 0.2)
 				m4._objectif("Brûlez les 3 parcelles du Cobra (F dans une parcelle) sans brûler le village. Coupe-feu : F au repère, au-dessus des maisons.")
 				var ca: Node = main.get_node_or_null("Carte")
 				if ca:
 					ca.poser_balise(repere_coupe)
 		Phase.FEU:
+			@warning_ignore("missing_await")
 			_en_feu(delta)
 
 

@@ -28,12 +28,12 @@ func construire(t: Terrain, p_joueur: Joueur, p_controles: Controles, traces: Ar
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 77
 	for i in traces.size():
-		var tr: PackedVector2Array = traces[i]
-		if tr.size() < 20:
+		var trace: PackedVector2Array = traces[i]
+		if trace.size() < 20:
 			continue
 		var pk := _pickup(rng)
-		pk["trace"] = tr
-		pk["l"] = rng.randf_range(0.2, 0.8) * _longueur(tr)
+		pk["trace"] = trace
+		pk["l"] = rng.randf_range(0.2, 0.8) * _longueur(trace)
 		pk["sens"] = 1.0 if i % 2 == 0 else -1.0
 		pickups.append(pk)
 	controles.alerte_barrage.connect(_alerte_generale)
@@ -115,21 +115,21 @@ func _camoufler(perso: Node3D) -> void:
 # ---------------------------------------------------------------------
 # Géométrie des pistes
 # ---------------------------------------------------------------------
-func _longueur(tr: PackedVector2Array) -> float:
-	return (tr.size() - 1) * 3.0     # les pistes sont rééchantillonnées tous les 3 m
+func _longueur(trace: PackedVector2Array) -> float:
+	return (trace.size() - 1) * 3.0     # les pistes sont rééchantillonnées tous les 3 m
 
 
-func _point(tr: PackedVector2Array, l: float) -> Vector2:
-	var f := clampf(l / 3.0, 0.0, tr.size() - 1.001)
+func _point(trace: PackedVector2Array, l: float) -> Vector2:
+	var f := clampf(l / 3.0, 0.0, trace.size() - 1.001)
 	var i := int(f)
-	return tr[i].lerp(tr[i + 1], f - i)
+	return trace[i].lerp(trace[i + 1], f - i)
 
 
-func _abscisse_proche(tr: PackedVector2Array, p: Vector2) -> float:
+func _abscisse_proche(trace: PackedVector2Array, p: Vector2) -> float:
 	var best := 0
 	var dmin := INF
-	for i in range(0, tr.size(), 2):
-		var d := tr[i].distance_squared_to(p)
+	for i in range(0, trace.size(), 2):
+		var d := trace[i].distance_squared_to(p)
 		if d < dmin:
 			dmin = d
 			best = i
@@ -199,7 +199,7 @@ func _process(delta: float) -> void:
 		if pk["etat"] == "arrete":
 			continue
 		var noeud: Node3D = pk["noeud"]
-		var tr: PackedVector2Array = pk["trace"]
+		var trace: PackedVector2Array = pk["trace"]
 		var ici := Vector2(noeud.global_position.x, noeud.global_position.z)
 		var d_joueur := ici.distance_to(jp)
 		var cible: Vector2
@@ -209,11 +209,11 @@ func _process(delta: float) -> void:
 			if d_joueur < VUE and joueur.a_une_arme and not joueur.mort:
 				_poursuivre(pk)
 			pk["l"] = pk["l"] + pk["sens"] * V_RONDE * delta
-			if pk["l"] <= 0.0 or pk["l"] >= _longueur(tr):
+			if pk["l"] <= 0.0 or pk["l"] >= _longueur(trace):
 				pk["sens"] = -pk["sens"]                       # demi-tour au bout de la piste
-				pk["l"] = clampf(pk["l"], 0.0, _longueur(tr))
-			cible = _point(tr, pk["l"] + pk["sens"] * 4.0)
-			ici = _point(tr, pk["l"])
+				pk["l"] = clampf(pk["l"], 0.0, _longueur(trace))
+			cible = _point(trace, pk["l"] + pk["sens"] * 4.0)
+			ici = _point(trace, pk["l"])
 		else:
 			vise = V_POURSUITE
 			if joueur.mort:
@@ -226,10 +226,10 @@ func _process(delta: float) -> void:
 				pk["t_abandon"] += delta
 				if pk["t_abandon"] > 25.0:
 					pk["etat"] = "ronde"                       # trop loin : retour à la ronde
-					pk["l"] = _abscisse_proche(tr, ici)
+					pk["l"] = _abscisse_proche(trace, ici)
 					pk.erase("rejoindre")
 					continue
-			var l_vise := _abscisse_proche(tr, jp)
+			var l_vise := _abscisse_proche(trace, jp)
 			if d_joueur < 90.0 or (not pk.has("rejoindre") and absf(l_vise - pk["l"]) < 15.0):
 				# tout près, ou au point de la piste le plus proche de lui : coupe à travers la brousse
 				pk["hors_piste"] = true
@@ -239,8 +239,8 @@ func _process(delta: float) -> void:
 			elif pk.get("hors_piste", false):
 				# il s'est éloigné : on rejoint d'abord la piste
 				if not pk.has("rejoindre"):
-					pk["rejoindre"] = _abscisse_proche(tr, ici)
-				var q := _point(tr, pk["rejoindre"])
+					pk["rejoindre"] = _abscisse_proche(trace, ici)
+				var q := _point(trace, pk["rejoindre"])
 				cible = q
 				var dir := q - ici
 				ici += dir.normalized() * minf(dir.length(), vise * delta)
@@ -253,8 +253,8 @@ func _process(delta: float) -> void:
 				var l_cible := l_vise
 				var sens := signf(l_cible - pk["l"])
 				pk["l"] = move_toward(pk["l"], l_cible, vise * delta)
-				ici = _point(tr, pk["l"])
-				cible = _point(tr, pk["l"] + (sens if sens != 0.0 else 1.0) * 4.0)
+				ici = _point(trace, pk["l"])
+				cible = _point(trace, pk["l"] + (sens if sens != 0.0 else 1.0) * 4.0)
 		_poser(pk, ici, cible, vise, delta)
 
 

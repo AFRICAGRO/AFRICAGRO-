@@ -99,7 +99,7 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 
 
 # ---------- dégâts ----------
-func touche(degats: float, par_joueur: bool) -> void:
+func touche(degats: float, _par_joueur: bool) -> void:
 	if etat in [Etat.MORT, Etat.LIGOTE] or role == "civil":
 		return
 	if etat == Etat.RENDU:
@@ -388,8 +388,10 @@ func _regarder(p: Vector3, poids: float) -> void:
 	d.y = 0
 	if d.length() < 0.1:
 		return
-	regard = regard.slerp(d.normalized(), clampf(poids, 0.0, 1.0)).normalized()
-	corps.rotation.y = atan2(regard.x, regard.z)
+	# interpolation d'angle (un slerp entre deux directions opposées produit un axe dégénéré)
+	var a := lerp_angle(atan2(regard.x, regard.z), atan2(d.x, d.z), clampf(poids, 0.0, 1.0))
+	regard = Vector3(sin(a), 0.0, cos(a))
+	corps.rotation.y = a
 
 
 func _animer() -> void:

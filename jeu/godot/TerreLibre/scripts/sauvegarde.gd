@@ -202,6 +202,7 @@ func charger() -> bool:
 			for p6 in m6.parcelles:
 				for idx in Mission6.NX * Mission6.NY:
 					p6["etat"][idx] = 2
+					@warning_ignore("integer_division")
 					m6._eteindre_case(m6.parcelles.find(p6), idx % Mission6.NX, idx / Mission6.NX)
 				p6["brulee"] = true
 			m6._drapeau()

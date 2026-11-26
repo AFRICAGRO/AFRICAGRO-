@@ -85,7 +85,7 @@ func _process(delta: float) -> void:
 		_appliquer(courant, cible)
 
 
-func _appliquer(a: Dictionary, cible: Dictionary) -> void:
+func _appliquer(a: Dictionary, _cible: Dictionary) -> void:
 	ciel.panorama = textures[a["ciel"]]
 	ciel.energy_multiplier = a["energie_ciel"]
 	env.sky_rotation = Vector3(0, deg_to_rad(a["rot"]), 0)

@@ -477,41 +477,41 @@ func _ruban(r: Dictionary) -> void:
 		prec = ligne
 		if asphalte:
 			# trottoirs de 2,2 m, interrompus aux carrefours
-			var tr: Array = []
+			var trace: Array = []
 			for cote in [-1.0, 1.0]:
 				var q0: Vector2 = ech[i] + n * (hw * cote)
 				var q1: Vector2 = ech[i] + n * ((hw + 2.2) * cote)
 				var libre := not _dans_autre_rue(ech[i] + n * ((hw + 1.1) * cote), r, 0.5)
 				var h := _sol(q1) + 0.27
-				tr.append([Vector3(q0.x, _sol(q0) + dy, q0.y), Vector3(q0.x, h, q0.y), Vector3(q1.x, h, q1.y), libre])
+				trace.append([Vector3(q0.x, _sol(q0) + dy, q0.y), Vector3(q0.x, h, q0.y), Vector3(q1.x, h, q1.y), libre])
 			if prec_tr.size() > 0:
 				for c in 2:
-					if tr[c][3] and prec_tr[c][3]:
-						_quad("trottoir", prec_tr[c][1], prec_tr[c][2], tr[c][2], tr[c][1], Color.WHITE, Vector3.UP)
-						sol_dur.append_array([prec_tr[c][1], prec_tr[c][2], tr[c][2], prec_tr[c][1], tr[c][2], tr[c][1]])
+					if trace[c][3] and prec_tr[c][3]:
+						_quad("trottoir", prec_tr[c][1], prec_tr[c][2], trace[c][2], trace[c][1], Color.WHITE, Vector3.UP)
+						sol_dur.append_array([prec_tr[c][1], prec_tr[c][2], trace[c][2], prec_tr[c][1], trace[c][2], trace[c][1]])
 						var nb := Vector3(n.x, 0, n.y) * (-1.0 if c == 0 else 1.0) * -1.0
-						_quad("beton", prec_tr[c][0], prec_tr[c][1], tr[c][1], tr[c][0], Color(0.85, 0.85, 0.82), nb)
+						_quad("beton", prec_tr[c][0], prec_tr[c][1], trace[c][1], trace[c][0], Color(0.85, 0.85, 0.82), nb)
 						if is_same(r, rues[0]) and _cote_mer(pts, -1.0 if c == 0 else 1.0):
 							# muret blanc du front de mer, comme une promenade
 							var a3: Vector3 = prec_tr[c][2]
-							var b3: Vector3 = tr[c][2]
+							var b3: Vector3 = trace[c][2]
 							var mid := (a3 + b3) * 0.5
 							var dir := Vector2(b3.x - a3.x, b3.z - a3.z)
 							if dir.length() > 0.1:
 								var xm := _repere(Vector2(mid.x, mid.z), Vector2(dir.y, -dir.x).normalized(), minf(a3.y, b3.y) - 0.05)
 								_boite("beton", xm, Vector3(dir.length() + 0.05, 0.75, 0.3), Color(0.96, 0.95, 0.92))
-			prec_tr = tr
+			prec_tr = trace
 	if sol_dur.size() > 0:
-		var corps := StaticBody3D.new()
-		corps.collision_layer = 1
-		corps.collision_mask = 0
+		var corps_sol := StaticBody3D.new()
+		corps_sol.collision_layer = 1
+		corps_sol.collision_mask = 0
 		var cs := CollisionShape3D.new()
 		var forme := ConcavePolygonShape3D.new()
 		forme.backface_collision = true
 		forme.set_faces(sol_dur)
 		cs.shape = forme
-		corps.add_child(cs)
-		add_child(corps)
+		corps_sol.add_child(cs)
+		add_child(corps_sol)
 
 
 # =====================================================================
@@ -787,6 +787,7 @@ func _lotir(r: Dictionary) -> void:
 
 ## Vrai si ce côté de la rue est celui de la mer (ouest).
 func _cote_mer(pts: PackedVector2Array, cote: float) -> bool:
+	@warning_ignore("integer_division")
 	var t := (pts[pts.size() / 2 + 1] - pts[pts.size() / 2]).normalized()
 	return Vector2(-t.y, t.x).x * cote < 0.0
 
@@ -959,11 +960,12 @@ func _lieux() -> void:
 	for sx in [-1.0, 1.0]:
 		for sz in [-1.0, 1.0]:
 			_boite("bois", xq.translated_local(Vector3(sx * 6.3, 0, sz * 3.6 - 1.0)), Vector3(0.14, 2.8, 0.14), Color(0.5, 0.36, 0.25))
-	var pz := func(a, b, c): return xq * Vector3(a, b, c)
-	_quad("tole", pz.call(-6.8, 2.9, -5.0), pz.call(6.8, 2.9, -5.0), pz.call(6.8, 3.2, 2.0), pz.call(-6.8, 3.2, 2.0), Color(0.8, 0.8, 0.8))
-	_quad("tole", pz.call(-6.8, 2.9, -5.0), pz.call(-6.8, 3.2, 2.0), pz.call(6.8, 3.2, 2.0), pz.call(6.8, 2.9, -5.0), Color(0.45, 0.45, 0.45))
+	var vers_monde := func(a, b, c): return xq * Vector3(a, b, c)
+	_quad("tole", vers_monde.call(-6.8, 2.9, -5.0), vers_monde.call(6.8, 2.9, -5.0), vers_monde.call(6.8, 3.2, 2.0), vers_monde.call(-6.8, 3.2, 2.0), Color(0.8, 0.8, 0.8))
+	_quad("tole", vers_monde.call(-6.8, 2.9, -5.0), vers_monde.call(-6.8, 3.2, 2.0), vers_monde.call(6.8, 3.2, 2.0), vers_monde.call(6.8, 2.9, -5.0), Color(0.45, 0.45, 0.45))
 	for i in 6: # tables et chaises en plastique
 		var tx := -4.5 + (i % 3) * 4.5
+		@warning_ignore("integer_division")
 		var tz := -3.6 + (i / 3) * 3.0
 		var t := xq.translated_local(Vector3(tx, 0, tz))
 		_boite("metal", t, Vector3(0.9, 0.72, 0.9), Color(0.95, 0.95, 0.95))
@@ -1104,9 +1106,7 @@ func _mobilier() -> void:
 		var avant: Vector2 = b[1]
 		var w: float = b[2]
 		var nom: String = b[3]
-		var base: float = b[4]
 		var r := Vector2(-avant.y, avant.x)
-		var dy := base - _sol(devant + avant * 1.5)
 		# deux ou trois chaises sous l'auvent
 		for k in rng.randi_range(1, 3):
 			var p := devant + avant * rng.randf_range(0.8, 1.8) + r * rng.randf_range(-w * 0.4, w * 0.4)
@@ -1134,6 +1134,7 @@ func _mobilier() -> void:
 		if bati.has(_cle(p)):
 			continue
 		for k in rng.randi_range(3, 8):
+			@warning_ignore("integer_division")
 			_objet("cement_bag", _xf_sol(p + Vector2(k % 3, 0) * 0.5, rng.randf_range(-0.2, 0.2), (k / 3) * 0.17))
 		if rng.randf() < 0.5:
 			_objet("barrel_01", _xf_sol(p + avant * 1.0, 0.0))

@@ -53,23 +53,23 @@ func construire(t: Terrain, troncons: Array, eviter: Array, rivieres: Array, vil
 			grille.set_point_solid(c, true)
 		else:
 			grille.set_point_weight_scale(c, grille.get_point_weight_scale(c) + 25.0)
-	for tr in troncons:
-		var pts := _chemin(grille, tr[0], tr[1])
+	for trace in troncons:
+		var pts := _chemin(grille, trace[0], trace[1])
 		if pts.size() < 2:
 			continue
 		# raccords : la route prolonge la rue de la ville tout droit sur quelques dizaines de mètres
 		var complet := PackedVector2Array()
-		for p in tr[2]:
+		for p in trace[2]:
 			complet.append(p)
 		complet.append_array(pts)
-		for p in tr[3]:
+		for p in trace[3]:
 			complet.append(p)
 		var lisse := _reechantillonner(_chaikin(_chaikin(_chaikin(complet))), 3.0)
 		traces.append(lisse)
-		_ruban(lisse, (tr[2] as Array).is_empty(), (tr[3] as Array).is_empty())
+		_ruban(lisse, (trace[2] as Array).is_empty(), (trace[3] as Array).is_empty())
 		_marquer(lisse)
-		if tr.size() > 4:
-			_panneau(lisse, tr[4])
+		if trace.size() > 4:
+			_panneau(lisse, trace[4])
 
 
 ## Panneau de bord de route : poteau de bois, plaque peinte avec le nom du village et la distance.
