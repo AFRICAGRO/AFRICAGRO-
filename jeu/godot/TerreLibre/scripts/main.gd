@@ -193,6 +193,11 @@ func _ready() -> void:
 	carte.name = "Carte"
 	add_child(carte)
 	carte.construire(self, terrain, noms)
+	# mission 5 « Les Graines » : l'entrepôt du Cobra sur pilotis, au quai (disponible après Akwéri)
+	var mission5 := Mission5.new()
+	mission5.name = "Mission5"
+	add_child(mission5)
+	mission5.construire(self, carte_vers_monde(170, 268), veg)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"
@@ -222,7 +227,7 @@ func _actions_clavier() -> void:
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
 		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
 		"vehicule": [KEY_E], "carte": [KEY_M],
-		"sauver": [KEY_F5], "charger": [KEY_F9],
+		"sauver": [KEY_F5], "charger": [KEY_F9], "lancer": [KEY_X],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -431,7 +436,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · M : carte · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · M : carte · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))

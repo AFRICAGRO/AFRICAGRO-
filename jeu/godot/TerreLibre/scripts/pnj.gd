@@ -32,6 +32,13 @@ var cible_nav := Vector3.ZERO
 var refuges: Array = []
 var vitesse := 0.0
 var regard := Vector3.FORWARD
+## Perception réglée par la mission : portée de vue (m) — réduite dans le noir — et zone interdite
+## (dans l'entrepôt du Cobra, un homme vu sans arme est quand même suspect).
+var portee_vue := 38.0
+var zone_interdite := false
+## Bruit suspect (objet lancé) : le garde va voir, regarde autour de lui, puis reprend sa ronde.
+var enquete := Vector3.INF
+var t_enquete := 0.0
 
 
 func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise: Color, texture_chemise: String = "", modele := "faris") -> void:
@@ -162,6 +169,15 @@ func _passer_combat() -> void:
 		alerte.emit(global_position)
 
 
+## Bruit discret (caillou lancé) : un garde calme va voir ce que c'est, sans donner l'alerte.
+func intriguer(origine: Vector3, portee: float) -> void:
+	if role == "civil" or etat != Etat.CALME or global_position.distance_to(origine) > portee:
+		return
+	enquete = origine
+	t_enquete = 5.0
+	attente = 0.0
+
+
 func entendre(origine: Vector3, portee: float) -> void:
 	if global_position.distance_to(origine) > portee:
 		return
@@ -191,7 +207,7 @@ func _voit_joueur() -> bool:
 	var tete := global_position + Vector3(0, 1.6, 0)
 	var cible := joueur.global_position + Vector3(0, 1.2 if joueur.accroupi else 1.5, 0)
 	var d := tete.distance_to(cible)
-	if d > 38.0:
+	if d > (portee_vue if not joueur.accroupi else portee_vue * 0.6):
 		return false
 	var dir := (cible - tete).normalized()
 	var plat := Vector3(dir.x, 0, dir.z).normalized()
@@ -232,7 +248,13 @@ func _calme(delta: float) -> void:
 	if voit and joueur.a_une_arme:
 		var d := global_position.distance_to(joueur.global_position)
 		var vite := 1.6 if not joueur.accroupi else 0.6
-		soupcon += delta * vite * clampf(30.0 / maxf(d, 3.0), 0.5, 4.0)
+		# dans le noir (portée de vue réduite), on met plus de temps à reconnaître une arme
+		soupcon += delta * vite * clampf(30.0 / maxf(d, 3.0), 0.5, 4.0) * clampf(portee_vue / 38.0, 0.25, 1.0)
+		etat = Etat.SUSPICION
+		_regarder(joueur.global_position, delta * 2.0)
+	elif voit and zone_interdite:
+		var d := global_position.distance_to(joueur.global_position)
+		soupcon += delta * (0.55 if not joueur.accroupi else 0.22) * clampf(16.0 / maxf(d, 2.0), 0.4, 3.0)
 		etat = Etat.SUSPICION
 		_regarder(joueur.global_position, delta * 2.0)
 	elif voit and not joueur.accroupi and global_position.distance_to(joueur.global_position) < 9.0:
@@ -245,6 +267,19 @@ func _calme(delta: float) -> void:
 			etat = Etat.CALME
 	if soupcon >= 1.0:
 		_passer_combat()
+		return
+	if etat == Etat.CALME and enquete != Vector3.INF:
+		if global_position.distance_to(enquete) > 1.5 and t_enquete > 4.9:
+			_aller(enquete)
+			_deplacer(1.9, delta)
+		else:
+			velocity.x = 0.0
+			velocity.z = 0.0
+			t_enquete -= delta
+			regard = regard.rotated(Vector3.UP, delta * 0.9 * signf(sin(t_enquete * 1.3)))
+			corps.rotation.y = atan2(regard.x, regard.z)
+			if t_enquete <= 0.0:
+				enquete = Vector3.INF
 		return
 	if etat == Etat.CALME and points_patrouille.size() > 1:
 		if attente > 0.0:

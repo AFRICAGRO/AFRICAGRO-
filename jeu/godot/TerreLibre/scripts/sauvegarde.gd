@@ -87,6 +87,9 @@ func sauver() -> void:
 			etats.append(int((p as Pnj).etat))
 		d["akweri"] = {"phase": int(mission.phase), "confiance": mission.confiance, "tues": mission.tues,
 				"epargnes": mission.epargnes, "pnjs": etats}
+	var m5: Node = main.get_node_or_null("Mission5")
+	if m5:
+		d["graines"] = {"phase": int(m5.phase), "livres": m5.sacs_livres, "preuve": m5.preuve}
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca and ca.balise != Vector3.INF:
 		d["balise"] = _v3(ca.balise)
@@ -161,6 +164,20 @@ func charger() -> bool:
 		mission.confiance = int(da["confiance"])
 		mission.tues = int(da["tues"])
 		mission.epargnes = int(da["epargnes"])
+	var m5: Node = main.get_node_or_null("Mission5")
+	if m5 and d.has("graines"):
+		var dg: Dictionary = d["graines"]
+		m5.preuve = bool(dg["preuve"])
+		var livres := int(dg["livres"])
+		while m5.sacs_livres < livres and m5.tas_sacs.size() > 0:
+			(m5.tas_sacs.pop_back() as Node).queue_free()
+			m5.sacs_livres += 1
+			m5.sacs_restants -= 1
+		if int(dg["phase"]) == Mission5.Phase.TERMINEE and m5.phase != Mission5.Phase.TERMINEE:
+			m5.phase = Mission5.Phase.TERMINEE
+			m5.m4._objectif("Prochain objectif : apporter les semences à Bomé (mission 6).")
+		elif m5.phase == Mission5.Phase.EN_COURS:
+			m5._reprendre_plus_tard()
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca:
 		if d.has("balise"):

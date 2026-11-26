@@ -24,6 +24,7 @@ sur un PC modeste avec carte graphique intégrée.
 | P · B · T | Aller à Port-Néré · Bomé · Tikané |
 | M | Carte de l'île (clic gauche : poser une balise, clic droit : l'enlever) |
 | F5 · F9 | Sauvegarder · reprendre la dernière sauvegarde (sauvegarde automatique toutes les 3 min) |
+| X | Lancer un caillou là où l'on regarde (le garde le plus proche va voir) — mission 5 |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -65,11 +66,17 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   fois levés), patrouilles en chasse, moto, cheval, pirogues, Faris ; balise avec colonne de lumière et distance.
   Mini-carte permanente en bas à droite.
 - Sauvegarde (F5) et reprise (F9), automatique toutes les 3 minutes et à la libération d'Akwéri.
+- Mission 5 « Les Graines » jouable (après Akwéri, balise posée sur la carte) : entrepôt du Cobra sur pilotis au
+  quai, de nuit. Entrer par la trappe depuis l'eau (Ama attend en pirogue) ou par la porte ; couper le groupe
+  électrogène (2 min de noir, torches des gardes) ; caillou pour attirer un garde ; maîtriser, traîner et cacher
+  un garde derrière les caisses (un camarade ligoté découvert = alerte) ; crocheter la chambre froide ; descendre
+  les 12 sacs par la trappe ; registre des chargements (preuve). Alerte : fuite avec les sacs déjà sauvés
+  (réussite partielle) ou nouvel essai plus tard.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Textures et objets tirés des photos réelles (dès réception), puis missions 1 à 3.
+2. Mission 6 « Champs de cendre » (libération de Bomé, coopérative), textures tirées des photos réelles.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

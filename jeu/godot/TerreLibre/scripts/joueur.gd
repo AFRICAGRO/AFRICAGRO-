@@ -43,6 +43,7 @@ var son_recharge: AudioStreamPlayer
 var lacet := PI # orientation de la caméra
 var tangage := -0.28
 var mission: Node
+var charge := false
 var a_cheval: Node = null   # le cheval sur lequel Faris est en selle (cheval.gd le conduit)
 
 
@@ -211,6 +212,8 @@ func _physics_process(delta: float) -> void:
 			v = MARCHE * 1.1
 		else:
 			v = COURSE if Input.is_action_pressed("courir") else MARCHE
+		if charge:
+			v = minf(v, MARCHE * 1.15)   # chargé d'un sac de semences ou d'un homme : on ne court pas
 	var cible := dir * v
 	var acc := 10.0 if is_on_floor() or nage else 3.0
 	velocity.x = move_toward(velocity.x, cible.x, acc * v * delta)
