@@ -460,6 +460,8 @@ func _ruban(r: Dictionary) -> void:
 	var lat := [-1.0, -0.5, 0.0, 0.5, 1.0]
 	var prec: Array = []
 	var prec_tr: Array = []
+	# la chaussée et les trottoirs sont plus hauts que le relief : on y marche (sinon les pieds s'y enfoncent)
+	var sol_dur := PackedVector3Array()
 	for i in ech.size():
 		var t := (ech[mini(i + 1, ech.size() - 1)] - ech[maxi(i - 1, 0)]).normalized()
 		var n := Vector2(-t.y, t.x)
@@ -471,6 +473,7 @@ func _ruban(r: Dictionary) -> void:
 		if prec.size() > 0:
 			for k in lat.size() - 1:
 				_quad(mat, prec[k], prec[k + 1], ligne[k + 1], ligne[k], Color.WHITE, Vector3.UP)
+				sol_dur.append_array([prec[k], prec[k + 1], ligne[k + 1], prec[k], ligne[k + 1], ligne[k]])
 		prec = ligne
 		if asphalte:
 			# trottoirs de 2,2 m, interrompus aux carrefours
@@ -485,6 +488,7 @@ func _ruban(r: Dictionary) -> void:
 				for c in 2:
 					if tr[c][3] and prec_tr[c][3]:
 						_quad("trottoir", prec_tr[c][1], prec_tr[c][2], tr[c][2], tr[c][1], Color.WHITE, Vector3.UP)
+						sol_dur.append_array([prec_tr[c][1], prec_tr[c][2], tr[c][2], prec_tr[c][1], tr[c][2], tr[c][1]])
 						var nb := Vector3(n.x, 0, n.y) * (-1.0 if c == 0 else 1.0) * -1.0
 						_quad("beton", prec_tr[c][0], prec_tr[c][1], tr[c][1], tr[c][0], Color(0.85, 0.85, 0.82), nb)
 						if is_same(r, rues[0]) and _cote_mer(pts, -1.0 if c == 0 else 1.0):
@@ -497,6 +501,17 @@ func _ruban(r: Dictionary) -> void:
 								var xm := _repere(Vector2(mid.x, mid.z), Vector2(dir.y, -dir.x).normalized(), minf(a3.y, b3.y) - 0.05)
 								_boite("beton", xm, Vector3(dir.length() + 0.05, 0.75, 0.3), Color(0.96, 0.95, 0.92))
 			prec_tr = tr
+	if sol_dur.size() > 0:
+		var corps := StaticBody3D.new()
+		corps.collision_layer = 1
+		corps.collision_mask = 0
+		var cs := CollisionShape3D.new()
+		var forme := ConcavePolygonShape3D.new()
+		forme.backface_collision = true
+		forme.set_faces(sol_dur)
+		cs.shape = forme
+		corps.add_child(cs)
+		add_child(corps)
 
 
 # =====================================================================

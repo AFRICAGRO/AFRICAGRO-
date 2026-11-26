@@ -174,7 +174,7 @@ func _process(delta: float) -> void:
 		buffer[b + 15] = etat
 		var pr: Node3D = a["proche"]
 		if pr:
-			pr.global_position = p
+			pr.global_position = _sur_le_sol(p)
 			pr.rotation.y = a["cap"]
 			var ap: AnimationPlayer = pr.get_meta("ap")
 			var voulu := "Marche" if marche else "Repos"
@@ -254,10 +254,20 @@ func _prendre_perso(a: Dictionary) -> void:
 	var ap2: AnimationPlayer = p.get_meta("ap")
 	ap2.play("Marche" if a["marche"] and a["pause"] <= 0.0 else "Repos")
 	ap2.seek(a["phase"] * ap2.current_animation_length, true)
-	p.global_position = a["pos"]
+	p.global_position = _sur_le_sol(a["pos"])
 	p.rotation.y = a["cap"]
 	a["proche"] = p
 	nb_proches += 1
+
+
+## Les personnages proches se posent sur la chaussée ou le trottoir (plus hauts que le relief),
+## pour que leurs pieds ne s'y enfoncent pas.
+func _sur_le_sol(p: Vector3) -> Vector3:
+	var q := PhysicsRayQueryParameters3D.create(p + Vector3(0, 0.5, 0), p - Vector3(0, 0.3, 0), 1)
+	var r := get_world_3d().direct_space_state.intersect_ray(q)
+	if r.is_empty():
+		return p
+	return Vector3(p.x, maxf(p.y, (r["position"] as Vector3).y), p.z)
 
 
 func _rendre(a: Dictionary) -> void:
