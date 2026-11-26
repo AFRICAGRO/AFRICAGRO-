@@ -72,11 +72,16 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   un garde derrière les caisses (un camarade ligoté découvert = alerte) ; crocheter la chambre froide ; descendre
   les 12 sacs par la trappe ; registre des chargements (preuve). Alerte : fuite avec les sacs déjà sauvés
   (réussite partielle) ou nouvel essai plus tard.
+- Mission 6 « Champs de Cendre » jouable (après la mission 5) : lire le vent à la manche à air (l'harmattan descend
+  vers Bomé), brûler les 3 parcelles du Cobra par lignes de feu. Le feu court dans le sens du vent et remonte
+  lentement contre lui : allumé du mauvais côté, il saute dans les herbes et file vers une maison (à éteindre à
+  plusieurs, F). Coupe-feu avec les cultivateurs. Riposte des contremaîtres, des miradors et d'une patrouille ;
+  la fumée cache Faris. Puis la coopérative : cultures, familles, part du village → revenus en ZLM.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 6 « Champs de cendre » (libération de Bomé, coopérative), textures tirées des photos réelles.
+2. Mission 7 « La Voix de l'île » (antenne du mont Talanké), téléphone Zala Money, textures des photos réelles.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

@@ -198,6 +198,11 @@ func _ready() -> void:
 	mission5.name = "Mission5"
 	add_child(mission5)
 	mission5.construire(self, carte_vers_monde(170, 268), veg)
+	# mission 6 « Champs de Cendre » : libérer Bomé par le feu, fonder la coopérative (après la mission 5)
+	var mission6 := Mission6.new()
+	mission6.name = "Mission6"
+	add_child(mission6)
+	mission6.construire(self)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"

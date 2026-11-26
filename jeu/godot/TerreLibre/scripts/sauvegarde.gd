@@ -90,6 +90,10 @@ func sauver() -> void:
 	var m5: Node = main.get_node_or_null("Mission5")
 	if m5:
 		d["graines"] = {"phase": int(m5.phase), "livres": m5.sacs_livres, "preuve": m5.preuve}
+	var m6: Node = main.get_node_or_null("Mission6")
+	if m6:
+		d["bome"] = {"phase": int(m6.phase), "choix": m6.choix, "argent": m6.argent, "revenu": m6.revenu,
+				"maisons_perdues": m6.maisons_perdues, "t_revenu": m6.t_revenu}
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca and ca.balise != Vector3.INF:
 		d["balise"] = _v3(ca.balise)
@@ -178,6 +182,23 @@ func charger() -> bool:
 			m5.m4._objectif("Prochain objectif : apporter les semences à Bomé (mission 6).")
 		elif m5.phase == Mission5.Phase.EN_COURS:
 			m5._reprendre_plus_tard()
+	var m6: Node = main.get_node_or_null("Mission6")
+	if m6 and d.has("bome"):
+		var db6: Dictionary = d["bome"]
+		m6.argent = int(db6["argent"])
+		m6.revenu = int(db6["revenu"])
+		m6.t_revenu = float(db6.get("t_revenu", 0.0))
+		m6.maisons_perdues = int(db6["maisons_perdues"])
+		if int(db6["phase"]) == Mission6.Phase.TERMINEE and m6.phase != Mission6.Phase.TERMINEE:
+			m6.choix = db6["choix"]
+			m6.phase = Mission6.Phase.TERMINEE
+			for p6 in m6.parcelles:
+				for idx in Mission6.NX * Mission6.NY:
+					p6["etat"][idx] = 2
+					m6._eteindre_case(m6.parcelles.find(p6), idx % Mission6.NX, idx / Mission6.NX)
+				p6["brulee"] = true
+			m6._drapeau()
+			m6.m4._objectif("Prochain objectif : la résistance a besoin d'une voix — l'antenne du mont Talanké (mission 7).")
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca:
 		if d.has("balise"):

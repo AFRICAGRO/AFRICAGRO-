@@ -315,7 +315,7 @@ func _plante_mais() -> ArrayMesh:
 	return m
 
 
-func _semer(mesh: Mesh, c: Vector2, ang: float, long: float, larg: float, pas_rang: float, pas_plant: float, echelle: Vector2, nom: String) -> void:
+func _semer(mesh: Mesh, c: Vector2, ang: float, long: float, larg: float, pas_rang: float, pas_plant: float, echelle: Vector2, nom: String) -> MultiMeshInstance3D:
 	var dir := Vector2(cos(ang), sin(ang))
 	var n := Vector2(-dir.y, dir.x)
 	var liste: Array = []
@@ -331,7 +331,7 @@ func _semer(mesh: Mesh, c: Vector2, ang: float, long: float, larg: float, pas_ra
 			y += pas_plant
 		x += pas_rang
 	if liste.is_empty():
-		return
+		return null
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
@@ -347,6 +347,7 @@ func _semer(mesh: Mesh, c: Vector2, ang: float, long: float, larg: float, pas_ra
 	mmi.position = origine
 	mmi.visibility_range_end = 450.0
 	add_child(mmi)
+	return mmi
 
 
 func _champs() -> void:
@@ -399,6 +400,8 @@ func _plantations_cobra() -> void:
 	m.set_shader_parameter("rayon_proche", 0.0)
 	buisson.surface_set_material(0, m)
 	var parcelles: Array = []
+	var axes: Array = []
+	var plants: Array = []
 	var meilleure := Vector2.ZERO
 	var hmax := -INF
 	for k in 24:  # côté le plus haut de la colline (vers le Mont Talanké)
@@ -411,10 +414,13 @@ func _plantations_cobra() -> void:
 		var a := atan2(meilleure.y, meilleure.x) + (i - 1) * 0.42
 		var p := c + Vector2(cos(a), sin(a)) * (215.0 + i * 12.0)
 		var ang := a + PI * 0.5
-		_semer(buisson, p, ang, 40.0, 26.0, 1.6, 1.4, Vector2(0.9, 1.3), "ParcelleCobra")
+		plants.append(_semer(buisson, p, ang, 40.0, 26.0, 1.6, 1.4, Vector2(0.9, 1.3), "ParcelleCobra"))
 		_cloture(p, ang, 42.0, 28.0)
 		parcelles.append(Vector3(p.x, _sol(p), p.y))
+		axes.append(ang)
 	reperes["parcelles"] = parcelles
+	reperes["parcelles_axe"] = axes        # orientation de chaque parcelle (40 m × 26 m)
+	reperes["parcelles_mm"] = plants       # les plants (MultiMesh) : la mission 6 les brûle
 	# miradors entre les parcelles et le village, manche à air
 	var tours: Array = []
 	for i in 2:
@@ -423,6 +429,9 @@ func _plantations_cobra() -> void:
 		_mirador(p)
 		tours.append(Vector3(p.x, _sol(p), p.y))
 	reperes["tours"] = tours
+	# l'après-midi, le vent d'harmattan descend de la colline vers le village : c'est tout l'enjeu du feu
+	# de la mission 6 (allumer une parcelle du mauvais côté, et les flammes descendent sur les maisons)
+	vent = (-meilleure).rotated(0.35)
 	var pm := c + meilleure * 170.0 + Vector2(-meilleure.y, meilleure.x) * 30.0
 	_manche_a_air(pm)
 	reperes["manche_a_air"] = Vector3(pm.x, _sol(pm), pm.y)
