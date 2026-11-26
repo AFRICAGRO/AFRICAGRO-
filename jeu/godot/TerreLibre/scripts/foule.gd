@@ -177,7 +177,7 @@ func _process(delta: float) -> void:
 			pr.global_position = _sur_le_sol(p)
 			pr.rotation.y = a["cap"]
 			var ap: AnimationPlayer = pr.get_meta("ap")
-			var voulu := "Marche" if marche else "Repos"
+			var voulu := ("Course" if a.get("panique", 0.0) > 0.0 else "Marche") if marche else "Repos"
 			if ap.current_animation != voulu:
 				ap.play(voulu, 0.25)
 			if not vis:
@@ -191,6 +191,10 @@ func _process(delta: float) -> void:
 
 ## Fait avancer un passant ; renvoie vrai s'il marche (faux pendant une pause au bout du chemin).
 func _avancer(a: Dictionary, delta: float) -> bool:
+	if a.get("panique", 0.0) > 0.0:
+		a["panique"] -= delta
+		if a["panique"] <= 0.0:
+			a["v"] = a["v_calme"]                # le calme revient : on reprend son pas
 	if a["pause"] > 0.0:
 		a["pause"] -= delta
 		return false
@@ -217,6 +221,28 @@ func _avancer(a: Dictionary, delta: float) -> bool:
 	var sens_v: Vector2 = dir * a["sens"]
 	a["cap"] = atan2(sens_v.x, sens_v.y)
 	return true
+
+
+## Coups de feu : les passants à portée fuient en courant, à l'opposé des tirs, pendant une vingtaine de secondes.
+func panique(origine: Vector3, rayon: float) -> void:
+	for a in agents:
+		if not a["marche"] or not a.has("c"):
+			continue
+		var pos: Vector3 = a["pos"]
+		if pos.distance_to(origine) > rayon:
+			continue
+		if a.get("panique", 0.0) <= 0.0:
+			a["v_calme"] = a["v"]
+		a["panique"] = rng.randf_range(16.0, 24.0)
+		a["v"] = rng.randf_range(3.8, 5.0)
+		a["pause"] = 0.0
+		# sens de fuite le long de son chemin : celui qui l'éloigne des tirs
+		var ch: Dictionary = chemins[a["c"]]
+		var pts: PackedVector2Array = ch["pts"]
+		var i: int = a["i"]
+		var dir := (pts[mini(i + 1, pts.size() - 1)] - pts[i]).normalized()
+		var fuite := Vector2(pos.x - origine.x, pos.z - origine.z)
+		a["sens"] = 1.0 if dir.dot(fuite) >= 0.0 else -1.0
 
 
 ## Échange silhouettes et vrais personnages autour de la caméra.

@@ -57,11 +57,13 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 - Patrouilles du Cobra : trois pick-up font la ronde sur les pistes. Après une alerte (barrage forcé, coups de feu,
   homme armé repéré), le plus proche fonce par la piste puis à travers la brousse, pile à 15 m et ses deux
   miliciens sautent à terre pour combattre (reddition et ligotage possibles). Trop loin, il abandonne.
+- Fusillades : les miliciens se mettent à couvert derrière les murets et les pick-up ; les passants à moins de
+  90 m s'enfuient en courant à l'opposé des tirs, puis reprennent leur chemin.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Couverture des miliciens (sacs de sable, véhicules) et réaction des passants pendant les fusillades.
+2. Textures et objets tirés des photos réelles (dès réception), puis missions 1 à 3.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

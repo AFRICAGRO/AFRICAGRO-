@@ -274,7 +274,7 @@ func _combat(delta: float) -> void:
 		var c: Vector3 = mission.choisir_couvert(self)
 		_aller(c)
 		t_couvert = randf_range(6.0, 9.0)
-	var arrive := agent.is_navigation_finished() or global_position.distance_to(cible_nav) < 1.2
+	var arrive := global_position.distance_to(cible_nav) < 1.2 or (not agent.get_current_navigation_path().is_empty() and agent.is_navigation_finished())
 	if not arrive:
 		_deplacer(4.2, delta)
 	else:
@@ -317,6 +317,20 @@ func _tirer() -> void:
 
 
 func _deplacer(v: float, _delta: float) -> void:
+	if agent.get_current_navigation_path().is_empty():
+		# pas de maillage de navigation ici (barrages, pistes) : on va droit vers le but
+		var vers := cible_nav - global_position
+		vers.y = 0
+		if vers.length() < 0.8:
+			velocity.x = 0.0
+			velocity.z = 0.0
+			return
+		vers = vers.normalized()
+		velocity.x = vers.x * v
+		velocity.z = vers.z * v
+		if etat != Etat.COMBAT:
+			_regarder(global_position + vers, 0.25)
+		return
 	if agent.is_navigation_finished():
 		velocity.x = 0.0
 		velocity.z = 0.0

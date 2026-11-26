@@ -20,6 +20,8 @@ var joueur: Joueur
 var annonceur: Node             # la mission 4 affiche les messages (_annoncer)
 var postes: Array = []          # {centre, gardes, alerte, prevenu, t_nuit, leve, t_loin}
 var tous: Array = []
+var couverts: Array = []        # [position, rayon] : murets de sacs de sable, pick-up arrêtés
+var foule: Foule                # les passants fuient les coups de feu
 
 
 func construire(ville: VillePortNere, p_joueur: Joueur, p_annonceur: Node) -> void:
@@ -37,6 +39,9 @@ func construire(ville: VillePortNere, p_joueur: Joueur, p_annonceur: Node) -> vo
 		var c2 := Vector2(c.x, c.z)
 		# deux gardes contre les murets de sacs de sable, un troisième près de la barrière
 		var places := [c2 + n * (demi - 0.4) - t * 1.0, c2 - n * (demi - 0.4) + t * 1.0, c2 + n * (demi - 1.6) + t * 1.4]
+		for s_ in [-1.0, 1.0]:   # les deux murets de sacs de sable du barrage
+			var mu: Vector2 = c2 + n * s_ * (demi + 0.6)
+			couverts.append([Vector3(mu.x, c.y, mu.y), 1.3])
 		var gardes: Array = []
 		for q in places:
 			var g := Pnj.new()
@@ -58,13 +63,29 @@ func construire(ville: VillePortNere, p_joueur: Joueur, p_annonceur: Node) -> vo
 
 
 # ---------- ce que les Pnj demandent à leur « mission » ----------
+## Couvert le plus proche (à moins de 25 m) : derrière un muret ou un pick-up, du côté opposé à Faris.
 func choisir_couvert(n: Pnj) -> Vector3:
-	return n.global_position      # ils tiennent leur poste, derrière les sacs de sable
+	var best := n.global_position
+	var dmin := 25.0
+	for c in couverts:
+		var pos: Vector3 = c[0]
+		var oppose := pos - joueur.global_position
+		oppose.y = 0
+		if oppose.length() < 4.0:
+			continue
+		var p := pos + oppose.normalized() * (float(c[1]) + 0.8)
+		var d := p.distance_to(n.global_position) + randf_range(0.0, 3.0)
+		if d < dmin:
+			dmin = d
+			best = p
+	return best
 
 
 func bruit_de_tir(p: Vector3, joueur_tire := false) -> void:
 	for g in tous:
 		(g as Pnj).entendre(p, 70.0 if joueur_tire else 45.0)
+	if foule:
+		foule.panique(p, 90.0)
 
 
 func blessure() -> void:

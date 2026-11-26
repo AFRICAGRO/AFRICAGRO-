@@ -164,6 +164,7 @@ func _poursuivre(pk: Dictionary) -> void:
 func _debarquer(pk: Dictionary) -> void:
 	pk["etat"] = "arrete"
 	var noeud: Node3D = pk["noeud"]
+	controles.couverts.append([noeud.global_position, 2.6])   # le pick-up sert de couvert
 	var modeles := ["villageois", "homme2"]
 	for k in (pk["passagers"] as Array).size():
 		var deco: Node3D = pk["passagers"][k]

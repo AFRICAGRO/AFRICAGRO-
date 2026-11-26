@@ -179,6 +179,7 @@ func _ready() -> void:
 	var foule := Foule.new()
 	foule.name = "Foule"
 	add_child(foule)
+	controles.foule = foule   # les passants fuient les coups de feu aux barrages
 	foule.preparer(terrain)
 	foule.peupler_port_nere(ville)
 	foule.peupler_bome(bome)
