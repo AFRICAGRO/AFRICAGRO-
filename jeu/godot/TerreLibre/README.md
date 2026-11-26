@@ -51,6 +51,9 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
 - Barrages du Cobra à Port-Néré tenus par des miliciens : passer au pas sans arme, barrage forcé = fusillade,
   couvre-feu la nuit (sommation puis tirs), miliciens qui se rendent (F pour ligoter), barrage levé une fois vidé.
 - Troncs d'arbres et de cocotiers solides autour du joueur (on ne les traverse plus à moto ou à cheval).
+- Routes de latérite (≈ 6 km) qui prolongent le boulevard et l'avenue de Port-Néré au-delà des barrages :
+  vers Akwéri, vers Bomé, puis de Bomé à Tikané. Tracé calculé sur le vrai relief (évite pentes, mer et maisons),
+  ornières, emprise dégagée, panneaux indicateurs avec la distance.
 
 ## Prochaines étapes
 

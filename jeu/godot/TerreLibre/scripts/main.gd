@@ -80,6 +80,7 @@ func _ready() -> void:
 	add_child(tikane)
 	tikane.construire_tikane(terrain, plan_tikane, veg, proche)
 	proche.villes.append(tikane)
+	_routes(veg, proche, akweri, mer)
 	joueur = Joueur.new()
 	joueur.name = "Faris"
 	add_child(joueur)
@@ -199,6 +200,38 @@ func _actions_clavier() -> void:
 			var ev := InputEventKey.new()
 			ev.physical_keycode = k
 			InputMap.action_add_event(action, ev)
+
+
+## Routes de latérite entre Port-Néré et les villages : elles prolongent le boulevard et l'avenue
+## au-delà des barrages, jusqu'à Akwéri, Bomé puis Tikané.
+func _routes(veg: Vegetation, proche: VegetationProche, akweri: Vector2, mer: Vector2) -> void:
+	var bvd: PackedVector2Array = ville.reperes["boulevard"]
+	var av: PackedVector2Array = ville.reperes["avenue"]
+	var d_bvd := (bvd[0] - bvd[1]).normalized()
+	var fin_av := av[av.size() - 1]
+	var d_av := (fin_av - av[av.size() - 2]).normalized()
+	var sortie_bvd := [bvd[0]]
+	var sortie_av := [fin_av]
+	var place_bome: Vector3 = bome.reperes["place"]
+	var pb := Vector2(place_bome.x, place_bome.z)
+	var piste: PackedVector2Array = tikane.reperes["piste"]
+	var fin_piste := piste[piste.size() - 1]
+	var entree_akweri := akweri - mer * 95.0
+	var troncons := [
+		[bvd[0] + d_bvd * 8.0, entree_akweri, sortie_bvd, [], "AKWÉRI"],
+		[fin_av + d_av * 8.0, pb, sortie_av, [], "BOMÉ"],
+		[pb, fin_piste, [], [], "TIKANÉ"],
+	]
+	var routes := Routes.new()
+	routes.name = "Routes"
+	add_child(routes)
+	routes.construire(terrain, troncons, _zones_construites(), terrain.lits, [ville, bome, tikane])
+	veg.degager(routes.sur_route)
+	proche.routes = routes
+	reperes_routes = routes.traces
+
+
+var reperes_routes: Array = []
 
 
 ## Point d'eau assez profonde (60 cm) le plus proche d'un lieu, pour y amarrer une pirogue ;

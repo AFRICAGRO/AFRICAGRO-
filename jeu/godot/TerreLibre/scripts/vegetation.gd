@@ -247,3 +247,20 @@ func _maillage_palmier(rng: RandomNumberGenerator, nb_palmes: int, huile := fals
 		mp.albedo_color = Color(0.72, 0.85, 0.6)
 	mesh.surface_set_material(1, mp)
 	return mesh
+
+
+## Retire les arbres et cocotiers dont le pied est dans une zone (routes tracées après la forêt).
+func degager(dans: Callable) -> void:
+	var rien := Basis().scaled(Vector3(0.0001, 0.0001, 0.0001))
+	for c in get_children():
+		var mmi := c as MultiMeshInstance3D
+		if mmi == null:
+			continue
+		var mm := mmi.multimesh
+		for i in mm.instance_count:
+			var xf := mm.get_instance_transform(i)
+			var o := mmi.position + xf.origin
+			if dans.call(Vector2(o.x, o.z)):
+				mm.set_instance_transform(i, Transform3D(rien, xf.origin))
+	if proche:
+		proche.degager(dans)

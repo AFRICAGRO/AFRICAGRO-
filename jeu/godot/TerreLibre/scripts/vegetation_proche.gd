@@ -343,7 +343,20 @@ func _process(_delta: float) -> void:
 			cases[k] = _construire_case(k)
 
 
+## Retire les arbres 3D et leurs troncs dans une zone (routes).
+func degager(dans: Callable) -> void:
+	for k in arbres_par_case:
+		arbres_par_case[k] = (arbres_par_case[k] as Array).filter(func(e): return not dans.call(Vector2((e[1] as Transform3D).origin.x, (e[1] as Transform3D).origin.z)))
+	for k in troncs_par_case:
+		troncs_par_case[k] = (troncs_par_case[k] as Array).filter(func(e): return not dans.call(Vector2((e[0] as Vector3).x, (e[0] as Vector3).z)))
+
+
+var routes: Routes = null      # pas d'herbe ni de buisson sur l'emprise des routes
+
+
 func _vide(x: float, z: float) -> bool:
+	if routes and routes.sur_route(Vector2(x, z)):
+		return true
 	for v in villes:
 		if (v as VillePortNere).occupe.has((v as VillePortNere)._cle(Vector2(x, z))):
 			return true
