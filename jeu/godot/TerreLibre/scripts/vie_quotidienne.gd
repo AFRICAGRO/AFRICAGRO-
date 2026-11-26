@@ -248,9 +248,169 @@ func ancien_chaise(pos: Vector2, angle: float, modele := "ancien") -> void:
 
 
 # ---------------------------------------------------------------------
+# Pêche en pirogue : un pêcheur debout pousse à la perche, un autre tient son épervier
+# ---------------------------------------------------------------------
+var _maillage_pirogue: ArrayMesh
+
+func _pirogue_maillage() -> ArrayMesh:
+	if _maillage_pirogue:
+		return _maillage_pirogue
+	# coque monoxyle ouverte, effilée aux deux bouts, avec trois bancs en travers
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var l := 6.8
+	var stations := 16
+	var profil := [Vector2(-1.0, 1.0), Vector2(-0.92, 0.4), Vector2(-0.6, 0.06), Vector2(0.0, 0.0), Vector2(0.6, 0.06), Vector2(0.92, 0.4), Vector2(1.0, 1.0)]
+	var anneaux: Array = []
+	for i in stations + 1:
+		var t := float(i) / stations
+		var e := pow(sin(t * PI), 0.55)
+		var anneau: Array = []
+		for p in profil:
+			anneau.append(Vector3(p.x * 0.48 * e, 0.45 * p.y + 0.18 * (1.0 - e) * p.y, (t - 0.5) * l))
+		anneaux.append(anneau)
+	for i in stations:
+		for j in profil.size() - 1:
+			var a: Vector3 = anneaux[i][j]
+			var b: Vector3 = anneaux[i][j + 1]
+			var c2: Vector3 = anneaux[i + 1][j + 1]
+			var d: Vector3 = anneaux[i + 1][j]
+			var col := Color(0.5, 0.42, 0.32) if j in [1, 2, 3, 4] else Color(0.62, 0.55, 0.45)
+			if (j == 0 or j == 5) and i % 5 < 2:
+				col = Color(0.2, 0.35, 0.5)   # bande peinte délavée sur le bordé
+			var nrm := (b - a).cross(d - a).normalized()
+			for v in [[a, Vector2(0, 0)], [b, Vector2(1, 0)], [c2, Vector2(1, 1)], [a, Vector2(0, 0)], [c2, Vector2(1, 1)], [d, Vector2(0, 1)]]:
+				st.set_normal(nrm)
+				st.set_color(col)
+				st.set_uv(v[1])
+				st.add_vertex(v[0])
+	_maillage_pirogue = st.commit()
+	var m := _bois()
+	m.vertex_color_use_as_albedo = true
+	m.albedo_color = Color(1, 1, 1)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_maillage_pirogue.surface_set_material(0, m)
+	var sb := SurfaceTool.new()   # bancs en travers, surface à part
+	sb.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for z in [-1.8, 0.0, 1.8]:
+		var bx := BoxMesh.new()
+		bx.size = Vector3(0.82, 0.05, 0.2)
+		sb.append_from(bx, 0, Transform3D(Basis(), Vector3(0, 0.33, z)))
+	_maillage_pirogue = sb.commit(_maillage_pirogue)
+	var mb := _bois()
+	mb.albedo_color = Color(0.5, 0.4, 0.3)
+	_maillage_pirogue.surface_set_material(1, mb)
+	return _maillage_pirogue
+
+
+## Points d'eau peu profonde (1 à 5 m) près d'un lieu, pour poser des pirogues.
+func points_mer(c: Vector2, n: int, rmin: float, rmax: float) -> Array:
+	var res: Array = []
+	for essai in 400:
+		if res.size() >= n:
+			break
+		var a := rng.randf() * TAU
+		var p := c + Vector2(cos(a), sin(a)) * rng.randf_range(rmin, rmax)
+		var h := _sol(p.x, p.y)
+		if h < -1.0 and h > -5.0:
+			var libre := true
+			for q in res:
+				if p.distance_to(q) < 14.0:
+					libre = false
+			if libre:
+				res.append(p)
+	return res
+
+
+func pirogue_peche(pos: Vector2, angle: float, geste: String) -> void:
+	var pir := Node3D.new()
+	add_child(pir)
+	pir.global_transform = Transform3D(Basis(Vector3.UP, angle), Vector3(pos.x, -0.22, pos.y))
+	var coque := MeshInstance3D.new()
+	coque.mesh = _pirogue_maillage()
+	pir.add_child(coque)
+	pirogues.append([pir, -0.22, rng.randf() * TAU])
+	var p: Node3D = (load("res://personnages/pecheur_lac.glb") as PackedScene).instantiate()
+	Apparence.ameliorer(p)
+	pir.add_child(p)
+	p.position = Vector3(0, 0.12, 0.9 if geste == "Perche" else 0.0)
+	p.rotation.y = rng.randf_range(-0.3, 0.3) + (0.0 if geste == "Perche" else PI * 0.5)
+	var ap: AnimationPlayer = p.find_child("AnimationPlayer", true, false)
+	ap.get_animation(geste).loop_mode = Animation.LOOP_LINEAR
+	ap.play(geste)
+	ap.seek(rng.randf() * 2.0, true)
+	var sq: Skeleton3D = p.find_child("Skeleton3D", true, false)
+	var md := BoneAttachment3D.new()
+	md.bone_name = "mixamorig_RightHand"
+	sq.add_child(md)
+	var mg := BoneAttachment3D.new()
+	mg.bone_name = "mixamorig_LeftHand"
+	sq.add_child(mg)
+	if geste == "Perche":
+		var perche := MeshInstance3D.new()
+		var cy := CylinderMesh.new()
+		cy.top_radius = 0.022
+		cy.bottom_radius = 0.028
+		cy.height = 1.0
+		cy.radial_segments = 6
+		perche.mesh = cy
+		var mb := _bois()
+		mb.albedo_color = Color(0.78, 0.66, 0.45)
+		perche.material_override = mb
+		perche.top_level = true
+		add_child(perche)
+		perches.append([perche, md, mg])
+	else:
+		# épervier roulé : cône de filet qui pend de la main gauche, plombs en bas
+		var filet := MeshInstance3D.new()
+		var cn := CylinderMesh.new()
+		cn.top_radius = 0.05
+		cn.bottom_radius = 0.2
+		cn.height = 0.75
+		cn.radial_segments = 10
+		filet.mesh = cn
+		var mf := StandardMaterial3D.new()
+		mf.albedo_color = Color(0.82, 0.76, 0.62)
+		mf.roughness = 0.95
+		filet.material_override = mf
+		filet.top_level = true
+		add_child(filet)
+		filets.append([filet, mg])
+
+
+func _peche_process() -> void:
+	var tps := Time.get_ticks_msec() * 0.001
+	for pr in pirogues:
+		var n: Node3D = pr[0]
+		var ph: float = pr[2]
+		n.position.y = pr[1] + 0.05 * sin(tps * 1.1 + ph)
+		n.rotation.z = 0.025 * sin(tps * 0.9 + ph * 1.7)
+		n.rotation.x = 0.015 * sin(tps * 0.7 + ph)
+	for fi in filets:
+		var main: Vector3 = (fi[1] as Node3D).global_position
+		(fi[0] as Node3D).global_position = main - Vector3(0, 0.36, 0)
+	for pe in perches:
+		# la perche passe par les deux mains et descend jusqu'au fond, côté gauche
+		var d: Vector3 = (pe[1] as Node3D).global_position
+		var g: Vector3 = (pe[2] as Node3D).global_position
+		var axe := g - d
+		if axe.length() < 0.05:
+			continue
+		axe = axe.normalized()
+		var haut := d - axe * 0.6
+		var bas := g + axe * 2.8
+		var ay := (haut - bas).normalized()
+		var ax := ay.cross(Vector3.FORWARD if absf(ay.z) < 0.9 else Vector3.RIGHT).normalized()
+		(pe[0] as Node3D).global_transform = Transform3D(Basis(ax, ay * haut.distance_to(bas), ax.cross(ay)), (haut + bas) * 0.5)
+
+
+# ---------------------------------------------------------------------
 # Corde à sauter : deux enfants font tourner la corde, un troisième saute, d'autres attendent
 # ---------------------------------------------------------------------
-var cordes: Array = []   # [mesh immédiat, main A, main B, lecteur d'animation du sauteur]
+var cordes: Array = []
+var pirogues: Array = []   # [pirogue, hauteur de base, phase] : bercées par la houle
+var perches: Array = []    # [perche, main droite, main gauche]
+var filets: Array = []     # [épervier roulé, main gauche] : le filet pend sous la main   # [mesh immédiat, main A, main B, lecteur d'animation du sauteur]
 
 func corde_a_sauter(c: Vector2, angle: float) -> void:
 	var dir := Vector2(sin(angle), cos(angle))
@@ -413,6 +573,10 @@ func port_nere(ville: VillePortNere) -> void:
 	if r.has("place"):
 		var pl2: Vector3 = r["place"]
 		corde_a_sauter(Vector2(pl2.x - 22, pl2.z + 16), 1.2)
+		var k := 0
+		for q in points_mer(Vector2(pl2.x, pl2.z), 3, 90.0, 260.0):
+			pirogue_peche(q, rng.randf() * TAU, "Perche" if k % 2 == 0 else "Epervier")
+			k += 1
 
 
 ## Bomé : anciens assis sous l'arbre à palabres, Baya Efua devant le grenier de la coopérative,
@@ -615,6 +779,10 @@ func _akweri_revit(v) -> void:
 	objets_cour(cv + mer * -38.0 + plage * 14.0, vers_mer + PI)
 	corde_a_sauter(cv + mer * -16.0 + plage * 16.0, vers_mer + 1.2)
 	# sous l'abri de palmes : les anciens sur leurs chaises, face à l'eau
+	var kp := 0
+	for q in points_mer(cv + mer * 25.0, 3, 5.0, 60.0):
+		pirogue_peche(q, rng.randf() * TAU, "Epervier" if kp % 2 == 0 else "Perche")
+		kp += 1
 	var pa: Vector2 = get_meta("apatam")
 	for k in 3:
 		ancien_chaise(pa + plage * (k - 1) * 1.6 - mer * 0.6, vers_mer + rng.randf_range(-0.4, 0.4), ["ancien", "villageois", "pecheur"][k])
@@ -622,6 +790,7 @@ func _akweri_revit(v) -> void:
 
 func _process(delta: float) -> void:
 	_dessiner_cordes()
+	_peche_process()
 	for pa in pilons:
 		var main: Node3D = pa[1]
 		(pa[0] as Node3D).global_transform = Transform3D(Basis(), main.global_position + Vector3(0, -0.3, 0))

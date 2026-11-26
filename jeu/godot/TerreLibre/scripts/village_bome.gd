@@ -12,7 +12,8 @@ extends VillePortNere
 var plan: Dictionary
 var proche: VegetationProche
 var vent := Vector2(-1, 0.3).normalized()
-var palmiers_huile: Array = []   # Vector2 : palmiers à huile autour des concessions   # le vent de l'après-midi souffle de l'est vers l'ouest
+var palmiers_huile: Array = []   # Vector2 : palmiers à huile autour des concessions
+var bananiers: Array = []        # Vector2 : touffes de bananiers derrière les cases   # le vent de l'après-midi souffle de l'est vers l'ouest
 
 
 ## Plan du village préparé AVANT la construction du terrain (terrasses à aplanir).
@@ -175,6 +176,8 @@ func _concession(s: Dictionary) -> void:
 		_grenier_pilotis(c - lat * 5.5 - vers_place * 6.5, rng.randf_range(1.0, 1.3), sol)
 	_foyer(c + vers_place * 5.0 - lat * 1.5, sol)
 	arbres.append(c + lat * rng.randf_range(-9.0, 9.0) - vers_place * rng.randf_range(11.0, 14.0))
+	for k in 3:
+		bananiers.append(c - vers_place * rng.randf_range(8.0, 11.0) + lat * rng.randf_range(-8.0, 8.0))
 	for k in 2:
 		palmiers_huile.append(c + lat * (rng.randf_range(10.0, 14.0) * (1.0 if k == 0 else -1.0)) - vers_place * rng.randf_range(4.0, 12.0))
 	_prendre(c, vers_place, 20.0, 18.0, 0.0)
@@ -504,7 +507,158 @@ func _palmiers_huile(veg: Vegetation) -> void:
 		add_child(mi)
 
 
+## Bananier : faux tronc vert-brun, une dizaine de grandes feuilles arquées et déchirées par le vent,
+## deux ou trois vieilles feuilles sèches pendantes ; parfois un régime de bananes vertes.
+static func maillage_bananier(rng: RandomNumberGenerator) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var h := rng.randf_range(2.2, 3.4)
+	var cotes := 9
+	for i in 6:
+		var t0 := i / 6.0
+		var t1 := (i + 1) / 6.0
+		var r0 := lerpf(0.16, 0.1, t0)
+		var r1 := lerpf(0.16, 0.1, t1)
+		for k in cotes:
+			var a0 := TAU * k / cotes
+			var a1 := TAU * (k + 1) / cotes
+			var q := [Vector3(cos(a0) * r0, t0 * h, sin(a0) * r0), Vector3(cos(a1) * r0, t0 * h, sin(a1) * r0),
+				Vector3(cos(a1) * r1, t1 * h, sin(a1) * r1), Vector3(cos(a0) * r1, t1 * h, sin(a0) * r1)]
+			for j in [0, 2, 1, 0, 3, 2]:
+				st.set_normal(Vector3(q[j].x, 0, q[j].z).normalized())
+				st.set_color(Color(0.42, 0.45, 0.25).lerp(Color(0.3, 0.42, 0.18), t0))
+				st.set_uv(Vector2(float(k) / cotes, t0))
+				st.add_vertex(q[j])
+	mesh = st.commit(mesh)
+	var mt := StandardMaterial3D.new()
+	mt.vertex_color_use_as_albedo = true
+	mt.roughness = 0.75
+	mesh.surface_set_material(0, mt)
+	# feuilles : chacune est une bande courbe (nervure arquée) qui porte la texture de feuille
+	var sf := SurfaceTool.new()
+	sf.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var nb := rng.randi_range(8, 11)
+	for f in nb:
+		var az := TAU * f / nb + rng.randf_range(-0.3, 0.3)
+		var seche := f < 2
+		var dir := Vector3(cos(az), 0, sin(az))
+		var cote := dir.cross(Vector3.UP).normalized()
+		var longueur := rng.randf_range(1.8, 2.6)
+		var largeur := rng.randf_range(0.5, 0.65)
+		var depart := Vector3(0, h - rng.randf_range(0.0, 0.25), 0)
+		var montee := rng.randf_range(0.5, 1.2)
+		var pts: Array = []
+		for i in 9:
+			var t := i / 8.0
+			var y := montee * sin(t * PI * 0.7) - t * t * (1.1 if not seche else 2.6)
+			pts.append(depart + dir * (0.25 + longueur * t) + Vector3.UP * y)
+		var torsion := rng.randf_range(-0.35, 0.35)
+		for i in 8:
+			var t0 := i / 8.0
+			var t1 := (i + 1) / 8.0
+			var c0 := cote.rotated(dir, torsion * t0) * largeur * 0.5
+			var c1 := cote.rotated(dir, torsion * t1) * largeur * 0.5
+			if seche:
+				c0 *= 0.45
+				c1 *= 0.45
+			var q := [pts[i] - c0, pts[i] + c0, pts[i + 1] + c1, pts[i + 1] - c1]
+			# l'image : bas = pétiole, haut = pointe
+			var uv := [Vector2(0, 1.0 - t0), Vector2(1, 1.0 - t0), Vector2(1, 1.0 - t1), Vector2(0, 1.0 - t1)]
+			var nrm: Vector3 = ((pts[i + 1] - pts[i]).cross(c0)).normalized()
+			if nrm.y < 0:
+				nrm = -nrm
+			var teinte := Color(0.55, 0.42, 0.22) if seche else Color(1, 1, 1)
+			for j in [0, 1, 2, 0, 2, 3]:
+				sf.set_normal(nrm.lerp(Vector3.UP, 0.3).normalized())
+				sf.set_color(teinte)
+				sf.set_uv(uv[j])
+				sf.add_vertex(q[j])
+	mesh = sf.commit(mesh)
+	var mf := StandardMaterial3D.new()
+	mf.albedo_texture = load("res://data/vegetation/banane.png")
+	mf.vertex_color_use_as_albedo = true
+	mf.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mf.alpha_scissor_threshold = 0.5
+	mf.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mf.roughness = 0.6
+	mf.backlight_enabled = true
+	mf.backlight = Color(0.25, 0.35, 0.1)
+	mesh.surface_set_material(1, mf)
+	# régime de bananes vertes, une fois sur deux
+	if rng.randf() < 0.5:
+		var sr := SurfaceTool.new()
+		sr.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var dirr := Vector3(cos(rng.randf() * TAU), 0, sin(rng.randf() * TAU))
+		var centre := Vector3(0, h - 0.55, 0) + dirr * 0.32
+		var sp := SphereMesh.new()
+		sp.radius = 0.2
+		sp.height = 0.55
+		sp.radial_segments = 8
+		sp.rings = 6
+		sr.append_from(sp, 0, Transform3D(Basis(), centre))
+		var mr := StandardMaterial3D.new()
+		mr.albedo_color = Color(0.36, 0.5, 0.18)
+		mr.roughness = 0.55
+		mesh = sr.commit(mesh)
+		mesh.surface_set_material(2, mr)
+	return mesh
+
+
+func _bananiers() -> void:
+	var modeles: Array = []
+	for k in 4:
+		modeles.append(VillageBome.maillage_bananier(rng))
+	for q in bananiers:
+		var p: Vector2 = q
+		if bati.has(_cle(p)) or occupe.has(_cle(p)) or _sol(p) < 1.0:
+			continue
+		# une touffe : la mère et deux ou trois rejets plus petits
+		for k in rng.randi_range(2, 4):
+			var o := p + Vector2(rng.randf_range(-1.2, 1.2), rng.randf_range(-1.2, 1.2)) * (0.0 if k == 0 else 1.0)
+			var mi := MeshInstance3D.new()
+			mi.mesh = modeles[rng.randi() % modeles.size()]
+			var s := 1.0 if k == 0 else rng.randf_range(0.45, 0.8)
+			mi.transform = Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(o.x, _sol(o) - 0.05, o.y))
+			mi.visibility_range_end = 350.0
+			add_child(mi)
+
+
+## Caféière : rangées de caféiers (arbustes sombres, 1,5 à 2 m) à l'ombre de quelques grands arbres.
+func _cafeiere() -> void:
+	if proche == null:
+		return
+	var c: Vector2 = plan["centre"]
+	var cafe: ArrayMesh = (proche.m_buissons[0] as ArrayMesh).duplicate()
+	for k in cafe.get_surface_count():
+		var m: ShaderMaterial = (cafe.surface_get_material(k) as ShaderMaterial).duplicate()
+		m.set_shader_parameter("rayon_proche", 0.0)
+		if k > 0 or cafe.get_surface_count() == 1:
+			m.set_shader_parameter("image", load("res://data/vegetation/rameau_sombre.png"))
+		cafe.surface_set_material(k, m)
+	for essai in 36:
+		var a := TAU * essai / 36.0 + 0.4
+		var p := c + Vector2(cos(a), sin(a)) * 112.0
+		if _sol(p) < 8.0 or terrain.pente(p.x, p.y) > 0.4 or bati.has(_cle(p)):
+			continue
+		var loin := true
+		for q in reperes.get("champs", []):
+			if p.distance_to(q) < 40.0:
+				loin = false
+		if not loin:
+			continue
+		_semer(cafe, p, a + PI * 0.5, 30.0, 18.0, 2.2, 1.6, Vector2(1.2, 1.6), "Cafeiers")
+		_prendre(p, Vector2(cos(a), sin(a)).orthogonal(), 32.0, 20.0, 1.0)
+		for j in 3:
+			arbres.append(p + Vector2(rng.randf_range(-12, 12), rng.randf_range(-8, 8)))
+		reperes["cafeiere"] = Vector3(p.x, _sol(p), p.y)
+		return
+
+
 func _arbres_bome(veg: Vegetation) -> void:
+	_bananiers()
+	if not (self is VillageTikane):
+		_cafeiere()
 	_palmiers_huile(veg)
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/arbres/arbres.json"))
 	var mm := MultiMesh.new()

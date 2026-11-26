@@ -30,6 +30,15 @@ VARIANTES = {
     "faris": dict(macros=dict(gender=1.0, age=0.5, muscle=0.62, weight=0.48, height=0.38),
                   peau=(0.10, 0.042, 0.02), cheveux=(0.012, 0.009, 0.008),
                   haut=("wax_diff.jpg", (1, 1, 1)), bas=(D[0], (0.06, 0.075, 0.11))),
+    # Faris en tenue de nuit : chèche indigo hérité de sa mère (famille de cavaliers du Sahel), chemise sombre
+    "faris_cheche": dict(macros=dict(gender=1.0, age=0.5, muscle=0.62, weight=0.48, height=0.38),
+                         peau=(0.10, 0.042, 0.02), cheveux=(0.012, 0.009, 0.008),
+                         haut=(L[0], (0.06, 0.06, 0.07)), bas=(D[0], (0.05, 0.055, 0.07)), cheche=(0.012, 0.022, 0.11)),
+    # pêcheur de lagune : boubou délavé, chapeau de paille conique, pieds nus
+    "pecheur_lac": dict(macros=dict(gender=1.0, age=0.62, muscle=0.55, weight=0.4, height=0.5),
+                        peau=(0.08, 0.035, 0.018), cheveux=(0.03, 0.028, 0.026),
+                        haut=(L[0], (0.36, 0.3, 0.34)), bas=(L[0], (0.3, 0.3, 0.32)), boubou=True, manches=1.5,
+                        pieds_nus=True, chapeau="conique"),
     "villageois": dict(macros=dict(gender=1.0, age=0.42, muscle=0.5, weight=0.66, height=0.55),
                        peau=(0.075, 0.032, 0.016), cheveux=(0.012, 0.009, 0.008),
                        haut=(L[0], (0.32, 0.17, 0.07)), bas=(L[0], (0.09, 0.085, 0.075))),
@@ -222,7 +231,8 @@ for m in [mat("Peau", (1, 1, 1), 0.55, vcol=True),  # teinte de peau portée par
           mat("Chaussures", (1, 1, 1), 0.6, "brown_leather_diff.jpg", "brown_leather_nor.jpg"),
           mat("Yeux", (1, 1, 1), 0.15, vcol=True),
           mat("Dents", (0.85, 0.82, 0.75), 0.4),
-          mat("Paille", (0.62, 0.48, 0.26), 0.85)]:
+          mat("Paille", (0.62, 0.48, 0.26), 0.85),
+          mat("Cheche", V.get("cheche", (0.03, 0.06, 0.24)), 0.9, L[0], L[1])]:
     me.materials.append(m)
 
 bm = bmesh.new()
@@ -258,7 +268,7 @@ bmesh.ops.subdivide_edges(bm, edges=aretes, cuts=1, use_grid_fill=True)
 bm.verts.ensure_lookup_table()
 
 # matériaux : 0 peau, 1 cheveux, 2 chemise, 3 pantalon, 4 chaussures, 5 yeux, 6 dents
-NOMS = ["Peau", "Cheveux", "Chemise", "Pantalon", "Chaussures", "Yeux", "Dents", "Paille"]
+NOMS = ["Peau", "Cheveux", "Chemise", "Pantalon", "Chaussures", "Yeux", "Dents", "Paille", "Cheche"]
 
 
 def centre(f):
@@ -557,7 +567,18 @@ for v in peau_v:
     teinte_v[v] = Vector((TP.x * m.x, TP.y * m.y, TP.z * m.z))
 print("visage : facteur tête", round(k_tete, 2), "nez", nez is not None)
 
-if V.get("chapeau"):
+if V.get("chapeau") == "conique":
+    # chapeau de paille conique des pêcheurs : large cône posé sur la tête, petite pointe
+    haut_c = max(v.co.z for v in v_cheveux)
+    base = centre_tete + Vector((0, 0, haut_c - centre_tete.z - 0.05))
+    for i in range(20):
+        a0, a1 = 2 * math.pi * i / 20, 2 * math.pi * (i + 1) / 20
+        for r0, r1, z0, z1 in ((0.25, 0.11, -0.03, 0.07), (0.11, 0.015, 0.07, 0.17)):
+            q = [base + Vector((math.cos(a0) * r0, math.sin(a0) * r0, z0)), base + Vector((math.cos(a1) * r0, math.sin(a1) * r0, z0)),
+                 base + Vector((math.cos(a1) * r1, math.sin(a1) * r1, z1)), base + Vector((math.cos(a0) * r1, math.sin(a0) * r1, z1))]
+            f = bm.faces.new([sommet(c) for c in q])
+            f.material_index = 7
+elif V.get("chapeau"):
     # chapeau de paille : bord large et calotte arrondie, posé sur les cheveux
     haut_c = max(v.co.z for v in v_cheveux)
     base = centre_tete + Vector((0, 0, haut_c - centre_tete.z - 0.045))
@@ -576,6 +597,64 @@ if V.get("lunettes"):
         anneau_l = [o + Vector((math.cos(a) * 0.017, 0, math.sin(a) * 0.014)) * k_tete for a in [2 * math.pi * i / 10 for i in range(11)]]
         tube(anneau_l, 0.0018, 4, mat_i=4)
     tube([oeil[1] + Vector((-0.017 * k_tete, -0.012 * k_tete, 0.002)), oeil[-1] + Vector((0.017 * k_tete, -0.012 * k_tete, 0.002))], 0.0016, 4, mat_i=4)
+
+if V.get("cheche"):
+    # chèche (tagelmust) : deux enveloppes de tissu lissées, comme un vrai tissu enroulé.
+    # - le turban, du haut du front jusqu'au sommet, avec des tours en spirale (plis) ;
+    # - le voile, sous les yeux jusqu'au cou ; une fente reste ouverte devant les yeux.
+    yeux_z = (oeil[1].z + oeil[-1].z) * 0.5
+    devant_y = min(oeil[1].y, oeil[-1].y)
+    cx = centre_tete.x
+    prof = centre_tete.y - devant_y   # distance du centre de la tête au plan des yeux
+
+    def enveloppe(anneaux_def, fermer_haut):
+        anneaux = []
+        for (z, cy, rx, ry, pli) in anneaux_def:
+            anneau = []
+            for k in range(28):
+                a = 2 * math.pi * k / 28
+                plis = 1.0 + pli * math.sin(a + z * 420.0) + 0.018 * math.sin(a * 5.0 + z * 90.0)
+                anneau.append(sommet(Vector((cx + math.cos(a) * rx * plis, cy + math.sin(a) * ry * plis, z))))
+            anneaux.append(anneau)
+        for i in range(len(anneaux) - 1):
+            for k in range(28):
+                f = bm.faces.new((anneaux[i][k], anneaux[i][(k + 1) % 28], anneaux[i + 1][(k + 1) % 28], anneaux[i + 1][k]))
+                f.material_index = 8
+        if fermer_haut:
+            z, cy, rx, ry, pli = anneaux_def[-1]
+            haut = sommet(Vector((cx, cy, z + 0.02 * k_tete)))
+            for k in range(28):
+                f = bm.faces.new((anneaux[-1][k], anneaux[-1][(k + 1) % 28], haut))
+                f.material_index = 8
+
+    # turban : part 2,5 cm au-dessus des yeux, monte en dôme
+    tz0 = yeux_z + 0.028 * k_tete
+    rx0 = r_tete * 1.12
+    ry0 = prof + 0.016 * k_tete
+    cy_t = centre_tete.y + 0.004
+    tours = []
+    for i in range(9):
+        u = i / 8.0
+        z = tz0 + u * 0.15 * k_tete
+        d = math.sqrt(max(0.0, 1.0 - (u * 0.93) ** 2))
+        tours.append((z, cy_t, rx0 * (1.02 * d + 0.06 * u), ry0 * (1.02 * d + 0.06 * u), 0.06 * (1 - u * 0.7)))
+    enveloppe(tours, True)
+    # voile : de 2,2 cm sous les yeux jusqu'au cou, devant le nez et la bouche
+    vz0 = yeux_z - 0.022 * k_tete
+    voile = []
+    for i in range(8):
+        u = i / 7.0
+        z = vz0 - u * 0.17 * k_tete
+        cy_v = centre_tete.y - 0.012 - 0.01 * u
+        ry = prof + (0.058 - 0.03 * u + 0.03 * u * u) * k_tete   # bien devant le nez et la bouche
+        rx = r_tete * (1.06 - 0.18 * u + 0.2 * u * u)          # s'évase sur le cou
+        voile.append((z, cy_v, rx, ry, 0.03))
+    voile.reverse()
+    enveloppe(voile, False)
+    # le dessus des cheveux disparaît sous le turban
+    for f in bm.faces:
+        if f.material_index == 1 and all(v.co.z > tz0 for v in f.verts):
+            f.material_index = 8
 
 # yeux : iris sombre vers l'avant
 col = bm.loops.layers.color.new("Col")
@@ -935,6 +1014,36 @@ for f in range(0, 31, 2):
     rot("RightLeg", X, 10)
     main_vers("Right", (-0.03, -0.3 - 0.25 * (1 - t), 0.75 + 0.75 * t), (-0.6, 0.2, 1.0))
     main_vers("Left", (0.03, -0.38 - 0.3 * (1 - t), 0.62 + 0.55 * t), (0.6, 0.2, 1.0))
+    cle(f)
+
+nouvelle("Perche")  # debout dans la pirogue : pousser la longue perche sur le fond (cycle de 2 s)
+for f in range(0, 49, 4):
+    p = 2 * math.pi * f / 48
+    u = 0.5 - 0.5 * math.cos(p)   # 0 = mains hautes (perche plantée), 1 = poussée finie
+    raz()
+    bouge_hanches(-0.03 * u)
+    rot("Spine", X, 6 + 16 * u)
+    rot("Spine1", X, 4 + 6 * u)
+    rot("Head", X, -8 * u)
+    rot("LeftUpLeg", X, -10)
+    rot("LeftLeg", X, 14 + 6 * u)
+    rot("RightUpLeg", X, 8)
+    rot("RightLeg", X, 6)
+    main_vers("Right", (-0.24, -0.12 + 0.12 * u, 1.48 - 0.32 * u), (-0.8, 0.2, 1.0))
+    main_vers("Left", (-0.2, -0.2 + 0.1 * u, 1.12 - 0.26 * u), (0.6, 0.0, 0.6))
+    cle(f)
+
+nouvelle("Epervier")  # debout, l'épervier (filet rond) roulé sur l'avant-bras, prêt à le lancer
+for f in range(0, 49, 6):
+    p = 2 * math.pi * f / 48
+    raz()
+    bouge_hanches(0.004 * math.sin(p))
+    rot("Spine", X, 3)
+    rot("Head", Z, 6 * math.sin(p))
+    rot("LeftUpLeg", Y, 5)
+    rot("RightUpLeg", Y, -5)
+    main_vers("Left", (0.12, -0.24, 1.16 + 0.01 * math.sin(p)), (0.6, 0.2, 0.8))
+    main_vers("Right", (-0.08, -0.3, 0.98), (-0.6, 0.2, 0.8))
     cle(f)
 
 nouvelle("TournerCorde")  # faire tourner la corde à sauter : la main droite décrit un cercle devant soi (1 tour / s)

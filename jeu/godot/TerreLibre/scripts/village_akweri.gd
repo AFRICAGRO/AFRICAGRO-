@@ -34,6 +34,8 @@ func construire(t: Terrain, p_centre: Vector2, p_mer: Vector2, vegetation: Veget
 			var c := k * 12.0 + rng.randf_range(-1.5, 1.5)
 			if rangee == 1 and (k == -3 or k == 3):
 				_maison_planches(a, c)
+			elif (rangee == 0 and (k == -2 or k == 2)) or (rangee == 1 and (k == -1 or k == 1)):
+				_case_roseaux(a, c)
 			else:
 				_case(a, c, rng.randf_range(2.3, 2.8))
 	# Fumoirs (couverts bas) avec fumée
@@ -115,6 +117,7 @@ func _materiaux() -> void:
 	mats["banco_bas"] = _materiau("red_mud_stones", 1.5, Color(0.8, 0.62, 0.5))
 	mats["chaume"] = _materiau("thatch_roof_angled", 1.6, Color(0.95, 0.88, 0.78))
 	mats["planches"] = _materiau("weathered_plank_siding", 2.0)
+	mats["roseaux"] = _materiau("roseaux", 1.0, Color(0.95, 0.9, 0.82))
 	mats["tole"] = _materiau("rusty_corrugated_iron", 2.0, Color.WHITE, 0.6, 0.3)
 	mats["bois"] = _materiau("weathered_brown_planks", 1.5)
 	mats["bois_peint"] = _materiau("wood_peeling_paint_weathered", 1.2)
@@ -191,6 +194,30 @@ func _case(avant: float, cote: float, r: float) -> void:
 	forme.radius = r
 	forme.height = h + 1.0
 	_collision(n, forme, Transform3D(Basis(), Vector3(0, (h + 1.0) * 0.5 - 0.2, 0)))
+
+
+## Case carrée aux murs de roseaux tressés, liés par des cordes, toit de chaume pyramidal.
+func _case_roseaux(avant: float, cote: float) -> void:
+	var n := Node3D.new()
+	n.name = "CaseRoseaux"
+	n.transform = _base(avant, cote, rng.randf_range(-0.3, 0.3))
+	add_child(n)
+	couverts.append([n.position, 2.8])
+	var l := rng.randf_range(3.4, 4.0)
+	var p := rng.randf_range(3.0, 3.4)
+	var h := 2.2
+	_piece(_boite(Vector3(l + 0.1, 0.25, p + 0.1)), mats["banco_bas"], Transform3D(Basis(), Vector3(0, 0.0, 0)), n)
+	_piece(_boite(Vector3(l, h, p)), mats["roseaux"], Transform3D(Basis(), Vector3(0, h * 0.5, 0)), n)
+	# poteaux d'angle
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			_piece(_cylindre(0.07, 0.08, h + 0.2, 6), mats["bois"], Transform3D(Basis(), Vector3(sx * l * 0.5, h * 0.5, sz * p * 0.5)), n)
+	# toit de chaume à quatre pans (pyramide) qui déborde largement
+	var toit := _cylindre(0.05, (maxf(l, p) * 0.5 + 0.8) * 1.414, 1.9, 4)
+	_piece(toit, mats["chaume"], Transform3D(Basis(Vector3.UP, PI * 0.25), Vector3(0, h + 0.9, 0)), n)
+	# porte côté mer : ouverture sombre et rideau de pagne
+	_piece(_boite(Vector3(0.85, 1.75, 0.1)), mats["ombre"], Transform3D(Basis(), Vector3(-0.5, 0.88, p * 0.5 + 0.01)), n)
+	_collision(n, _forme_boite(Vector3(l, h + 0.6, p)), Transform3D(Basis(), Vector3(0, (h + 0.6) * 0.5, 0)))
 
 
 func _maison_planches(avant: float, cote: float) -> void:
