@@ -93,7 +93,7 @@ static func habiller(m: Node3D) -> void:
 	robe.normal_scale = 0.35
 	robe.uv1_scale = Vector3(10, 10, 1)
 	robe.roughness = 0.48
-	robe.specular = 0.42
+	robe.metallic_specular = 0.42
 	robe.rim_enabled = true
 	robe.rim = 0.18
 	robe.rim_tint = 0.6

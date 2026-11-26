@@ -25,6 +25,8 @@ sur un PC modeste avec carte graphique intégrée.
 | M | Carte de l'île (clic gauche : poser une balise, clic droit : l'enlever) |
 | F5 · F9 | Sauvegarder · reprendre la dernière sauvegarde (sauvegarde automatique toutes les 3 min) |
 | X | Lancer un caillou là où l'on regarde (le garde le plus proche va voir) — mission 5 |
+| Tab | Téléphone : missions, Zala Money (achats), preuves, radio, carte |
+| Espace contre une paroi claire | Grimper (ZQSD), mission 7 |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -77,11 +79,18 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   lentement contre lui : allumé du mauvais côté, il saute dans les herbes et file vers une maison (à éteindre à
   plusieurs, F). Coupe-feu avec les cultivateurs. Riposte des contremaîtres, des miradors et d'une patrouille ;
   la fumée cache Faris. Puis la coopérative : cultures, familles, part du village → revenus en ZLM.
+- Téléphone de Faris (Tab) : journal des missions, Zala Money (solde, historique ; munitions, soins, dons),
+  preuves recueillies, radio (Lagune FM du Cobra, puis Radio Racines), carte ; notifications.
+- Mission 7 « La Voix de l'Île » jouable (après Bomé) : lac de cratère à l'aube dans la brume, sanctuaire
+  (offrande), point de vue panoramique ; escalade de la face nord (jauge d'endurance, corniches, jamais de mort) ;
+  poste du sommet (5 gardes, l'antenne à ne pas toucher) ; Joël l'opérateur radio ; premier message au choix
+  (espoir, vérité, défi) avec ses effets. Radio Racines diffuse ensuite un morceau original de « zala-beat »
+  (composé et synthétisé : outils/zala_beat.py) dans le téléphone et dans tout Port-Néré.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 7 « La Voix de l'île » (antenne du mont Talanké), téléphone Zala Money, textures des photos réelles.
+2. Mission 8 « Nuit à Tikané » (otages), textures tirées des photos réelles.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

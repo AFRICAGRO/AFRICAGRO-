@@ -6,6 +6,7 @@ extends CharacterBody3D
 
 signal a_tire(position: Vector3)
 signal tombe()
+signal impact(collider: Object, position: Vector3)   # où la balle de Faris a frappé (décor, antenne…)
 
 const MARCHE := 2.0
 const COURSE := 6.0
@@ -285,6 +286,7 @@ func _combat(delta: float) -> void:
 			p.touche(DEGATS * (2.5 if tete else 1.0), true)
 		else:
 			Arme.impact(get_tree().current_scene, r2["position"], r2["normal"])
+			impact.emit(r2["collider"], r2["position"])
 	if munitions <= 0 and reserve > 0 and t_recharge <= 0.0:
 		_recharger()
 

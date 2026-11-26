@@ -765,11 +765,15 @@ func _process(delta: float) -> void:
 		if t_revenu >= SEMAINE:
 			t_revenu = 0.0
 			argent += revenu
-			m4._annoncer("Coopérative de Bomé : +%d ZLM pour la résistance." % revenu, 3.0)
+			var tel: Node = main.get_node_or_null("Telephone")
+			if tel:
+				tel.crediter(revenu, "Coopérative de Bomé")
+	var tel: Node = main.get_node_or_null("Telephone")
+	var solde: int = tel.argent if tel else argent
 	if revenu > 0 and t_revenu < 0.0:
-		etiquette.text = "Racines : %d ZLM · 1re récolte dans %d sem." % [argent, int(ceil(-t_revenu / SEMAINE))]
+		etiquette.text = "Zala Money : %d ZLM · 1re récolte dans %d sem." % [solde, int(ceil(-t_revenu / SEMAINE))]
 	else:
-		etiquette.text = ("Racines : %d ZLM" % argent) if revenu > 0 or argent > 0 else ""
+		etiquette.text = ("Zala Money : %d ZLM" % solde) if revenu > 0 or solde > 0 else ""
 	match phase:
 		Phase.INDISPONIBLE:
 			if m5 and m5.phase == Mission5.Phase.TERMINEE:

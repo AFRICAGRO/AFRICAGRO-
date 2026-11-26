@@ -94,6 +94,13 @@ func sauver() -> void:
 	if m6:
 		d["bome"] = {"phase": int(m6.phase), "choix": m6.choix, "argent": m6.argent, "revenu": m6.revenu,
 				"maisons_perdues": m6.maisons_perdues, "t_revenu": m6.t_revenu}
+	var m7: Node = main.get_node_or_null("Mission7")
+	if m7:
+		d["radio"] = {"phase": int(m7.phase), "offrande": m7.offrande}
+	var tel: Node = main.get_node_or_null("Telephone")
+	if tel:
+		d["telephone"] = {"argent": tel.argent, "historique": tel.historique, "preuves": tel.preuves,
+				"radio": tel.radio_racines, "ton": tel.ton_radio}
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca and ca.balise != Vector3.INF:
 		d["balise"] = _v3(ca.balise)
@@ -199,6 +206,19 @@ func charger() -> bool:
 				p6["brulee"] = true
 			m6._drapeau()
 			m6.m4._objectif("Prochain objectif : la résistance a besoin d'une voix — l'antenne du mont Talanké (mission 7).")
+	var m7: Node = main.get_node_or_null("Mission7")
+	if m7 and d.has("radio"):
+		m7.offrande = bool(d["radio"]["offrande"])
+		if int(d["radio"]["phase"]) == Mission7.Phase.TERMINEE and m7.phase != Mission7.Phase.TERMINEE:
+			m7.restaurer_terminee("")
+	var tel: Node = main.get_node_or_null("Telephone")
+	if tel and d.has("telephone"):
+		var dt: Dictionary = d["telephone"]
+		tel.argent = int(dt["argent"])
+		tel.historique = dt["historique"]
+		tel.preuves = dt["preuves"]
+		tel.radio_racines = bool(dt["radio"])
+		tel.ton_radio = str(dt.get("ton", ""))
 	var ca: Node = main.get_node_or_null("Carte")
 	if ca:
 		if d.has("balise"):

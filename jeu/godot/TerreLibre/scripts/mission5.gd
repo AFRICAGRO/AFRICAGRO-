@@ -526,6 +526,9 @@ func interagir() -> void:
 	var registre: Node3D = get_node("Registre")
 	if not preuve and jp.distance_to(registre.global_position) < 2.0:
 		preuve = true
+		var tel: Node = main.get_node_or_null("Telephone")
+		if tel:
+			tel.ajouter_preuve("Registre de l'entrepôt n° 3", "Chargements nocturnes vers Lagunaville, déclarés « marchandises agricoles ». Signatures du Front du Cobra et du Syndicat des Docks.")
 		m4._annoncer("PREUVE — Registre des chargements nocturnes vers Lagunaville : « marchandises agricoles ». Le Cobra et le Syndicat des Docks sont liés.", 6.0)
 		return
 	# monter par la trappe depuis l'eau (ou redescendre)

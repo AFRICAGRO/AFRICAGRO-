@@ -47,6 +47,9 @@ func _ready() -> void:
 	plan_tikane = VillageTikane.preparer_plan(carte_vers_monde(405, 470))
 	terrain.plateformes.append_array(plan_tikane["plateformes"])
 	terrain.lits = [plan_tikane["lit"]]
+	# mont Talanké : cuvette du lac de cratère et replat du sommet (mission 7)
+	plan_m7 = Mission7.preparer_plan(carte_vers_monde(290, 356), carte_vers_monde(347, 442))
+	terrain.plateformes.append_array(plan_m7["plateformes"])
 	add_child(terrain)
 	_mer()
 	var env := _environnement()
@@ -193,6 +196,11 @@ func _ready() -> void:
 	carte.name = "Carte"
 	add_child(carte)
 	carte.construire(self, terrain, noms)
+	# le téléphone de Faris (Tab) : missions, Zala Money, preuves, radio
+	var telephone := Telephone.new()
+	telephone.name = "Telephone"
+	add_child(telephone)
+	telephone.preparer(self)
 	# mission 5 « Les Graines » : l'entrepôt du Cobra sur pilotis, au quai (disponible après Akwéri)
 	var mission5 := Mission5.new()
 	mission5.name = "Mission5"
@@ -203,6 +211,11 @@ func _ready() -> void:
 	mission6.name = "Mission6"
 	add_child(mission6)
 	mission6.construire(self)
+	# mission 7 « La Voix de l'Île » : lac de cratère, face nord, antenne du sommet, Radio Racines
+	var mission7 := Mission7.new()
+	mission7.name = "Mission7"
+	add_child(mission7)
+	mission7.construire(self, plan_m7, veg)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"
@@ -232,7 +245,7 @@ func _actions_clavier() -> void:
 		"droite": [KEY_D, KEY_RIGHT], "courir": [KEY_SHIFT], "sauter": [KEY_SPACE], "ambiance": [KEY_N],
 		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
 		"vehicule": [KEY_E], "carte": [KEY_M],
-		"sauver": [KEY_F5], "charger": [KEY_F9], "lancer": [KEY_X],
+		"sauver": [KEY_F5], "charger": [KEY_F9], "lancer": [KEY_X], "telephone": [KEY_TAB],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -273,6 +286,7 @@ func _routes(veg: Vegetation, proche: VegetationProche, akweri: Vector2, mer: Ve
 
 
 var reperes_routes: Array = []
+var plan_m7: Dictionary = {}
 
 
 ## Point d'eau assez profonde (60 cm) le plus proche d'un lieu, pour y amarrer une pirogue ;
@@ -441,7 +455,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · M : carte · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · M : carte · Tab : téléphone · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 15)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
