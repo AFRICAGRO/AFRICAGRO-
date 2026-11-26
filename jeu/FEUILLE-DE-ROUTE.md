@@ -49,7 +49,7 @@ Principe : **pas de précipitation**. Chaque phase se termine par une validation
 - [ ] Jauge de confiance, système d'alerte
 - [ ] Coopérative (version simple)
 - [x] Civils avec routines, cycle jour/nuit, météo
-- [ ] Sauvegarde/chargement, téléphone, carte en jeu
+- [x] Sauvegarde/chargement, carte en jeu — [ ] téléphone
 
 ## Phase 4 — Tranche verticale (mois 9–15)
 

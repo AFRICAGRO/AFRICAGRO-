@@ -22,6 +22,8 @@ sur un PC modeste avec carte graphique intégrée.
 | E | Enfourcher la moto ou embarquer dans une pirogue / descendre |
 | C · F · clic droit · clic gauche · R | S'accroupir · maîtriser · viser · tirer · recharger (mission 4) |
 | P · B · T | Aller à Port-Néré · Bomé · Tikané |
+| M | Carte de l'île (clic gauche : poser une balise, clic droit : l'enlever) |
+| F5 · F9 | Sauvegarder · reprendre la dernière sauvegarde (sauvegarde automatique toutes les 3 min) |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -59,6 +61,10 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   miliciens sautent à terre pour combattre (reddition et ligotage possibles). Trop loin, il abandonne.
 - Fusillades : les miliciens se mettent à couvert derrière les murets et les pick-up ; les passants à moins de
   90 m s'enfuient en courant à l'opposé des tirs, puis reprennent leur chemin.
+- Carte de l'île (M) sur l'image satellite ombrée par le relief : pistes, rues, lieux, barrages (rouges, verts une
+  fois levés), patrouilles en chasse, moto, cheval, pirogues, Faris ; balise avec colonne de lumière et distance.
+  Mini-carte permanente en bas à droite.
+- Sauvegarde (F5) et reprise (F9), automatique toutes les 3 minutes et à la libération d'Akwéri.
 
 ## Prochaines étapes
 
