@@ -279,7 +279,7 @@ func _combat(delta: float) -> void:
 	var q := PhysicsRayQueryParameters3D.create(origine, origine + dir * 250.0, 1 | 4)
 	q.exclude = [get_rid()]
 	var r := get_world_3d().direct_space_state.intersect_ray(q)
-	cible_civile = not r.is_empty() and r["collider"] is Pnj and (r["collider"] as Pnj).role in ["civil", "recrue"]
+	cible_civile = not r.is_empty() and r["collider"] is Pnj and (r["collider"] as Pnj).role in ["civil", "recrue", "allie"]
 	if mode_flechettes:
 		_tir_flechette(r)
 		return

@@ -111,11 +111,19 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   les tireurs vous visent ; viser le train ou un moteur (le cockpit : le témoin meurt, on recommence) ; sortie de piste,
   ou décollage puis atterrissage forcé sur la plage si le réservoir est percé ; interrogatoire du pilote Marc Ndoro
   et choix (témoin des Racines ou clé de casier à Lagunaville) ; sons d'avion et de sirène synthétisés (outils/sons_avion.py).
+- Mission 11 « Le Serpent » jouable (après l'avion) : la table de planification dans l'arrière-salle du maquis de
+  Mama Rokia (approche discrète, frontale ou mixte ; rôles d'Ama, de Kwame et de la Dr Nadia ; appel de Radio Racines ;
+  nombre de villageois volontaires selon la confiance) ; le camp du Cobra construit sur sa terrasse au-dessus de la mer
+  (enceinte, dortoirs, cellules, chapelle avec pignons et croix, clocher, pick-up armé, projecteurs) ; villageois alliés
+  qui suivent Faris et tirent (jamais visés par Faris) ; Ama tireuse de la plage, pick-up piégé par Kwame, groupe
+  électrogène coupé ; Dossou fait défection s'il a été relâché à Akwéri, ou se bat contre Faris s'il a été fait
+  prisonnier ; les garçons de Tikané ouvrent les cellules de l'intérieur ; Yaw libéré ; tireur du clocher, contrats
+  dans le coffre de la chapelle ; le Commandant Mamba et sa canne-épée ; le choix : l'arrêter ou l'éliminer.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 11 « Le Serpent » (l'assaut du camp du Cobra) ; modèles 3D dédiés à la Dr Nadia, à Moto-Moto et à Marc Ndoro ; un vrai navire 3D pour le caboteur de Lagunaville.
+2. Mission 12 « L'Aube » (le retour à Port-Néré, fin de l'acte 1) ; modèles 3D dédiés à Mamba, Yaw, la Dr Nadia, Moto-Moto et Marc Ndoro ; un vrai navire 3D pour le caboteur de Lagunaville.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

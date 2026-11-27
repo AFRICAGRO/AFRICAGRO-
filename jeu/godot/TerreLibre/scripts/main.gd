@@ -53,6 +53,9 @@ func _ready() -> void:
 	terrain.plateformes.append_array(Mission9.preparer_plan()["plateformes"])
 	# piste de terre du nord et plage de l'atterrissage forcé (mission 10)
 	terrain.plateformes.append_array(Mission10.preparer_plan()["plateformes"])
+	# terrasse du camp du Cobra (mission 11)
+	var plan_m11 := Mission11.preparer_plan()
+	terrain.plateformes.append_array(plan_m11["plateformes"])
 	terrain.plateformes.append_array(plan_m7["plateformes"])
 	terrain.anneaux = plan_m7["anneaux"]
 	add_child(terrain)
@@ -238,6 +241,14 @@ func _ready() -> void:
 	mission10.name = "Mission10"
 	add_child(mission10)
 	mission10.construire(self, veg)
+	# mission 11 « Le Serpent » : table de planification, assaut du camp du Cobra, Mamba
+	var mission11 := Mission11.new()
+	mission11.name = "Mission11"
+	add_child(mission11)
+	mission11.construire(self, plan_m11["sol"])
+	var hors_camp := func(q: Vector2) -> bool: return q.distance_to(Mission11.CENTRE) < 72.0
+	veg.degager(hors_camp)
+	proche.degager(hors_camp)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"

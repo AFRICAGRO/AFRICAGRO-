@@ -10,7 +10,9 @@ signal alerte(position: Vector3)
 
 enum Etat { CALME, SUSPICION, COMBAT, RENDU, LIGOTE, MORT, FUITE, CACHE, ENDORMI, DESARME }
 
-var role := "milicien"   # "milicien", "dossou", "civil", "recrue" (mineur enrôlé de force : jamais une cible)
+var role := "milicien"   # "milicien", "dossou", "civil", "recrue" (mineur enrôlé de force : jamais une cible),
+                         # "allie" (villageois armé des Racines, mission 11), "mamba" (le Commandant : canne-épée)
+var t_coup := 0.0
 var etat := Etat.CALME
 var pv := 100.0
 var mission: Node
@@ -101,7 +103,7 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 # ---------- dégâts ----------
 func touche(degats: float, _par_joueur: bool) -> void:
 	# règle absolue : un civil ou un jeune enrôlé de force n'est jamais blessé
-	if etat in [Etat.MORT, Etat.LIGOTE, Etat.ENDORMI] or role == "civil" or role == "recrue":
+	if etat in [Etat.MORT, Etat.LIGOTE, Etat.ENDORMI] or role in ["civil", "recrue", "allie"]:
 		return
 	if etat == Etat.RENDU:
 		pv = 0.0
@@ -196,7 +198,7 @@ func dos_au_joueur() -> bool:
 
 
 func _passer_combat() -> void:
-	if role == "civil":
+	if role == "civil" or role == "allie":
 		return
 	if etat in [Etat.CALME, Etat.SUSPICION]:
 		etat = Etat.COMBAT
@@ -219,6 +221,8 @@ func entendre(origine: Vector3, portee: float) -> void:
 	if role == "civil":
 		if etat == Etat.CALME:
 			_fuir()
+	elif role == "allie":
+		return
 	elif etat in [Etat.CALME, Etat.SUSPICION]:
 		_passer_combat()
 
@@ -277,7 +281,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _calme(delta: float) -> void:
-	if role == "civil" or joueur == null:
+	if role == "civil" or role == "allie" or joueur == null:
 		return
 	var voit := _voit_joueur()
 	if voit and joueur.a_une_arme:
@@ -335,6 +339,24 @@ func _calme(delta: float) -> void:
 
 
 func _combat(delta: float) -> void:
+	if role == "mamba":
+		# le Commandant ne tire pas : sa canne cache une lame. Il marche droit sur Faris.
+		var vers := joueur.global_position - global_position
+		vers.y = 0.0
+		_regarder(joueur.global_position, delta * 4.0)
+		t_coup -= delta
+		if vers.length() > 1.8:
+			var v := vers.normalized() * (3.6 if vers.length() > 6.0 else 2.2)
+			velocity.x = v.x
+			velocity.z = v.z
+		else:
+			velocity.x = 0.0
+			velocity.z = 0.0
+			if t_coup <= 0.0 and not joueur.mort:
+				t_coup = 1.1
+				joueur.blesser(13.0)
+				mission.blessure()
+		return
 	if role == "recrue":
 		# un garçon terrifié : il crie, braque son arme en tremblant, mais ne tire jamais
 		velocity.x = 0.0

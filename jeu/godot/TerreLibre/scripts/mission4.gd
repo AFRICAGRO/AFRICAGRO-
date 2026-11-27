@@ -21,6 +21,7 @@ var epargnes := 0
 var t_suivante := -1.0
 var t_reprise := -1.0
 var choix_fait := false
+var sort_dossou := ""      # "prisonnier" ou "relache" : il pèsera dans l'assaut du camp (mission 11)
 
 # interface
 var objectif: Label
@@ -237,6 +238,7 @@ func _choisir(prisonnier: bool) -> void:
 	choix_fait = true
 	panneau_choix.visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	sort_dossou = "prisonnier" if prisonnier else "relache"
 	if prisonnier:
 		dossou.ligoter()
 		_annoncer("Dossou est fait prisonnier : il sera enfermé dans la cave de l'église.", 4.0)

@@ -86,7 +86,7 @@ func sauver() -> void:
 		for p in mission.pnjs:
 			etats.append(int((p as Pnj).etat))
 		d["akweri"] = {"phase": int(mission.phase), "confiance": mission.confiance, "tues": mission.tues,
-				"epargnes": mission.epargnes, "pnjs": etats}
+				"epargnes": mission.epargnes, "pnjs": etats, "dossou": mission.sort_dossou}
 	var m5: Node = main.get_node_or_null("Mission5")
 	if m5:
 		d["graines"] = {"phase": int(m5.phase), "livres": m5.sacs_livres, "preuve": m5.preuve}
@@ -106,6 +106,10 @@ func sauver() -> void:
 	var m10: Node = main.get_node_or_null("Mission10")
 	if m10 and m10.phase == Mission10.Phase.TERMINEE:
 		d["avion"] = {"phase": int(m10.phase), "choix": m10.choix}
+	var m11: Node = main.get_node_or_null("Mission11")
+	if m11 and m11.phase == Mission11.Phase.TERMINEE:
+		d["serpent"] = {"phase": int(m11.phase), "choix": m11.choix, "mamba": str(main.get_meta("mamba", "")),
+				"tyran": int(main.get_meta("nouveau_tyran", 0))}
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel:
 		d["telephone"] = {"argent": tel.argent, "historique": tel.historique, "preuves": tel.preuves,
@@ -184,6 +188,7 @@ func charger() -> bool:
 		mission.confiance = int(da["confiance"])
 		mission.tues = int(da["tues"])
 		mission.epargnes = int(da["epargnes"])
+		mission.sort_dossou = str(da.get("dossou", ""))
 	var m5: Node = main.get_node_or_null("Mission5")
 	if m5 and d.has("graines"):
 		var dg: Dictionary = d["graines"]
@@ -232,6 +237,11 @@ func charger() -> bool:
 	var m10: Node = main.get_node_or_null("Mission10")
 	if m10 and d.has("avion") and m10.phase != Mission10.Phase.TERMINEE:
 		m10.restaurer_terminee(str(d["avion"]["choix"]))
+	var m11: Node = main.get_node_or_null("Mission11")
+	if m11 and d.has("serpent") and m11.phase != Mission11.Phase.TERMINEE:
+		main.set_meta("mamba", str(d["serpent"]["mamba"]))
+		main.set_meta("nouveau_tyran", int(d["serpent"]["tyran"]))
+		m11.restaurer_terminee(str(d["serpent"]["choix"]))
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel and d.has("telephone"):
 		var dt: Dictionary = d["telephone"]
