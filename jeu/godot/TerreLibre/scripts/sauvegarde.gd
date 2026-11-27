@@ -103,6 +103,9 @@ func sauver() -> void:
 	var m9: Node = main.get_node_or_null("Mission9")
 	if m9 and m9.phase == Mission9.Phase.TERMINEE:
 		d["chenal"] = {"phase": int(m9.phase), "photos": m9.photos}
+	var m10: Node = main.get_node_or_null("Mission10")
+	if m10 and m10.phase == Mission10.Phase.TERMINEE:
+		d["avion"] = {"phase": int(m10.phase), "choix": m10.choix}
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel:
 		d["telephone"] = {"argent": tel.argent, "historique": tel.historique, "preuves": tel.preuves,
@@ -226,6 +229,9 @@ func charger() -> bool:
 	if m9 and d.has("chenal") and m9.phase != Mission9.Phase.TERMINEE:
 		m9.photos = d["chenal"]["photos"]
 		m9.restaurer_terminee()
+	var m10: Node = main.get_node_or_null("Mission10")
+	if m10 and d.has("avion") and m10.phase != Mission10.Phase.TERMINEE:
+		m10.restaurer_terminee(str(d["avion"]["choix"]))
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel and d.has("telephone"):
 		var dt: Dictionary = d["telephone"]

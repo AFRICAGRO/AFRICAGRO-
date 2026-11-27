@@ -216,6 +216,9 @@ func _missions() -> void:
 	var m9: Node = main.get_node_or_null("Mission9")
 	if m9:
 		liste.append(["9 · Le Chenal", m9.etat_texte()])
+	var m10: Node = main.get_node_or_null("Mission10")
+	if m10:
+		liste.append(["10 · L'Avion", m10.etat_texte()])
 	for l in liste:
 		_texte("%s — %s" % l)
 

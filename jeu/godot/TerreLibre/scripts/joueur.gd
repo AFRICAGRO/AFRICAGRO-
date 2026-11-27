@@ -206,6 +206,10 @@ func ressusciter(p: Vector3) -> void:
 func _physics_process(delta: float) -> void:
 	if a_cheval:
 		velocity = Vector3.ZERO
+		if a_cheval.get("tir_embarque"):
+			# tir depuis la moto : clic droit pour viser, clic gauche pour tirer
+			vise = a_une_arme and Input.is_action_pressed("viser")
+			_combat(delta)
 		return
 	if mort:
 		velocity.x = 0.0

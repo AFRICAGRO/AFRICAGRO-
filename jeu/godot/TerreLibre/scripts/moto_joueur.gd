@@ -27,6 +27,9 @@ var gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9
 var moteur: AudioStreamPlayer3D
 var phare: SpotLight3D
 var aide: Label3D
+var vmax_bonus := 1.0       # la moto gonflée par Kwame (mission 10)
+var accel_bonus := 1.0
+var tir_embarque := false   # Faris peut viser (clic droit) et tirer en roulant
 
 
 func preparer(p_joueur: Node3D, pos: Vector3, angle: float) -> void:
@@ -152,19 +155,20 @@ func _physics_process(delta: float) -> void:
 		var entree := Input.get_vector("gauche", "droite", "avancer", "reculer")
 		gaz = -entree.y
 		virage = -entree.x
-		var vmax := VMAX_POUSSE if Input.is_action_pressed("courir") else VMAX
+		var vmax := (VMAX_POUSSE if Input.is_action_pressed("courir") else VMAX) * vmax_bonus
 		if gaz > 0.2:
 			cible = vmax
 		elif gaz < -0.2:
 			cible = -RECUL if vitesse < 0.5 else 0.0
 		# on suit aussi la caméra quand on roule tout droit (souris), comme le cheval
-		if absf(entree.x) < 0.2 and vitesse > 2.0 and gaz > 0.2:
+		var vise_moto := tir_embarque and Input.is_action_pressed("viser")
+		if absf(entree.x) < 0.2 and vitesse > 2.0 and gaz > 0.2 and not vise_moto:
 			var lacet: float = joueur.get("lacet")
 			virage = clampf(wrapf(lacet + PI - cap, -PI, PI) * 1.2, -1.0, 1.0)
-	var acc := ACCEL if absf(cible) > absf(vitesse) else (FREIN if gaz < -0.2 else 1.8)
+	var acc := ACCEL * accel_bonus if absf(cible) > absf(vitesse) else (FREIN if gaz < -0.2 else 1.8)
 	vitesse = move_toward(vitesse, cible, acc * delta)
 	# braquage : serré à basse vitesse, large à grande vitesse ; pas de rotation à l'arrêt
-	var taux := lerpf(2.4, 0.9, clampf(absf(vitesse) / VMAX_POUSSE, 0.0, 1.0)) * clampf(absf(vitesse) / 1.5, 0.0, 1.0)
+	var taux := lerpf(2.4, 0.9, clampf(absf(vitesse) / (VMAX_POUSSE * vmax_bonus), 0.0, 1.0)) * clampf(absf(vitesse) / 1.5, 0.0, 1.0)
 	cap += virage * taux * delta * signf(vitesse if vitesse != 0.0 else 1.0)
 	rotation.y = cap
 	var avant := Vector3(sin(cap), 0, cos(cap))

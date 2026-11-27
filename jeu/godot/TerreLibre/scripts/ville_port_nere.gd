@@ -269,7 +269,18 @@ func _cle(p: Vector2) -> Vector2i:
 	return Vector2i(floori(p.x / 2.0), floori(p.y / 2.0))
 
 
+## Couloirs où l'on ne bâtit pas (la piste d'atterrissage) : [a, b, demi-largeur].
+var interdits: Array = []
+
+
 func _rect_libre(c: Vector2, avant: Vector2, w: float, d: float, marge := 0.5) -> bool:
+	var demi_diag := Vector2(w, d).length() * 0.5 + marge
+	for z in interdits:
+		var a: Vector2 = z[0]
+		var ab: Vector2 = (z[1] as Vector2) - a
+		var t := clampf((c - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+		if c.distance_to(a + ab * t) < float(z[2]) + demi_diag:
+			return false
 	var r := Vector2(-avant.y, avant.x)
 	var x := -w * 0.5 - marge
 	while x <= w * 0.5 + marge:

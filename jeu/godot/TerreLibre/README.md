@@ -30,6 +30,7 @@ sur un PC modeste avec carte graphique intégrée.
 | V | Fusil ↔ fusil à fléchettes anesthésiantes (mission 8) |
 | H | Ordre aux familles escortées : suivre → attendre → se cacher → courir (mission 8) |
 | K · clic gauche | Appareil photo du téléphone · déclencher (mission 9) |
+| Clic droit à moto | Viser en roulant (clic gauche : tirer), mission 10 |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -103,11 +104,18 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   semé) ; marée qui monte (un banc de vase s'ouvre, une arche de racines se ferme) ; appareil photo du téléphone
   (sacs, acheteur, navire LGV 2047 au large) ; cabane sur pilotis : écouter sous le plancher, voler le registre ou
   attaquer (le registre peut tomber à l'eau) ; le registre signé « H.S. » relie le Cobra au Syndicat des Docks.
+- Mission 10 « L'Avion » jouable (après le registre) : la piste de terre du nord aplanie le long de la côte (bornes,
+  manche à air, hangar de tôle, citerne, caisses) ; garage de Kwame sur la place de Port-Néré et moto gonflée de
+  Moto-Moto (~140 km/h, tir en roulant) ; approche au choix (route : alarme immédiate ; à pied : saboter le réservoir
+  sous l'aile ; par la plage) ; bimoteur WZ-AKT construit pour le jeu, décollage et poursuite entre deux pick-up dont
+  les tireurs vous visent ; viser le train ou un moteur (le cockpit : le témoin meurt, on recommence) ; sortie de piste,
+  ou décollage puis atterrissage forcé sur la plage si le réservoir est percé ; interrogatoire du pilote Marc Ndoro
+  et choix (témoin des Racines ou clé de casier à Lagunaville) ; sons d'avion et de sirène synthétisés (outils/sons_avion.py).
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 10 « L'Avion » (la piste du nord) ; modèle 3D dédié à la Dr Nadia ; un vrai navire 3D pour le caboteur de Lagunaville.
+2. Mission 11 « Le Serpent » (l'assaut du camp du Cobra) ; modèles 3D dédiés à la Dr Nadia, à Moto-Moto et à Marc Ndoro ; un vrai navire 3D pour le caboteur de Lagunaville.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait
