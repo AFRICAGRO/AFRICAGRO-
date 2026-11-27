@@ -246,6 +246,11 @@ func _ready() -> void:
 	mission11.name = "Mission11"
 	add_child(mission11)
 	mission11.construire(self, plan_m11["sol"])
+	# mission 12 « L'Aube » : Port-Néré libérée, le cimetière, le bac, le bilan de l'acte 1
+	var mission12 := Mission12.new()
+	mission12.name = "Mission12"
+	add_child(mission12)
+	mission12.construire(self)
 	var hors_camp := func(q: Vector2) -> bool: return q.distance_to(Mission11.CENTRE) < 72.0
 	veg.degager(hors_camp)
 	proche.degager(hors_camp)

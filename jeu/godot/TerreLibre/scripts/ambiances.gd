@@ -55,7 +55,12 @@ func preparer(p_soleil: DirectionalLight3D, p_env: Environment, p_terrain_mat: S
 	_appliquer(courant, LISTE[0])
 
 
+var ile_libre := false        # après la mission 12, la nuit n'est plus celle de l'île occupée
+
+
 func nom() -> String:
+	if ile_libre and index == 3:
+		return "Nuit (île libre)"
 	return LISTE[index]["nom"]
 
 

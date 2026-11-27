@@ -110,6 +110,9 @@ func sauver() -> void:
 	if m11 and m11.phase == Mission11.Phase.TERMINEE:
 		d["serpent"] = {"phase": int(m11.phase), "choix": m11.choix, "mamba": str(main.get_meta("mamba", "")),
 				"tyran": int(main.get_meta("nouveau_tyran", 0))}
+	var m12: Node = main.get_node_or_null("Mission12")
+	if m12 and m12.phase == Mission12.Phase.TERMINEE:
+		d["acte1"] = {"bilan": m12.bilan}       # transmis à l'acte 2
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel:
 		d["telephone"] = {"argent": tel.argent, "historique": tel.historique, "preuves": tel.preuves,
@@ -242,6 +245,9 @@ func charger() -> bool:
 		main.set_meta("mamba", str(d["serpent"]["mamba"]))
 		main.set_meta("nouveau_tyran", int(d["serpent"]["tyran"]))
 		m11.restaurer_terminee(str(d["serpent"]["choix"]))
+	var m12: Node = main.get_node_or_null("Mission12")
+	if m12 and d.has("acte1"):
+		m12.restaurer_terminee(d["acte1"]["bilan"])
 	var tel: Node = main.get_node_or_null("Telephone")
 	if tel and d.has("telephone"):
 		var dt: Dictionary = d["telephone"]

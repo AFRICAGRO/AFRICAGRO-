@@ -119,11 +119,19 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   électrogène coupé ; Dossou fait défection s'il a été relâché à Akwéri, ou se bat contre Faris s'il a été fait
   prisonnier ; les garçons de Tikané ouvrent les cellules de l'intérieur ; Yaw libéré ; tireur du clocher, contrats
   dans le coffre de la chapelle ; le Commandant Mamba et sa canne-épée ; le choix : l'arrêter ou l'éliminer.
+- Mission 12 « L'Aube » jouable (fin de l'acte 1, sans combat) : dès le début du jeu, la fresque délavée de la
+  coopérative porte l'affiche du Front du Cobra ; après la libération, elle est repeinte (Samuel au centre, Faris
+  dessiné à la craie par un enfant), les barrages et les patrouilles disparaissent, fanions aux couleurs des Racines,
+  lampadaires solaires, Radio Racines et danseurs au maquis, marché plein, pêcheurs qui chantent, Petit Prince sur
+  son vélo neuf, match de foot sur la latérite (ballon physique, on peut marquer) ; six activités facultatives ;
+  le cimetière (chrétiens et musulmans côte à côte, tombe de Samuel gravée du proverbe) au coucher du soleil avec Ama,
+  Mamba escorté ou Dossou aux pirogues selon les choix ; le bac de nuit, la voix inconnue à la radio ; la carte de
+  Wanzala (outils/textures_acte1.py) et le bilan de l'acte 1, enregistré pour l'acte 2.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 12 « L'Aube » (le retour à Port-Néré, fin de l'acte 1) ; modèles 3D dédiés à Mamba, Yaw, la Dr Nadia, Moto-Moto et Marc Ndoro ; un vrai navire 3D pour le caboteur de Lagunaville.
+2. Missions 1 à 3 (l'arrivée de Faris, l'enterrement, la maison de son père) pour ouvrir le jeu ; puis l'acte 2, Lagunaville. Modèles 3D dédiés à Mamba, Yaw, la Dr Nadia, Moto-Moto, Marc Ndoro et au passeur ; de vrais bateaux 3D (bac, caboteur).
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

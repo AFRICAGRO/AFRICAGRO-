@@ -21,6 +21,18 @@ var pickups: Array = []         # {noeud, trace, l, sens, v, etat, passagers, ro
 var nuit := false
 
 
+## Port-Néré libérée (mission 12) : plus aucun pick-up de la milice sur les routes.
+func liberer() -> void:
+	for pk in pickups:
+		for p in pk["passagers"]:
+			if is_instance_valid(p):
+				(p as Node).queue_free()
+		if is_instance_valid(pk["noeud"]):
+			(pk["noeud"] as Node).queue_free()
+	pickups.clear()
+	set_process(false)
+
+
 func construire(t: Terrain, p_joueur: Joueur, p_controles: Controles, traces: Array) -> void:
 	terrain = t
 	joueur = p_joueur

@@ -24,6 +24,17 @@ var couverts: Array = []        # [position, rayon] : murets de sacs de sable, p
 var foule: Foule                # les passants fuient les coups de feu
 
 
+## Port-Néré libérée (mission 12) : les miliciens des barrages sont partis, plus de couvre-feu.
+func liberer() -> void:
+	for poste in postes:
+		for g in poste["gardes"]:
+			if is_instance_valid(g):
+				(g as Node).queue_free()
+	postes.clear()
+	tous.clear()
+	set_process(false)
+
+
 func construire(ville: VillePortNere, p_joueur: Joueur, p_annonceur: Node) -> void:
 	joueur = p_joueur
 	annonceur = p_annonceur

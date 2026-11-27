@@ -246,6 +246,14 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_pressed("sauter") and not accroupi:
 		velocity.y = SAUT
 	move_and_slide()
+	# pousser ce qui roule : le ballon du match de football (mission 12)
+	for k in get_slide_collision_count():
+		var col := get_slide_collision(k)
+		var corps_rigide := col.get_collider() as RigidBody3D
+		if corps_rigide:
+			var pousse := -col.get_normal()
+			pousse.y = 0.0
+			corps_rigide.apply_central_impulse(pousse.normalized() * (0.6 + vitesse_affichee * 0.45) + Vector3(0, 0.25, 0))
 	vitesse_affichee = Vector2(velocity.x, velocity.z).length()
 	# orientation du corps : vers la caméra quand on vise ou tire, sinon vers la marche
 	if vise or (a_une_arme and t_tir > -0.6):
