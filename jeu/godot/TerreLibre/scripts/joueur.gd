@@ -35,6 +35,7 @@ var cible_civile := false # le réticule passe sur un civil ou un jeune enrôlé
 var flechettes := 0        # fusil à fléchettes anesthésiantes de Kwame (mission 8)
 var mode_flechettes := false
 var son_flechette: AudioStreamPlayer
+var photo := false          # appareil photo du téléphone (mission 9) : zoom, pas de tir
 
 var pivot: Node3D
 var bras: SpringArm3D
@@ -265,7 +266,8 @@ func _combat(delta: float) -> void:
 			var pris := mini(besoin, reserve)
 			munitions += pris
 			reserve -= pris
-	if not a_une_arme:
+	if not a_une_arme or photo:
+		cible_civile = false
 		return
 	# que vise le réticule ?
 	var origine := camera.global_position
@@ -337,5 +339,9 @@ func _process(delta: float) -> void:
 	var longueur := 1.7 if vise else (5.2 if vitesse_affichee > 4.0 else 3.9)
 	if a_cheval:
 		longueur = 6.8 if vitesse_affichee > 5.0 else 5.6
-	bras.spring_length = lerpf(bras.spring_length, longueur, 8.0 * delta if vise else 2.0 * delta)
-	camera.fov = lerpf(camera.fov, 50.0 if vise else 62.0, 8.0 * delta)
+	if photo:
+		longueur = 0.1          # le téléphone à hauteur des yeux : Faris ne masque plus le cadre
+	if not a_cheval:
+		corps.visible = not (photo and bras.spring_length < 0.8)
+	bras.spring_length = lerpf(bras.spring_length, longueur, 8.0 * delta if (vise or photo) else 2.0 * delta)
+	camera.fov = lerpf(camera.fov, 22.0 if photo else (50.0 if vise else 62.0), 8.0 * delta)

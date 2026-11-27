@@ -29,6 +29,7 @@ sur un PC modeste avec carte graphique intégrée.
 | Espace contre une paroi claire | Grimper (ZQSD), mission 7 |
 | V | Fusil ↔ fusil à fléchettes anesthésiantes (mission 8) |
 | H | Ordre aux familles escortées : suivre → attendre → se cacher → courir (mission 8) |
+| K · clic gauche | Appareil photo du téléphone · déclencher (mission 9) |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -95,11 +96,18 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   aucune arme ne les blesse, ils ne tirent jamais) : on les désarme dans leur dos, ou la Dr Nadia leur parle ;
   crochetage de la maison du chef ; escorte des familles jusqu'aux pirogues d'Ama avec des ordres simples ;
   choix de l'aube (poursuivre le pick-up ou protéger les familles) ; la Dr Nadia rejoint les Racines (soins plus rapides).
+- Mission 9 « Le Chenal » jouable (après Tikané) : une mangrove créée dans la baie du Sud (îlots de vase aux bords
+  irréguliers, chenaux creusés dans le relief, ~850 palétuviers sur racines-échasses, vase sombre et luisante,
+  grenouilles, insectes et clapotis synthétisés : outils/sons_mangrove.py) ; filature d'une barge à la perche avec
+  Ama (jauge de distance 25–60 m, pauses d'écoute, projecteur qui balaie le sillage, reprise si l'on est vu ou
+  semé) ; marée qui monte (un banc de vase s'ouvre, une arche de racines se ferme) ; appareil photo du téléphone
+  (sacs, acheteur, navire LGV 2047 au large) ; cabane sur pilotis : écouter sous le plancher, voler le registre ou
+  attaquer (le registre peut tomber à l'eau) ; le registre signé « H.S. » relie le Cobra au Syndicat des Docks.
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 9 « Le Chenal » (suivre les chargements de la nuit) ; modèle 3D dédié à la Dr Nadia et au pick-up des renforts.
+2. Mission 10 « L'Avion » (la piste du nord) ; modèle 3D dédié à la Dr Nadia ; un vrai navire 3D pour le caboteur de Lagunaville.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

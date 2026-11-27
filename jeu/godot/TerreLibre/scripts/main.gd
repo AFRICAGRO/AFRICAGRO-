@@ -49,6 +49,8 @@ func _ready() -> void:
 	terrain.lits = [plan_tikane["lit"]]
 	# mont Talanké : cuvette du lac de cratère et replat du sommet (mission 7)
 	plan_m7 = Mission7.preparer_plan(carte_vers_monde(290, 356), carte_vers_monde(347, 442))
+	# mangrove de la baie du Sud (mission 9) : îlots de vase et chenaux creusés dans le relief
+	terrain.plateformes.append_array(Mission9.preparer_plan()["plateformes"])
 	terrain.plateformes.append_array(plan_m7["plateformes"])
 	terrain.anneaux = plan_m7["anneaux"]
 	add_child(terrain)
@@ -222,6 +224,11 @@ func _ready() -> void:
 	mission8.name = "Mission8"
 	add_child(mission8)
 	mission8.construire(self)
+	# mission 9 « Le Chenal » : mangrove, filature de la barge, photos, cabane sur pilotis, registre
+	var mission9 := Mission9.new()
+	mission9.name = "Mission9"
+	add_child(mission9)
+	mission9.construire(self)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"
@@ -252,7 +259,7 @@ func _actions_clavier() -> void:
 		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
 		"vehicule": [KEY_E], "carte": [KEY_M],
 		"sauver": [KEY_F5], "charger": [KEY_F9], "lancer": [KEY_X], "telephone": [KEY_TAB],
-		"changer_arme": [KEY_V], "ordre": [KEY_H],
+		"changer_arme": [KEY_V], "ordre": [KEY_H], "photo": [KEY_K],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -462,7 +469,7 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · M : carte · Tab : téléphone · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · V : fléchettes · H : ordre aux otages · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
+	aide.text = "ZQSD : marcher · Maj : courir · M : carte · Tab : téléphone · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · V : fléchettes · H : ordre aux otages · K : appareil photo · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
 	aide.add_theme_font_size_override("font_size", 14)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))

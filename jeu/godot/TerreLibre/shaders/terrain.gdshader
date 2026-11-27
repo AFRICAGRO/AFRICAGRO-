@@ -19,6 +19,8 @@ uniform sampler2D roche_n : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform float secheresse : hint_range(0.0, 1.0) = 0.0; // harmattan : herbe jaunie
 uniform float mouille : hint_range(0.0, 1.0) = 0.0;    // pluie : sol sombre et brillant
 uniform float distance_detail = 260.0;
+// mangrove (mission 9) : sur cette zone (x0, z0, x1, z1), le sable bas devient une vase sombre et luisante
+uniform vec4 zone_vase = vec4(0.0);
 
 varying vec3 monde;
 varying float pente;
@@ -69,10 +71,15 @@ void fragment() {
 	vec3 macro = sat * 1.15;
 	col = mix(col * mix(vec3(1.0), sat * 2.0, 0.25), macro, loin * 0.75);
 
+	float bord_x = min(monde.x - zone_vase.x, zone_vase.z - monde.x);
+	float bord_z = min(monde.z - zone_vase.y, zone_vase.w - monde.z);
+	float vase = smoothstep(0.0, 30.0, min(bord_x, bord_z)) * (1.0 - smoothstep(1.0, 1.9, h));
+	vec3 boue = couleur(sable_c, uv / 3.0) * vec3(0.32, 0.27, 0.22);
+	col = mix(col, boue, vase);
 	col *= mix(1.0, 0.72, mouille);
 	ALBEDO = col;
 	NORMAL_MAP = mix(nrm, vec3(0.5, 0.5, 1.0), loin);
 	NORMAL_MAP_DEPTH = 1.2;
-	ROUGHNESS = mix(0.95, 0.65, mouille);
+	ROUGHNESS = mix(mix(0.95, 0.65, mouille), 0.4, vase);
 	SPECULAR = mix(0.2, 0.35, mouille);
 }

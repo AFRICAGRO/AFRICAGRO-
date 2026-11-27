@@ -32,6 +32,8 @@ var cap := 0.0
 var t := 0.0
 var clapot: AudioStreamPlayer3D
 var aide: Label3D
+## Passages que la marée ouvre ou ferme (mission 9) : chaque Callable(Vector2) -> bool dit « bloqué ».
+var obstacles: Array = []
 
 
 func preparer(p_joueur: Node3D, p_terrain: Node, p_rivieres: Array, maillage: Mesh, pos: Vector2, angle: float) -> void:
@@ -81,6 +83,9 @@ func niveau_eau(p: Vector2) -> float:
 
 
 func _navigable(de: Vector2, vers: Vector2) -> bool:
+	for o in obstacles:
+		if (o as Callable).call(vers):
+			return false                               # banc de vase, racines à fleur d'eau
 	var n := niveau_eau(vers)
 	if n - terrain.hauteur(vers.x, vers.y) < TIRANT:
 		return false                                   # haut-fond, plage, berge
