@@ -8,9 +8,9 @@ signal neutralise(pnj: Pnj, comment: String) # "ligote", "mort"
 signal rendu(pnj: Pnj)
 signal alerte(position: Vector3)
 
-enum Etat { CALME, SUSPICION, COMBAT, RENDU, LIGOTE, MORT, FUITE, CACHE }
+enum Etat { CALME, SUSPICION, COMBAT, RENDU, LIGOTE, MORT, FUITE, CACHE, ENDORMI, DESARME }
 
-var role := "milicien"   # "milicien", "dossou", "civil"
+var role := "milicien"   # "milicien", "dossou", "civil", "recrue" (mineur enrôlé de force : jamais une cible)
 var etat := Etat.CALME
 var pv := 100.0
 var mission: Node
@@ -100,7 +100,8 @@ func preparer(p_role: String, p_mission: Node, p_joueur: Joueur, teinte_chemise:
 
 # ---------- dégâts ----------
 func touche(degats: float, _par_joueur: bool) -> void:
-	if etat in [Etat.MORT, Etat.LIGOTE] or role == "civil":
+	# règle absolue : un civil ou un jeune enrôlé de force n'est jamais blessé
+	if etat in [Etat.MORT, Etat.LIGOTE, Etat.ENDORMI] or role == "civil" or role == "recrue":
 		return
 	if etat == Etat.RENDU:
 		pv = 0.0
@@ -148,6 +149,39 @@ func ligoter() -> void:
 		arme.queue_free()
 		arme = null
 	neutralise.emit(self, "ligote")
+
+
+## Fléchette anesthésiante (mission 8) : le milicien s'effondre et dort jusqu'au matin.
+func endormir() -> void:
+	if not est_actif() and etat != Etat.RENDU:
+		return
+	if role == "civil" or role == "recrue":
+		return
+	etat = Etat.ENDORMI
+	velocity = Vector3.ZERO
+	anim_haut.stop()
+	anim.play("Mort", 0.6)
+	collision_layer = 0
+	if arme:
+		arme.queue_free()
+		arme = null
+	neutralise.emit(self, "endormi")
+
+
+## Jeune recrue désarmée sans violence : elle pose son arme et s'assoit ; elle redevient un civil.
+func desarmer() -> void:
+	if role != "recrue":
+		return
+	etat = Etat.DESARME
+	role = "civil"
+	velocity = Vector3.ZERO
+	soupcon = 0.0
+	anim_haut.stop()
+	anim.play("Assis" if anim.has_animation("Assis") else "Accroupi", 0.5)
+	if arme:
+		arme.queue_free()
+		arme = null
+	neutralise.emit(self, "desarme")
 
 
 func est_actif() -> bool:
@@ -301,6 +335,12 @@ func _calme(delta: float) -> void:
 
 
 func _combat(delta: float) -> void:
+	if role == "recrue":
+		# un garçon terrifié : il crie, braque son arme en tremblant, mais ne tire jamais
+		velocity.x = 0.0
+		velocity.z = 0.0
+		_regarder(joueur.global_position, delta * 3.0)
+		return
 	if joueur.mort:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -400,7 +440,7 @@ func _animer() -> void:
 	match etat:
 		Etat.RENDU:
 			return
-		Etat.LIGOTE, Etat.MORT:
+		Etat.LIGOTE, Etat.MORT, Etat.ENDORMI, Etat.DESARME:
 			return
 		Etat.CACHE:
 			nom = "Accroupi"

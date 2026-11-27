@@ -95,7 +95,7 @@ func _evaluer() -> void:
 	var en_ville := 0.0
 	if ville:
 		en_ville = 1.0 - smoothstep(180.0, 450.0, Vector2(p.x, p.z).distance_to(ville.centre))
-	var pluie: bool = ambiances != null and ambiances.LISTE[ambiances.index]["ciel"] == "pluie"
+	var pluie: bool = ambiances != null and ambiances.LISTE[ambiances.index]["pluie"]
 	var jour := 1.0 - smoothstep(0.4, 0.9, nuit)
 	cibles["vagues"] = smoothstep(0.0, 0.45, mer) * 0.9
 	cibles["vent"] = 0.25 + 0.35 * smoothstep(20.0, 120.0, p.y) + 0.15 * mer

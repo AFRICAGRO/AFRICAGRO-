@@ -639,6 +639,8 @@ func tikane(v: VillageTikane) -> void:
 	var c: Vector3 = v.reperes["place"]
 	var gardes: Array = v.reperes["gardes"]
 	var modeles := ["homme2", "villageois", "homme3", "homme2", "villageois", "homme3", "homme2"]
+	var decor: Array = []
+	v.set_meta("gardes_decor", decor)   # remplacés par de vrais gardes quand la mission 8 commence
 	for i in gardes.size():
 		var g: Vector3 = gardes[i]
 		var regard := Vector2(g.x - c.x, g.z - c.z)
@@ -646,6 +648,7 @@ func tikane(v: VillageTikane) -> void:
 			regard = -regard   # devant la prison : face à la place
 		var garde := _perso(modeles[i], "Repos", g, atan2(regard.x, regard.y) + rng.randf_range(-0.4, 0.4))
 		_camoufler(garde)
+		decor.append(garde)
 
 
 func _camoufler(perso: Node3D) -> void:

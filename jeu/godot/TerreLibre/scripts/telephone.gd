@@ -210,6 +210,9 @@ func _missions() -> void:
 	var m7: Node = main.get_node_or_null("Mission7")
 	if m7:
 		liste.append(["7 · La Voix de l'Île", m7.etat_texte()])
+	var m8: Node = main.get_node_or_null("Mission8")
+	if m8:
+		liste.append(["8 · Nuit à Tikané", m8.etat_texte()])
 	for l in liste:
 		_texte("%s — %s" % l)
 

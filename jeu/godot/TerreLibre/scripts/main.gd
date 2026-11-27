@@ -217,6 +217,11 @@ func _ready() -> void:
 	mission7.name = "Mission7"
 	add_child(mission7)
 	mission7.construire(self, plan_m7, veg)
+	# mission 8 « Nuit à Tikané » : orage, otages, jeunes recrues à désarmer, escorte jusqu'aux pirogues
+	var mission8 := Mission8.new()
+	mission8.name = "Mission8"
+	add_child(mission8)
+	mission8.construire(self)
 	# sauvegarde (F5), reprise (F9), sauvegarde automatique
 	var sauvegarde := Sauvegarde.new()
 	sauvegarde.name = "Sauvegarde"
@@ -247,6 +252,7 @@ func _actions_clavier() -> void:
 		"aller_port_nere": [KEY_P], "aller_bome": [KEY_B], "aller_tikane": [KEY_T], "cheval": [KEY_G],
 		"vehicule": [KEY_E], "carte": [KEY_M],
 		"sauver": [KEY_F5], "charger": [KEY_F9], "lancer": [KEY_X], "telephone": [KEY_TAB],
+		"changer_arme": [KEY_V], "ordre": [KEY_H],
 	}
 	for action in touches:
 		if not InputMap.has_action(action):
@@ -456,14 +462,19 @@ func _interface() -> void:
 	etiquette.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	calque.add_child(etiquette)
 	aide = Label.new()
-	aide.text = "ZQSD : marcher · Maj : courir · M : carte · Tab : téléphone · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
-	aide.add_theme_font_size_override("font_size", 15)
+	aide.text = "ZQSD : marcher · Maj : courir · M : carte · Tab : téléphone · X : lancer un caillou · C : s'accroupir · F : maîtriser / ligoter · clic droit : viser · clic gauche : tirer · R : recharger · V : fléchettes · H : ordre aux otages · N : ambiance · P : Port-Néré · B : Bomé · T : Tikané · G : cheval · E : moto / pirogue · F5 : sauver · F9 : reprendre · Échap : souris"
+	aide.add_theme_font_size_override("font_size", 14)
 	aide.add_theme_constant_override("outline_size", 5)
 	aide.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+	aide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # sur deux lignes si l'écran est étroit
 	aide.anchor_top = 1.0
 	aide.anchor_bottom = 1.0
-	aide.offset_top = -38
+	aide.anchor_right = 1.0
+	aide.offset_top = -46
+	aide.offset_bottom = -4
 	aide.offset_left = 20
+	aide.offset_right = -20
+	aide.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	calque.add_child(aide)
 
 

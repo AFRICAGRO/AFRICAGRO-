@@ -17,7 +17,7 @@ sur un PC modeste avec carte graphique intégrée.
 | Z Q S D (ou W A S D, flèches) | Marcher |
 | Maj | Courir |
 | Espace | Sauter |
-| N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube |
+| N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube → nuit d'orage |
 | G | Monter à cheval / descendre (près du cheval, devant la maison de Faris) |
 | E | Enfourcher la moto ou embarquer dans une pirogue / descendre |
 | C · F · clic droit · clic gauche · R | S'accroupir · maîtriser · viser · tirer · recharger (mission 4) |
@@ -27,6 +27,8 @@ sur un PC modeste avec carte graphique intégrée.
 | X | Lancer un caillou là où l'on regarde (le garde le plus proche va voir) — mission 5 |
 | Tab | Téléphone : missions, Zala Money (achats), preuves, radio, carte |
 | Espace contre une paroi claire | Grimper (ZQSD), mission 7 |
+| V | Fusil ↔ fusil à fléchettes anesthésiantes (mission 8) |
+| H | Ordre aux familles escortées : suivre → attendre → se cacher → courir (mission 8) |
 | Échap | Libérer la souris |
 
 En haut à gauche : lieu actuel, ambiance, vitesse et **images par seconde (i/s)**.
@@ -86,11 +88,18 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   poste du sommet (5 gardes, l'antenne à ne pas toucher) ; Joël l'opérateur radio ; premier message au choix
   (espoir, vérité, défi) avec ses effets. Radio Racines diffuse ensuite un morceau original de « zala-beat »
   (composé et synthétisé : outils/zala_beat.py) dans le téléphone et dans tout Port-Néré.
+- Mission 8 « Nuit à Tikané » jouable (après Radio Racines) : appel chuchoté de la Dr Nadia ; nuit d'orage
+  (pluie, éclairs qui révèlent tout : pendant l'éclair les gardes voient deux fois plus loin, tonnerre synthétisé :
+  outils/sons_orage.py) ; fusil à fléchettes de Kwame (12, silencieux) ; 7 gardes adultes (fléchette, prise
+  dans le dos ou combat) ; 6 jeunes recrues enrôlées de force qui ne sont **jamais des cibles** (réticule bloqué,
+  aucune arme ne les blesse, ils ne tirent jamais) : on les désarme dans leur dos, ou la Dr Nadia leur parle ;
+  crochetage de la maison du chef ; escorte des familles jusqu'aux pirogues d'Ama avec des ordres simples ;
+  choix de l'aube (poursuivre le pick-up ou protéger les familles) ; la Dr Nadia rejoint les Racines (soins plus rapides).
 
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Mission 8 « Nuit à Tikané » (otages), textures tirées des photos réelles.
+2. Mission 9 « Le Chenal » (suivre les chargements de la nuit) ; modèle 3D dédié à la Dr Nadia et au pick-up des renforts.
 3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
 
 ## Faris : comment il est fait

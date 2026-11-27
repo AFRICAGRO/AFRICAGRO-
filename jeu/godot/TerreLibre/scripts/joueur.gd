@@ -31,7 +31,10 @@ var munitions := CHARGEUR
 var reserve := 90
 var t_tir := 0.0
 var t_recharge := 0.0
-var cible_civile := false # le réticule passe sur un civil : tir interdit
+var cible_civile := false # le réticule passe sur un civil ou un jeune enrôlé : tir interdit
+var flechettes := 0        # fusil à fléchettes anesthésiantes de Kwame (mission 8)
+var mode_flechettes := false
+var son_flechette: AudioStreamPlayer
 
 var pivot: Node3D
 var bras: SpringArm3D
@@ -79,6 +82,10 @@ func _ready() -> void:
 	son_recharge = AudioStreamPlayer.new()
 	son_recharge.stream = load("res://sons/recharge.wav")
 	add_child(son_recharge)
+	son_flechette = AudioStreamPlayer.new()
+	son_flechette.stream = load("res://sons/flechette.wav")
+	son_flechette.volume_db = -4.0
+	add_child(son_flechette)
 
 
 func _construire_corps() -> void:
@@ -156,6 +163,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		accroupi = not accroupi
 	elif event.is_action_pressed("recharger"):
 		_recharger()
+	elif event.is_action_pressed("changer_arme") and a_une_arme:
+		if flechettes > 0 or mode_flechettes:
+			mode_flechettes = not mode_flechettes
 	elif event.is_action_pressed("interagir") and mission and not mort:
 		mission.interagir()
 
@@ -240,7 +250,7 @@ func _physics_process(delta: float) -> void:
 	# soins lents hors du feu
 	t_soin -= delta
 	if t_soin <= 0.0 and pv < 100.0:
-		pv = minf(100.0, pv + 8.0 * delta)
+		pv = minf(100.0, pv + (14.0 if has_meta("soins_nadia") else 8.0) * delta)
 	_combat(delta)
 	_choisir_animation()
 	corps.position.y = -0.35 if nage else 0.0
@@ -263,7 +273,10 @@ func _combat(delta: float) -> void:
 	var q := PhysicsRayQueryParameters3D.create(origine, origine + dir * 250.0, 1 | 4)
 	q.exclude = [get_rid()]
 	var r := get_world_3d().direct_space_state.intersect_ray(q)
-	cible_civile = not r.is_empty() and r["collider"] is Pnj and (r["collider"] as Pnj).role == "civil"
+	cible_civile = not r.is_empty() and r["collider"] is Pnj and (r["collider"] as Pnj).role in ["civil", "recrue"]
+	if mode_flechettes:
+		_tir_flechette(r)
+		return
 	if Input.is_action_pressed("tirer") and t_tir <= 0.0 and t_recharge <= 0.0 and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		if munitions <= 0:
 			_recharger()
@@ -294,6 +307,24 @@ func _combat(delta: float) -> void:
 			impact.emit(r2["collider"], r2["position"])
 	if munitions <= 0 and reserve > 0 and t_recharge <= 0.0:
 		_recharger()
+
+
+## Fusil à fléchettes : un coup, silencieux, lent à réarmer ; il endort un milicien adulte.
+## Jamais sur un civil ni sur un jeune : la détente se bloque.
+func _tir_flechette(r: Dictionary) -> void:
+	if not Input.is_action_just_pressed("tirer") or t_tir > 0.0 or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		return
+	if flechettes <= 0:
+		mode_flechettes = false
+		return
+	if cible_civile:
+		return
+	t_tir = 1.3
+	flechettes -= 1
+	son_flechette.play()
+	tangage += 0.004
+	if not r.is_empty() and r["collider"] is Pnj:
+		(r["collider"] as Pnj).endormir()
 
 
 func _process(delta: float) -> void:

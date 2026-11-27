@@ -122,7 +122,7 @@ func _process(_delta: float) -> void:
 func regler_nuit(n: float) -> void:
 	for f in feux:
 		(f[0] as OmniLight3D).visible = n > 0.05
-		f[1] = 0.6 + 5.4 * n
+		f[1] = f[3] * (0.25 + 0.75 * n)
 	if mats.has("braise"):
 		(mats["braise"] as StandardMaterial3D).emission_energy_multiplier = 1.5 + 4.0 * n
 
@@ -150,6 +150,7 @@ func _prison(p: Vector2) -> void:
 	_toit_tole(xf.translated_local(Vector3(0, 3.0, -1.4)), w + 0.6, dp + 3.6, false, Color.WHITE, Color(0.9, 0.78, 0.65), "banco")
 	# porte à deux battants, barre de fer et cadenas
 	var porte := xf.translated_local(Vector3(0, 0, -dp * 0.5 - 0.04))
+	reperes["porte_xf"] = porte
 	_boite("bois", porte, Vector3(1.6, 2.2, 0.07), Color(0.42, 0.3, 0.2))
 	_boite("metal", porte.translated_local(Vector3(0, 1.1, -0.06)), Vector3(1.9, 0.09, 0.05), Color(0.35, 0.33, 0.3))
 	_boite("metal", porte.translated_local(Vector3(0.25, 0.95, -0.09)), Vector3(0.09, 0.12, 0.05), Color(0.55, 0.5, 0.3))
@@ -217,7 +218,7 @@ func _lanterne(p: Vector3) -> void:
 	l.position = p + Vector3(0, 0.1, 0)
 	l.shadow_enabled = false
 	add_child(l)
-	feux.append([l, 3.0, rng.randf() * TAU])
+	feux.append([l, 1.2, rng.randf() * TAU, 1.2])
 
 
 func _brasero(p: Vector2) -> void:
@@ -231,7 +232,7 @@ func _brasero(p: Vector2) -> void:
 	l.position = b + Vector3(0, 1.4, 0)
 	l.shadow_enabled = true
 	add_child(l)
-	feux.append([l, 5.0, rng.randf() * TAU])
+	feux.append([l, 2.2, rng.randf() * TAU, 2.2])
 
 
 # ---------------------------------------------------------------------

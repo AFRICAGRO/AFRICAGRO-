@@ -21,6 +21,9 @@ const LISTE := [
 	{"nom": "Aube", "nuit": 0.3, "ciel": "aube", "rot": 87.0, "elev": 9.7, "energie_ciel": 0.65,
 	 "soleil": Color(1.0, 0.8, 0.7), "energie": 1.1, "ambiant": Color(0.6, 0.62, 0.72), "a_energie": 0.55,
 	 "brume": Color(0.8, 0.74, 0.76), "densite": 0.0014, "ombre": 0.8, "mer": 0.8, "secheresse": 0.0, "mouille": 0.0, "pluie": false},
+	{"nom": "Nuit d'orage", "nuit": 1.0, "ciel": "nuit", "rot": 140.0, "elev": 17.0, "energie_ciel": 0.16,
+	 "soleil": Color(0.5, 0.58, 0.8), "energie": 0.16, "ambiant": Color(0.24, 0.28, 0.4), "a_energie": 0.42,
+	 "brume": Color(0.07, 0.08, 0.12), "densite": 0.0024, "ombre": 0.3, "mer": 0.15, "secheresse": 0.0, "mouille": 1.0, "pluie": true},
 ]
 
 var soleil: DirectionalLight3D

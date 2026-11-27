@@ -367,12 +367,17 @@ func _interface() -> void:
 	infos.anchor_right = 1.0
 	infos.position = Vector2(-300, 16)
 	calque.add_child(infos)
-	munitions = _label(26)
+	munitions = _label(22)
 	munitions.anchor_left = 1.0
 	munitions.anchor_right = 1.0
 	munitions.anchor_top = 1.0
 	munitions.anchor_bottom = 1.0
-	munitions.position = Vector2(-170, -84)
+	# au-dessus de la mini-carte (210 px, à 50 px du bas), aligné à droite
+	munitions.offset_left = -620
+	munitions.offset_right = -18
+	munitions.offset_top = -300
+	munitions.offset_bottom = -268
+	munitions.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	calque.add_child(munitions)
 	vie_fond = ColorRect.new()
 	vie_fond.color = Color(0, 0, 0, 0.5)
@@ -452,8 +457,12 @@ func _process(delta: float) -> void:
 			@warning_ignore("missing_await")
 			_choisir(true)
 	vie.size.x = 220.0 * joueur.pv / 100.0
-	if joueur.a_une_arme:
-		munitions.text = ("%d / %d" % [joueur.munitions, joueur.reserve]) + ("  rechargement…" if joueur.t_recharge > 0.0 else "")
+	if joueur.a_une_arme and joueur.mode_flechettes:
+		munitions.text = "Fléchettes anesthésiantes : %d   (V : fusil)" % joueur.flechettes
+		reticule.text = "✕" if joueur.cible_civile else "◦"
+		reticule.add_theme_color_override("font_color", Color(0.6, 0.95, 1.0) if not joueur.cible_civile else Color(1, 0.4, 0.3))
+	elif joueur.a_une_arme:
+		munitions.text = ("%d / %d" % [joueur.munitions, joueur.reserve]) + ("  rechargement…" if joueur.t_recharge > 0.0 else "") + ("   (V : fléchettes)" if joueur.flechettes > 0 else "")
 		reticule.text = "✕" if joueur.cible_civile else "+"
 		reticule.add_theme_color_override("font_color", Color(1, 1, 1) if not joueur.cible_civile else Color(1, 0.4, 0.3))
 	else:
