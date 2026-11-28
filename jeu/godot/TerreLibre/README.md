@@ -3,6 +3,14 @@
 Projet Godot 4 de l'île de Talanké. Rendu **Compatibilité** (OpenGL 3.3) pour tourner
 sur un PC modeste avec carte graphique intégrée.
 
+## Jouer sans Godot (Windows)
+
+Télécharger `WANZALA.exe` (un seul fichier, le jeu est inclus dedans) et double-cliquer dessus.
+Windows peut afficher « Windows a protégé votre ordinateur » (le fichier n'est pas signé) :
+cliquer sur **Informations complémentaires** → **Exécuter quand même**. Pour refaire l'exécutable
+depuis Godot : **Projet → Exporter… → Windows Desktop** (le préréglage est dans `export_presets.cfg` ;
+il faut d'abord installer les modèles d'exportation de Godot 4.7.2 depuis cette même fenêtre).
+
 ## Ouvrir le projet
 
 1. Lancer Godot → **Importer** → choisir `jeu/godot/TerreLibre/project.godot`.
@@ -19,7 +27,9 @@ sur un PC modeste avec carte graphique intégrée.
 | Espace | Sauter |
 | N | Changer d'ambiance : heure dorée → midi harmattan → pluie → nuit → aube → nuit d'orage |
 | G | Monter à cheval / descendre (près du cheval, devant la maison de Faris) |
-| E | Enfourcher la moto ou embarquer dans une pirogue / descendre |
+| E | Enfourcher la moto ou embarquer dans une pirogue / descendre (pirogue à moteur, mission 3 : Z gaz, relâcher pour glisser) |
+| F (pendant une scène) | Passer à la réplique suivante |
+| 1 · 2 · 3 | Choisir une réponse (barrage de la mission 1) |
 | C · F · clic droit · clic gauche · R | S'accroupir · maîtriser · viser · tirer · recharger (mission 4) |
 | P · B · T | Aller à Port-Néré · Bomé · Tikané |
 | M | Carte de l'île (clic gauche : poser une balise, clic droit : l'enlever) |
@@ -128,11 +138,28 @@ Notez ce chiffre sur votre PC : c'est notre mesure de performance.
   Mamba escorté ou Dossou aux pirogues selon les choix ; le bac de nuit, la voix inconnue à la radio ; la carte de
   Wanzala (outils/textures_acte1.py) et le bilan de l'acte 1, enregistré pour l'acte 2.
 
+- Prologue (missions 1 à 3) : le jeu commence désormais par **« Le Retour »** — la traversée en bac (cinématique,
+  le passeur au chapeau de paille), le quai où la milice fouille les sacs et emporte le poisson, Petit Prince
+  (tutoriel du téléphone), Mama Rokia au maquis, la vendeuse du marché, la fresque et une page du carnet de Samuel
+  (facultative), le barrage de Dossou (choix en 8 secondes : se taire, répondre calmement, provoquer), l'enterrement
+  au coucher du soleil (le Père Joseph et l'Imam Salif côte à côte, Baya Efua, « Zala ka wan, wan ka zala »), le
+  convoi de Mamba aperçu en contrebas, Ama ; écran-titre. **« La Veillée »** : couvre-feu de nuit, patrouilles à
+  lampe torche (jauge « vu », C pour s'accroupir ; plus de patrouilles si Faris a provoqué Dossou ; Petit Prince
+  siffle s'il a été bien traité ; repéré, on est ramené au début du quartier, jamais tué), la maison du père fouillée,
+  les souvenirs en lumière dorée, la boîte en fer sous la pierre plate du manguier, le tableau des preuves.
+  **« Le Pêcheur »** : Akwéri au petit matin, Esther, Ama, le racket du hors-bord (filets tranchés), la poursuite en
+  pirogue à moteur (nouveau mode de la pirogue) le long de la côte ouest : deux champs de récifs où le hors-bord racle,
+  la vague qui le fait chavirer à moitié, trois heurts = chute à l'eau et reprise au dernier passage ; personne
+  n'est blessé ; la crique, Ama rejoint les Racines → retour à Akwéri et mission 4. Les choix (barrage, Petit
+  Prince, page du carnet) sont sauvegardés et pèsent sur la suite et sur le bilan de l'acte 1.
+- Exportation Windows : `export_presets.cfg` (Windows Desktop, jeu inclus dans l'exécutable).
+
 ## Prochaines étapes
 
 1. Réalisme par photos réelles : textures de matières (banco, latérite, tôle, chaume) et objets scannés.
-2. Missions 1 à 3 (l'arrivée de Faris, l'enterrement, la maison de son père) pour ouvrir le jeu ; puis l'acte 2, Lagunaville. Modèles 3D dédiés à Mamba, Yaw, la Dr Nadia, Moto-Moto, Marc Ndoro et au passeur ; de vrais bateaux 3D (bac, caboteur).
-3. Missions 1 à 3 et 5 à 6, jauge de confiance, sauvegarde.
+2. L'acte 2, Lagunaville. Modèles 3D dédiés à Mamba, Yaw, la Dr Nadia, Moto-Moto, Marc Ndoro, Ama, Baya Efua,
+   au passeur et au Père Joseph ; de vrais bateaux 3D (bac, hors-bord, caboteur) ; voix des dialogues.
+3. Essais sur un vrai PC Windows : réglage de la poursuite en mer, des patrouilles de nuit et des performances.
 
 ## Faris : comment il est fait
 

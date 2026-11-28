@@ -802,6 +802,8 @@ func _process(delta: float) -> void:
 		var main: Node3D = pa[1]
 		(pa[0] as Node3D).global_transform = Transform3D(Basis(), main.global_position + Vector3(0, -0.3, 0))
 	for ca in cannes:
+		if not is_instance_valid(ca[0]) or not is_instance_valid(ca[1]):
+			continue                 # personnage de décor effacé (fin d'une scène du prologue)
 		var h: Vector3 = (ca[1] as Node3D).global_position
 		var sol := _sol(h.x, h.z)
 		var bas := Vector3(h.x, sol, h.z) + (ca[1] as Node3D).global_basis.z.slide(Vector3.UP).normalized() * 0.05

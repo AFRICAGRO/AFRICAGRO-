@@ -131,7 +131,7 @@ func _ready() -> void:
 	var mission := Mission4.new()
 	mission.name = "Mission4"
 	add_child(mission)
-	mission.demarrer(village, joueur)
+	mission.preparer(village, joueur)    # lancée après le prologue (missions 1 à 3)
 	(get_node("VieQuotidienne") as VieQuotidienne).akweri(village, mission)
 	(get_node("VieQuotidienne") as VieQuotidienne).bome(bome)
 	(get_node("VieQuotidienne") as VieQuotidienne).tikane(tikane)
@@ -251,6 +251,19 @@ func _ready() -> void:
 	mission12.name = "Mission12"
 	add_child(mission12)
 	mission12.construire(self)
+	# prologue : mission 1 « Le Retour », 2 « La Veillée », 3 « Le Pêcheur » (le jeu commence ici)
+	var mission1 := Mission1.new()
+	mission1.name = "Mission1"
+	add_child(mission1)
+	mission1.construire(self)
+	var mission2 := Mission2.new()
+	mission2.name = "Mission2"
+	add_child(mission2)
+	mission2.construire(self)
+	var mission3 := Mission3.new()
+	mission3.name = "Mission3"
+	add_child(mission3)
+	mission3.construire(self)
 	var hors_camp := func(q: Vector2) -> bool: return q.distance_to(Mission11.CENTRE) < 72.0
 	veg.degager(hors_camp)
 	proche.degager(hors_camp)
@@ -274,6 +287,8 @@ func _ready() -> void:
 	(get_node("AmbianceSonore") as AmbianceSonore).bome = bome
 	(get_node("AmbianceSonore") as AmbianceSonore).preparer(terrain, joueur, ville, ambiances, get_node("VegetationProche"), get_node("Mouettes"))
 	_interface()
+	# nouvelle partie : le bac, à l'approche de Talanké
+	mission1.commencer()
 
 
 func _actions_clavier() -> void:

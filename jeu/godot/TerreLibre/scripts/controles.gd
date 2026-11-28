@@ -22,6 +22,8 @@ var postes: Array = []          # {centre, gardes, alerte, prevenu, t_nuit, leve
 var tous: Array = []
 var couverts: Array = []        # [position, rayon] : murets de sacs de sable, pick-up arrêtés
 var foule: Foule                # les passants fuient les coups de feu
+## Prologue (mission 2, couvre-feu sans arme ni mort) : la sommation ramène Faris au début du quartier.
+var prologue: Node = null
 
 
 ## Port-Néré libérée (mission 12) : les miliciens des barrages sont partis, plus de couvre-feu.
@@ -199,7 +201,10 @@ func _process(delta: float) -> void:
 			if poste["t_nuit"] == 0.0:
 				_annoncer("« Couvre-feu ! Halte ! Demi-tour ! »", SOMMATION)
 			poste["t_nuit"] += delta
-			if poste["t_nuit"] > SOMMATION:
+			if poste["t_nuit"] > SOMMATION and prologue and prologue.has_method("repere_barrage"):
+				poste["t_nuit"] = 0.0
+				prologue.repere_barrage()
+			elif poste["t_nuit"] > SOMMATION:
 				_annoncer("Les miliciens ouvrent le feu.", 2.5)
 				_tous_au_combat(i)
 			continue

@@ -22,6 +22,9 @@ var t_suivante := -1.0
 var t_reprise := -1.0
 var choix_fait := false
 var sort_dossou := ""      # "prisonnier" ou "relache" : il pèsera dans l'assaut du camp (mission 11)
+var lancee := false        # la mission ne commence qu'après le prologue (missions 1 à 3)
+## Pendant le prologue : là où Faris reprend pied s'il tombe (pas de mort dans les missions 1 à 3).
+var reprise_prologue := Vector3.INF
 
 # interface
 var objectif: Label
@@ -38,16 +41,30 @@ var jauge: ProgressBar
 var bloc_jauge: VBoxContainer
 
 
-func demarrer(p_village: VillageAkweri, p_joueur: Joueur) -> void:
+## Préparation au lancement du jeu : interface commune (objectif, annonces, vie), navigation, villageois.
+## La mission elle-même ne commence qu'après le prologue (missions 1 à 3), avec lancer().
+func preparer(p_village: VillageAkweri, p_joueur: Joueur) -> void:
 	village = p_village
 	joueur = p_joueur
-	joueur.mission = self
 	joueur.a_tire.connect(func(p): bruit_de_tir(p, true))
 	joueur.tombe.connect(_joueur_tombe)
 	_actions()
 	_interface()
 	_naviguer()
 	_placer_civils()
+
+
+## Début de la mission 4 : retour à Akwéri, la milice brûle les pirogues.
+## au_depart : Faris est posé sur les hauteurs du village (pas lors d'un chargement de partie).
+func lancer(au_depart := true) -> void:
+	if lancee:
+		return
+	lancee = true
+	joueur.mission = self
+	if au_depart:
+		var d3: Vector3 = village.reperes["depart"][0]
+		joueur.ressusciter(d3 + Vector3(0, 0.5, 0))
+		joueur.lacet = atan2(-village.mer.x, -village.mer.y)
 	# le milicien isolé patrouille entre deux fumoirs
 	var a := village._monde3(-12, -9)
 	var b := village._monde3(-12, 22)
@@ -271,6 +288,11 @@ func _joueur_tombe() -> void:
 
 
 func _reprendre() -> void:
+	if not lancee:
+		var p := reprise_prologue if reprise_prologue != Vector3.INF else joueur.global_position + Vector3(0, 1.0, 0)
+		joueur.ressusciter(p)
+		_annoncer("Reprise", 1.5)
+		return
 	# la vague en cours recommence ; les ennemis déjà neutralisés le restent
 	var num := 1
 	match phase:
@@ -471,4 +493,5 @@ func _process(delta: float) -> void:
 		munitions.text = ""
 		reticule.text = ""
 	infos.text = "Épargnés : %d   Tués : %d" % [epargnes, tues]
+	infos.visible = lancee
 	jauge.value = confiance

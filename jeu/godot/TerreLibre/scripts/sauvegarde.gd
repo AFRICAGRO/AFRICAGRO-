@@ -80,6 +80,16 @@ func sauver() -> void:
 			for g in poste["gardes"]:
 				etats.append(int((g as Pnj).etat))
 			d["barrages"].append({"leve": poste["leve"], "gardes": etats})
+	var prologue := {}
+	for nom in ["Mission1", "Mission2", "Mission3"]:
+		var mp: Node = main.get_node_or_null(nom)
+		if mp:
+			prologue[nom] = mp.est_terminee()
+	var metas := {}
+	for k in ["m1_barrage", "prince_ami", "indice_billes", "dossou_estime", "ama_racines"]:
+		if main.has_meta(k):
+			metas[k] = main.get_meta(k)
+	d["prologue"] = {"faites": prologue, "metas": metas}
 	var mission: Node = main.get_node_or_null("Mission4")
 	if mission:
 		var etats := []
@@ -175,6 +185,30 @@ func charger() -> bool:
 				_appliquer_etat(poste["gardes"][k], int(etats[k]))
 			poste["leve"] = bool(db[i]["leve"])
 			poste["alerte"] = false
+	# prologue (missions 1 à 3) : une mission interrompue reprend depuis son début ;
+	# une sauvegarde d'avant le prologue (sans cette rubrique) le tient pour fait
+	var dp: Dictionary = d.get("prologue", {})
+	var dm: Dictionary = dp.get("metas", {})
+	for k in dm:
+		main.set_meta(k, dm[k])
+	var df: Dictionary = dp.get("faites", {"Mission1": true, "Mission2": true, "Mission3": true})
+	var reprise: Node = null
+	for nom in ["Mission1", "Mission2", "Mission3"]:
+		var mp: Node = main.get_node_or_null(nom)
+		if mp == null:
+			continue
+		if bool(df.get(nom, true)):
+			if not mp.est_terminee():
+				mp.terminer()
+		elif reprise == null:
+			reprise = mp
+		else:
+			mp.annuler()
+	var m4p: Node = main.get_node_or_null("Mission4")
+	if reprise:
+		reprise.commencer()
+	elif m4p and not m4p.lancee:
+		m4p.lancer(false)
 	# Akwéri : si le village avait été libéré, il l'est de nouveau
 	var mission: Node = main.get_node_or_null("Mission4")
 	if mission and d.has("akweri"):

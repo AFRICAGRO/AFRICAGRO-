@@ -34,6 +34,15 @@ var clapot: AudioStreamPlayer3D
 var aide: Label3D
 ## Passages que la marée ouvre ou ferme (mission 9) : chaque Callable(Vector2) -> bool dit « bloqué ».
 var obstacles: Array = []
+## Pirogue à moteur hors-bord (mission 3) : Faris assis à l'arrière, la main sur la barre du moteur.
+## Z : gaz · relâcher Z : couper les gaz et glisser en silence · Q / D : tourner · Maj : plein gaz.
+var moteur := false
+var verrou := false          # poursuite en cours : on ne débarque pas en pleine mer
+var son_moteur: AudioStreamPlayer3D
+const VMAX_MOTEUR := 8.2
+const VMAX_MOTEUR_FORT := 9.6
+const POUSSEE_MOTEUR := 2.8
+const VIRAGE_MOTEUR := 0.95
 
 
 func preparer(p_joueur: Node3D, p_terrain: Node, p_rivieres: Array, maillage: Mesh, pos: Vector2, angle: float) -> void:
@@ -95,6 +104,8 @@ func _navigable(de: Vector2, vers: Vector2) -> bool:
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("vehicule") or joueur == null:
 		return
+	if monte and verrou:
+		return
 	if monte:
 		descendre()
 	elif joueur.get("a_cheval") == null and not joueur.get("mort") \
@@ -117,6 +128,25 @@ func monter() -> void:
 	assiette.add_child(piroguier)
 	piroguier.position = Vector3(0, 0.12, -1.9)    # debout à l'arrière
 	ap = piroguier.find_child("AnimationPlayer", true, false)
+	if moteur:
+		# assis à l'arrière, devant le moteur ; pas de perche
+		piroguier.position = Vector3(0, -0.12, -2.0)
+		ap.get_animation("Assis").loop_mode = Animation.LOOP_LINEAR
+		ap.play("Assis")
+		if son_moteur == null:
+			var sm: AudioStreamWAV = load("res://sons/moto.wav")
+			sm.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			sm.loop_end = int(sm.get_length() * sm.mix_rate)
+			son_moteur = AudioStreamPlayer3D.new()
+			son_moteur.stream = sm
+			son_moteur.unit_size = 6.0
+			son_moteur.max_distance = 90.0
+			son_moteur.volume_db = -12.0
+			son_moteur.pitch_scale = 0.5
+			add_child(son_moteur)
+		son_moteur.play()
+		clapot.play()
+		return
 	ap.get_animation("Perche").loop_mode = Animation.LOOP_LINEAR
 	ap.play("Perche")
 	ap.speed_scale = 0.0
@@ -152,6 +182,8 @@ func descendre() -> void:
 		perche.queue_free()
 		perche = null
 	clapot.stop()
+	if son_moteur:
+		son_moteur.stop()
 	# on débarque du côté de la terre la plus proche (sinon dans l'eau, à la nage)
 	var meilleur := global_position + global_transform.basis.x * 1.2
 	var haut := -INF
@@ -176,15 +208,24 @@ func _process(delta: float) -> void:
 	if monte:
 		var entree := Input.get_vector("gauche", "droite", "avancer", "reculer")
 		virage = -entree.x
-		if entree.y < -0.2:
+		if moteur:
+			if entree.y < -0.2:
+				cible = VMAX_MOTEUR_FORT if Input.is_action_pressed("courir") else VMAX_MOTEUR
+			elif entree.y > 0.2:
+				cible = -1.5
+		elif entree.y < -0.2:
 			cible = VMAX_FORT if Input.is_action_pressed("courir") else VMAX
 		elif entree.y > 0.2:
 			cible = -0.8
 		elif absf(entree.x) > 0.2:
 			cible = maxf(vitesse, 0.6)                 # on pousse de côté pour pivoter
-	var acc := POUSSEE if cible != 0.0 else ERRE
+	var acc := (POUSSEE_MOTEUR if moteur else POUSSEE) if cible != 0.0 else ERRE
 	vitesse = move_toward(vitesse, cible, acc * delta)
-	cap += virage * VIRAGE * delta * clampf(0.35 + absf(vitesse) / VMAX, 0.0, 1.2)
+	if moteur:
+		# le moteur fait tourner même à petite vitesse ; virage plus serré à mi-régime
+		cap += virage * VIRAGE_MOTEUR * delta * clampf(0.45 + absf(vitesse) / VMAX_MOTEUR, 0.0, 1.1)
+	else:
+		cap += virage * VIRAGE * delta * clampf(0.35 + absf(vitesse) / VMAX, 0.0, 1.2)
 	rotation.y = cap
 	var avant := Vector2(sin(cap), cos(cap))
 	var ici := Vector2(global_position.x, global_position.z)
@@ -201,7 +242,14 @@ func _process(delta: float) -> void:
 	global_position = Vector3(ici.x, lerpf(global_position.y, n - 0.22 + 0.05 * houle * sin(t * 1.3), 1.0 - exp(-4.0 * delta)), ici.y)
 	assiette.basis = Basis.from_euler(Vector3(0.025 * houle * sin(t * 0.9 + 1.0), 0, 0.04 * houle * sin(t * 1.1)
 			- virage * 0.03 * clampf(vitesse / VMAX, 0.0, 1.0)))
-	if monte:
+	if monte and moteur:
+		if son_moteur:
+			son_moteur.pitch_scale = 0.45 + 0.55 * clampf(absf(cible) / VMAX_MOTEUR_FORT, 0.0, 1.0) + 0.1 * clampf(absf(vitesse) / VMAX_MOTEUR, 0.0, 1.0)
+			son_moteur.volume_db = -22.0 if cible == 0.0 else -10.0
+		clapot.volume_db = -24.0 + 10.0 * clampf(absf(vitesse) / VMAX_MOTEUR_FORT, 0.0, 1.0)
+		joueur.global_position = global_position + Vector3(0, 0.3, 0)
+		joueur.set("vitesse_affichee", absf(vitesse))
+	elif monte:
 		# le geste de perche suit l'effort : immobile quand on se laisse glisser
 		ap.speed_scale = clampf(absf(cible) / VMAX, 0.0, 1.2) if cible != 0.0 else 0.0
 		clapot.volume_db = -26.0 + 10.0 * clampf(absf(vitesse) / VMAX_FORT, 0.0, 1.0)

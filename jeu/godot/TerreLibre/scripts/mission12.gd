@@ -908,8 +908,18 @@ func _afficher_bilan() -> void:
 		villages += 1
 	var total := m4.epargnes + m4.tues
 	var etoiles := clampi(roundi(m4.confiance / 20.0), 0, 5)
-	var nb_preuves: int = tel.preuves.size() if tel else 0
+	var nb_preuves := 0
+	var nb_documents := 0
+	if tel:
+		for pr in tel.preuves:
+			if str(pr[0]) in Mission2.DOCUMENTS:
+				nb_documents += 1
+			else:
+				nb_preuves += 1
 	var choix: Array = []
+	var barrage := str(main.get_meta("m1_barrage", ""))
+	if barrage != "":
+		choix.append({"taire": "silence au barrage", "calme": "calme face à Dossou", "provoquer": "Dossou provoqué"}[barrage])
 	choix.append("Dossou relâché" if m4.sort_dossou == "relache" else ("Dossou prisonnier" if m4.sort_dossou == "prisonnier" else "Dossou : —"))
 	if main.has_meta("garcons_au_camp"):
 		choix.append("familles de Tikané protégées")
@@ -930,6 +940,7 @@ func _afficher_bilan() -> void:
 	t += "Civils protégés : aucun civil blessé\n"
 	t += "Confiance de l'île : %s\n" % ("★".repeat(etoiles) + "☆".repeat(5 - etoiles))
 	t += "Preuves réunies : %d / 9 (Cobra → Docks → ministère de l'Agriculture)\n" % mini(nb_preuves, 9)
+	t += "Documents de Samuel retrouvés : %d / 5\n" % nb_documents
 	t += "Choix majeurs : %s\n\n" % " · ".join(PackedStringArray(choix))
 	t += "Ces valeurs se transmettent à l'acte 2 et pèseront sur la fin du jeu.\n\nACTE 2 — LAGUNAVILLE : en préparation."
 	(ecran_fin.find_child("Bilan", true, false) as Label).text = t

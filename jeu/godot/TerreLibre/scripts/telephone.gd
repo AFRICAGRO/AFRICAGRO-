@@ -199,8 +199,12 @@ func _missions() -> void:
 	if m4:
 		_texte(m4.objectif.text, Color(1.0, 0.85, 0.4))
 	var liste := []
+	for n in [["Mission1", "1 · Le Retour"], ["Mission2", "2 · La Veillée"], ["Mission3", "3 · Le Pêcheur"]]:
+		var mp: Node = main.get_node_or_null(n[0])
+		if mp:
+			liste.append([n[1], mp.etat_texte()])
 	if m4:
-		liste.append(["4 · Première Étincelle", "Akwéri libéré" if m4.phase == Mission4.Phase.LIBERE else "en cours"])
+		liste.append(["4 · Première Étincelle", "Akwéri libéré" if m4.phase == Mission4.Phase.LIBERE else ("en cours" if m4.lancee else "à venir")])
 	var m5: Node = main.get_node_or_null("Mission5")
 	if m5:
 		liste.append(["5 · Les Graines", ["à venir", "disponible", "en cours", "terminée — %d sacs sauvés" % m5.sacs_livres][m5.phase]])
